@@ -1,0 +1,41 @@
+[project]
+name = "turkish-tokenizer-benchmark"
+version = "0.1.0"
+description = "A research-grade framework for evaluating subword vs. semantic-morphological encoders for Turkish."
+authors = [{name = "Tolga Şakar", email = "lonewolf_rd@protonmail.com", github ="https://github.com/dfavenfre", repository = "https://github.com/lonewolf-rd/TurkishTokenizer-Alpha-v1"}]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy==2.4.4",
+    "sentencepiece==0.2.1",
+    "tokenizers==0.23.1",
+    "morfessor==2.0.6",
+    "torch==2.11.0",
+    "pydantic==2.12.5",
+    "python-box==7.4.1",
+    "pyyaml==6.0.3",
+    "huggingface-hub==1.12.2",
+    "datasets==4.8.5",
+    "pandas==3.0.2",
+    "tqdm==4.67.3",
+    "rich==15.0.0",
+    "matplotlib==3.10.9",
+    "seaborn==0.13.2",
+    "scikit-learn==1.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.0.0",
+    "black==24.1.1",
+    "isort==5.13.2",
+    "flake8==7.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.isort]
+profile = "black"
+line_length = 88

@@ -1,0 +1,5 @@
+dataset:
+  limit_mb: 1024
+  fetch_wiki: true
+  fetch_oscar: false
+  shuffle_before_merge: true
