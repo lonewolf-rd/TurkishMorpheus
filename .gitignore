@@ -27,7 +27,7 @@ share/python-wheels/
 MANIFEST
 
 # Configs
-src/configs/huggingface.yaml
+src/benchmarker/configs/huggingface.yaml
 
 # Files
 .*txt
@@ -222,4 +222,5 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-/src/dataset/
+/src/benchmarker/dataset/
+/src/model_development/model/debugging_logs.txt

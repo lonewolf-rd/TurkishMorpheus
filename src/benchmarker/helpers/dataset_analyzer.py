@@ -3,8 +3,8 @@ import random
 from pathlib import Path
 from collections import Counter
 from typing import List, Dict, Any
-from src.utils.logger import AppLogger
-from src.utils.providers.config_provider import config_provider
+from src.benchmarker.utils.logger import AppLogger
+from src.benchmarker.utils.providers.config_provider import config_provider
 
 
 class DatasetAnalyzer:
@@ -14,16 +14,17 @@ class DatasetAnalyzer:
         self.base_path = Path(__file__).parent.parent
         self.dataset_dir = self.base_path / "dataset"
         self.output_dir = self.base_path / "dataset" / "splits"
+        self.input_file = self.base_path / "dataset" / "raw" / "wiki_tr_raw.txt"
         self.output_dir.mkdir(exist_ok=True)
 
-    def analyze_and_split(self, file_path: Path):
-        self.logger.info(f"[DatasetAnalyzer](analyze_and_split) Starting comprehensive analysis for {file_path.name}")
+    def analyze_and_split(self):
+        self.logger.info(f"[DatasetAnalyzer](analyze_and_split) Starting comprehensive analysis for {self.input_file.name}")
 
-        if not file_path.exists():
-            self.logger.error(f"[DatasetAnalyzer](analyze_and_split) Source file not found: {file_path}")
+        if not self.input_file.exists():
+            self.logger.error(f"[DatasetAnalyzer](analyze_and_split) Source file not found: {self.input_file}")
             return
 
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(self.input_file, "r", encoding="utf-8") as f:
             raw_lines = [l.strip() for l in f if l.strip()]
 
         full_text = " ".join(raw_lines)
@@ -34,7 +35,7 @@ class DatasetAnalyzer:
             "word_count": len(all_words),
             "char_count": len(full_text),
             "unique_words": len(set(all_words)),
-            "file_size_mb": os.path.getsize(file_path) / (1024 * 1024)
+            "file_size_mb": os.path.getsize(self.input_file) / (1024 * 1024)
         }
 
         self._print_quantitative_stats(stats)
@@ -99,3 +100,7 @@ class DatasetAnalyzer:
 
         self.logger.info(f"[DatasetAnalyzer](_create_splits) Saved {len(train_lines)} lines to train.txt")
         self.logger.info(f"[DatasetAnalyzer](_create_splits) Saved {len(test_lines)} lines to test.txt")
+
+if __name__ == "__main__":
+    analyzer = DatasetAnalyzer()
+    analyzer.analyze_and_split()

@@ -1,0 +1,9 @@
+dataset:
+  limit_mb: 5120
+  fetch_wiki: true
+  fetch_oscar: false
+  shuffle_before_merge: true
+
+huggingface:
+  access_token: "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"
+

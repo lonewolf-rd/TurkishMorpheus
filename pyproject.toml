@@ -1,8 +1,8 @@
 [project]
-name = "turkish-tokenizer-benchmark"
+name = "turkish-tokenizer"
 version = "0.1.0"
 description = "A research-grade framework for evaluating subword vs. semantic-morphological encoders for Turkish."
-authors = [{name = "Tolga Şakar", email = "lonewolf_rd@protonmail.com", github ="https://github.com/dfavenfre", repository = "https://github.com/lonewolf-rd/TurkishTokenizer-Alpha-v1"}]
+authors = [{name = "Tolga Şakar", email = "lonewolf_rd@protonmail.com"}]
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -22,6 +22,7 @@ dependencies = [
     "matplotlib==3.10.9",
     "seaborn==0.13.2",
     "scikit-learn==1.8.0",
+    "wandb==0.26.1"
 ]
 
 [project.optional-dependencies]
