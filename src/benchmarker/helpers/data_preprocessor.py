@@ -1,5 +1,5 @@
-from src.utils.providers.config_provider import config_provider
-from src.utils.logger import AppLogger
+from src.benchmarker.utils.providers.config_provider import config_provider
+from src.benchmarker.utils.providers.logger_provider import global_logger
 from pathlib import Path
 from typing import Optional, List
 from datasets import load_dataset
@@ -8,7 +8,6 @@ import re, os
 
 class DataPreprocessor:
     def __init__(self):
-        self.logger = AppLogger()
         self.configs = config_provider.cfg
 
         self.base_path = Path(__file__).parent.parent
@@ -30,7 +29,7 @@ class DataPreprocessor:
         return text
 
     def fetch_wikipedia_tr(self, limit_mb: Optional[int] = None) -> Path:
-        self.logger.info(f"[DataPreprocessor](fetch_wikipedia_tr) Starting fetch process for Wikipedia TR.")
+        global_logger.info(f"[DataPreprocessor](fetch_wikipedia_tr) Starting fetch process for Wikipedia TR.")
         output_path = self.raw_dir / "wiki_tr_raw.txt"
 
         try:
@@ -52,14 +51,14 @@ class DataPreprocessor:
                     if limit_mb and current_size >= (limit_mb * 1024 * 1024):
                         break
 
-            self.logger.info(f"[DataPreprocessor](fetch_wikipedia_tr) Successfully saved raw data to {output_path}")
+            global_logger.info(f"[DataPreprocessor](fetch_wikipedia_tr) Successfully saved raw data to {output_path}")
             return output_path
         except Exception as e:
-            self.logger.error(f"[DataPreprocessor](fetch_wikipedia_tr) Error occurred during fetch: {str(e)}")
+            global_logger.error(f"[DataPreprocessor](fetch_wikipedia_tr) Error occurred during fetch: {str(e)}")
             raise
 
     def fetch_oscar_tr(self, limit_mb: Optional[int] = None) -> Path:
-        self.logger.info(f"[DataPreprocessor](fetch_oscar_tr) Starting fetch process for OSCAR TR.")
+        global_logger.info(f"[DataPreprocessor](fetch_oscar_tr) Starting fetch process for OSCAR TR.")
         output_path = self.raw_dir / "oscar_tr_raw.txt"
 
         try:
@@ -81,15 +80,15 @@ class DataPreprocessor:
                     if limit_mb and current_size >= (limit_mb * 1024 * 1024):
                         break
 
-            self.logger.info(f"[DataPreprocessor](fetch_oscar_tr) Successfully saved raw data to {output_path}")
+            global_logger.info(f"[DataPreprocessor](fetch_oscar_tr) Successfully saved raw data to {output_path}")
             return output_path
         except Exception as e:
-            self.logger.error(f"[DataPreprocessor](fetch_oscar_tr) Error occurred during fetch: {str(e)}")
+            global_logger.error(f"[DataPreprocessor](fetch_oscar_tr) Error occurred during fetch: {str(e)}")
             raise
 
     def merge_and_finalize(self, file_paths: List[Path], output_filename: str = "final_corpus.txt") -> Path:
         final_path = self.dataset_dir / output_filename
-        self.logger.info(f"[DataPreprocessor](merge_and_finalize) Merging {len(file_paths)} files into {final_path}")
+        global_logger.info(f"[DataPreprocessor](merge_and_finalize) Merging {len(file_paths)} files into {final_path}")
 
         try:
             with open(final_path, "w", encoding="utf-8") as outfile:
@@ -98,16 +97,16 @@ class DataPreprocessor:
                         with open(file_path, "r", encoding="utf-8") as infile:
                             for line in infile:
                                 outfile.write(line)
-                        self.logger.info(f"[DataPreprocessor](merge_and_finalize) Appended {file_path.name}")
+                        global_logger.info(f"[DataPreprocessor](merge_and_finalize) Appended {file_path.name}")
 
-            self.logger.info(f"[DataPreprocessor](merge_and_finalize) Final corpus is ready at {final_path}")
+            global_logger.info(f"[DataPreprocessor](merge_and_finalize) Final corpus is ready at {final_path}")
             return final_path
         except Exception as e:
-            self.logger.error(f"[DataPreprocessor](merge_and_finalize) Error during merging: {str(e)}")
+            global_logger.error(f"[DataPreprocessor](merge_and_finalize) Error during merging: {str(e)}")
             raise
 
     def process_pipeline(self):
-        self.logger.info(f"[DataPreprocessor](process_pipeline) Initializing data pipeline.")
+        global_logger.info(f"[DataPreprocessor](process_pipeline) Initializing data pipeline.")
         limit = self.configs.dataset.get("limit_mb", 100)
 
         paths = []
@@ -121,10 +120,10 @@ class DataPreprocessor:
             if paths:
                 self.merge_and_finalize(paths)
             else:
-                self.logger.warning("[DataPreprocessor](process_pipeline) No data sources selected in configuration.")
+                global_logger.warning("[DataPreprocessor](process_pipeline) No data sources selected in configuration.")
 
         except Exception as e:
-            self.logger.error(f"[DataPreprocessor](process_pipeline) Pipeline execution failed: {str(e)}")
+            global_logger.error(f"[DataPreprocessor](process_pipeline) Pipeline execution failed: {str(e)}")
 
 
 if __name__ == "__main__":

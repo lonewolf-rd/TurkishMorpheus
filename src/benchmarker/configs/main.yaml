@@ -1,0 +1,27 @@
+dataset:
+  limit_mb: 1024
+  fetch_wiki: true
+  fetch_oscar: false
+  shuffle_before_merge: true
+
+huggingface:
+  access_token: "hf---"
+
+training:
+  vocab_size: [8000, 16000, 32000, 40000, 64000]
+
+bpe_configs:
+  model_type: "bpe"
+  coverage: 0.9999
+  input_sentence_size: 5_000_000
+  shuffle_input_sentence: true
+  num_threads: 6
+  pad_id: 3
+
+unigram_configs:
+  model_type: "bpe"
+  coverage: 0.9999
+  input_sentence_size: 5_000_000
+  shuffle_input_sentence: true
+  num_threads: 6
+  pad_id: 3
