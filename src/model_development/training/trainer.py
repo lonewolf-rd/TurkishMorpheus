@@ -56,7 +56,7 @@ class TrainingConfig:
     char_embed_dim: int = 56
     case_embed_dim: int = 8
     n_layers_encoder: int = 2
-    n_layers_detector: int = 2
+    n_layers_detector: int = 3
     num_heads: int = 4
     max_word_len: int = 32
     max_sent_len: int = 24
@@ -67,14 +67,14 @@ class TrainingConfig:
     count_loss_w: float = 0.1
 
     use_mlm: bool = True
-    mlm_ctx_layers: int = 2
-    mlm_dec_layers: int = 1
+    mlm_ctx_layers: int = 3
+    mlm_dec_layers: int = 2
     mlm_mask_rate: float = 0.15
 
-    sgns_n_negatives: int = 5
+    sgns_n_negatives: int = 8
     sgns_window: int = 5
 
-    ctr_temperature: float = 0.10
+    ctr_temperature: float = 0.07
 
     aux_weight_start: float = 0.5
     aux_weight_end: float = 0.10
@@ -516,7 +516,11 @@ if __name__ == "__main__":
         word_vocab_path=word_vocab_path,
         root_vocab_path=root_vocab_path,
         morfessor_path=morfessor_path,
-        max_sentences=200_000,
+        max_sentences=1_500_000,
+        word_vocab_top_k=100_000,
+        word_vocab_min_freq=3,
+        root_vocab_top_k=30_000,
+        root_vocab_min_freq=2,
     )
 
     build_sentence_cache(
@@ -525,7 +529,11 @@ if __name__ == "__main__":
         word_vocab_path=word_vocab_path,
         root_vocab_path=root_vocab_path,
         morfessor_path=morfessor_path,
-        max_sentences=20_000,
+        max_sentences=150_000,
+        word_vocab_top_k=100_000,
+        word_vocab_min_freq=3,
+        root_vocab_top_k=30_000,
+        root_vocab_min_freq=2,
     )
 
     config = TrainingConfig(
@@ -533,15 +541,14 @@ if __name__ == "__main__":
         val_cache_path=test_cache,
         word_vocab_path=word_vocab_path,
         checkpoint_dir=checkpoint_dir,
-        run_name="turkish_morpheus",
-        batch_size=64,
-        grad_accum_steps=2,
-        n_epochs=18,
-        learning_rate=1e-4,
-        warmup_steps=1000,
-        use_amp=True,
-        num_workers=4,
-        use_mlm=True,
+        run_name="turkish_morpheus_a100",
+        batch_size=256,
+        grad_accum_steps=1,
+        n_epochs=16,
+        learning_rate=1.5e-4,
+        warmup_steps=2500,
+        use_amp=False,
+        num_workers=8,
     )
 
     trainer = MorpheusTrainer(config, use_wandb=True)

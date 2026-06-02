@@ -76,8 +76,8 @@ def clean_word_preserve_case(word: str) -> Optional[str]:
 
 def build_word_vocab(
         txt_path: str,
-        top_k: int = 50000,
-        min_freq: int = 5,
+        top_k: int = 100000,
+        min_freq: int = 3,
 ) -> Tuple[Dict[str, int], torch.Tensor]:
     global_logger.info(f"[build_word_vocab] Counting words in {txt_path}")
     counter = Counter()
@@ -108,8 +108,8 @@ def build_word_vocab(
 def build_root_vocab(
         word_freqs: Counter,
         morfessor_path: str,
-        top_k: int = 20000,
-        min_freq: int = 3,
+        top_k: int = 30000,
+        min_freq: int = 2,
 ) -> Dict[str, int]:
     global_logger.info(f"[build_root_vocab] Loading Morfessor: {morfessor_path}")
     wrapper = MorfessorWrapper(morfessor_path)
@@ -145,6 +145,10 @@ def build_sentence_cache(
         max_sent_len: int = 24,
         min_sent_words: int = 3,
         max_sentences: int = 200_000,
+        word_vocab_top_k: int = 100_000,
+        word_vocab_min_freq: int = 3,
+        root_vocab_top_k: int = 30_000,
+        root_vocab_min_freq: int = 2,
         batch_log: int = 5000,
 ) -> None:
     cache_path_obj = Path(cache_path)
@@ -174,7 +178,11 @@ def build_sentence_cache(
         word_vocab = torch.load(word_vocab_path)["vocab"]
         word_freqs = torch.load(word_vocab_path)["freqs"]
     else:
-        word_vocab, word_freqs = build_word_vocab(txt_path)
+        word_vocab, word_freqs = build_word_vocab(
+            txt_path,
+            top_k=word_vocab_top_k,
+            min_freq=word_vocab_min_freq,
+        )
         Path(word_vocab_path).parent.mkdir(parents=True, exist_ok=True)
         torch.save({"vocab": word_vocab, "freqs": word_freqs}, word_vocab_path)
         global_logger.info(f"[build_sentence_cache] Saved word vocab: {word_vocab_path}")
@@ -183,7 +191,12 @@ def build_sentence_cache(
         global_logger.info(f"[build_sentence_cache] Loading root vocab: {root_vocab_path}")
         root_vocab = torch.load(root_vocab_path)
     else:
-        root_vocab = build_root_vocab(word_counter, morfessor_path)
+        root_vocab = build_root_vocab(
+            word_counter,
+            morfessor_path,
+            top_k=root_vocab_top_k,
+            min_freq=root_vocab_min_freq,
+        )
         Path(root_vocab_path).parent.mkdir(parents=True, exist_ok=True)
         torch.save(root_vocab, root_vocab_path)
         global_logger.info(f"[build_sentence_cache] Saved root vocab: {root_vocab_path}")

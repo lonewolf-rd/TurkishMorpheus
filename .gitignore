@@ -30,7 +30,7 @@ MANIFEST
 src/benchmarker/configs/huggingface.yaml
 
 # Files
-.*txt
+*.txt
 
 # PyInstaller
 #   Usually these files are written by a python script from a template
@@ -227,3 +227,5 @@ __marimo__/
 /src/benchmarker/helpers/debugging_logs.txt
 /src/model_development/training/checkpoints/
 /src/model_development/training/debugging_logs.txt
+/src/model_development/evaluation_results/
+/src/model_development/evaluation/debugging_logs.txt
