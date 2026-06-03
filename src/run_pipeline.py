@@ -1,0 +1,359 @@
+import argparse
+import sys
+import time
+import traceback
+from pathlib import Path
+from typing import List, Callable, Tuple
+
+
+BASE = Path(__file__).resolve().parent.parent
+
+
+def _banner(title: str, ch: str = "="):
+    line = ch * 78
+    print(f"\n{line}\n  {title}\n{line}", flush=True)
+
+
+def _check_file(path: Path, label: str) -> bool:
+    exists = path.exists()
+    status = "OK" if exists else "MISSING"
+    size = f"({path.stat().st_size / 1e6:.1f} MB)" if exists else ""
+    print(f"   [{status:7s}] {label:<28s} {path}  {size}")
+    return exists
+
+
+def stage_data() -> bool:
+    _banner("STAGE 1/6  ·  data preprocess + analyze")
+    from src.benchmarker.helpers.data_preprocessor import DataPreprocessor
+    from src.benchmarker.helpers.dataset_analyzer import DatasetAnalyzer
+
+    raw_path = BASE / "src/benchmarker/dataset/raw/wiki_tr_raw.txt"
+    train_path = BASE / "src/benchmarker/dataset/splits/train.txt"
+    test_path = BASE / "src/benchmarker/dataset/splits/test.txt"
+
+    if train_path.exists() and test_path.exists():
+        print(f"   train/test splits already exist — skipping data fetch.")
+        _check_file(train_path, "train.txt")
+        _check_file(test_path, "test.txt")
+        return True
+
+    if not raw_path.exists():
+        print("   raw corpus missing — fetching Wikipedia-tr...")
+        DataPreprocessor().process_pipeline()
+    else:
+        print(f"   raw corpus exists at {raw_path}, skipping fetch")
+
+    print("\n   running DatasetAnalyzer.analyze_and_split() ...")
+    DatasetAnalyzer().analyze_and_split()
+
+    return _check_file(train_path, "train.txt") and _check_file(test_path, "test.txt")
+
+
+def stage_benchmark() -> bool:
+    _banner("STAGE 2/6  ·  classical tokenizer benchmark (BPE/ByteBPE/Unigram/WordPiece + Morfessor)")
+    from src.benchmarker.helpers.benchmarker import TokenizerBenchmarker
+
+    morfessor_path = BASE / "src/benchmarker/results/morfessor_model.bin"
+
+    hard_words = [
+        "evlerimizdekiler", "muvaffakiyetsizleştiriciler",
+        "gidebileceklerindenmişsiniz", "anlaşılamamaktadır",
+        "kitap", "ev", "geliyorum",
+    ]
+
+    benchmarker = TokenizerBenchmarker(test_sentences=hard_words)
+    benchmarker.run_benchmark()
+    return _check_file(morfessor_path, "morfessor_model.bin")
+
+
+def stage_dataset() -> bool:
+    _banner("STAGE 3/6  ·  build sentence cache for Morpheus training")
+    from src.model_development.training.dataset import build_sentence_cache
+
+    train_txt = str(BASE / "src/benchmarker/dataset/splits/train.txt")
+    test_txt = str(BASE / "src/benchmarker/dataset/splits/test.txt")
+    morfessor_path = str(BASE / "src/benchmarker/results/morfessor_model.bin")
+    word_vocab_path = str(BASE / "src/benchmarker/dataset/splits/word_vocab.pt")
+    root_vocab_path = str(BASE / "src/benchmarker/dataset/splits/root_vocab.pt")
+    train_cache = str(BASE / "src/benchmarker/dataset/splits/train_sentences.pt")
+    test_cache = str(BASE / "src/benchmarker/dataset/splits/test_sentences.pt")
+
+    print("   building train sentence cache...")
+    build_sentence_cache(
+        txt_path=train_txt,
+        cache_path=train_cache,
+        word_vocab_path=word_vocab_path,
+        root_vocab_path=root_vocab_path,
+        morfessor_path=morfessor_path,
+        max_sentences=1_500_000,
+        word_vocab_top_k=100_000,
+        word_vocab_min_freq=3,
+        root_vocab_top_k=30_000,
+        root_vocab_min_freq=2,
+    )
+
+    print("\n   building test sentence cache...")
+    build_sentence_cache(
+        txt_path=test_txt,
+        cache_path=test_cache,
+        word_vocab_path=word_vocab_path,
+        root_vocab_path=root_vocab_path,
+        morfessor_path=morfessor_path,
+        max_sentences=150_000,
+        word_vocab_top_k=100_000,
+        word_vocab_min_freq=3,
+        root_vocab_top_k=30_000,
+        root_vocab_min_freq=2,
+    )
+
+    ok = True
+    ok &= _check_file(Path(train_cache), "train_sentences.pt")
+    ok &= _check_file(Path(test_cache), "test_sentences.pt")
+    ok &= _check_file(Path(word_vocab_path), "word_vocab.pt")
+    ok &= _check_file(Path(root_vocab_path), "root_vocab.pt")
+    return ok
+
+
+def stage_train() -> bool:
+    _banner("STAGE 4/6  ·  Morpheus training")
+    from src.model_development.training.trainer import MorpheusTrainer, TrainingConfig
+
+    checkpoint_dir = BASE / "src/model_development/training/checkpoints"
+    train_cache = str(BASE / "src/benchmarker/dataset/splits/train_sentences.pt")
+    test_cache = str(BASE / "src/benchmarker/dataset/splits/test_sentences.pt")
+    word_vocab_path = str(BASE / "src/benchmarker/dataset/splits/word_vocab.pt")
+
+    config = TrainingConfig(
+        train_cache_path=train_cache,
+        val_cache_path=test_cache,
+        word_vocab_path=word_vocab_path,
+        checkpoint_dir=str(checkpoint_dir),
+        run_name="turkish_morpheus_a100_release",
+        batch_size=512,
+        grad_accum_steps=1,
+        n_epochs=25,
+        learning_rate=2.0e-4,
+        warmup_steps=1500,
+        use_amp=False,
+        num_workers=8,
+    )
+
+    trainer = MorpheusTrainer(config, use_wandb=True)
+    trainer.train()
+
+    best_ckpt = checkpoint_dir / f"{config.run_name}_best.pt"
+    return _check_file(best_ckpt, "best checkpoint")
+
+
+def stage_tokenizer() -> bool:
+    _banner("STAGE 5/6  ·  build MorpheusTokenizer (50K vocab)")
+    import torch
+    from src.model_development.model.morpheus import Morpheus
+    from src.model_development.tokenizer.morpheus_tokenizer import (
+        MorpheusTokenizer,
+        build_morpheus_vocab,
+    )
+
+    checkpoint_path = BASE / "src/model_development/training/checkpoints/turkish_morpheus_a100_release_best.pt"
+    if not checkpoint_path.exists():
+        fallback = BASE / "src/model_development/training/checkpoints/turkish_morpheus_a100_best.pt"
+        if fallback.exists():
+            checkpoint_path = fallback
+        else:
+            print(f"   no checkpoint found — train first.")
+            return False
+
+    corpus_path = str(BASE / "src/benchmarker/dataset/splits/train.txt")
+    output_dir = BASE / "src/model_development/tokenizer/morpheus_50k"
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"   loading checkpoint: {checkpoint_path.name}  (device={device})")
+
+    ckpt = torch.load(str(checkpoint_path), map_location=device, weights_only=False)
+    cfg = ckpt["config"]
+
+    model = Morpheus(
+        char_dim=cfg.char_dim,
+        char_embed_dim=cfg.char_embed_dim,
+        case_embed_dim=cfg.case_embed_dim,
+        n_layers_encoder=cfg.n_layers_encoder,
+        n_layers_detector=cfg.n_layers_detector,
+        num_heads=cfg.num_heads,
+        max_word_len=cfg.max_word_len,
+        max_segs=cfg.max_segs,
+        dropout=cfg.dropout,
+        threshold=cfg.threshold,
+        pos_weight=cfg.pos_weight,
+        count_loss_w=getattr(cfg, "count_loss_w", 0.3),
+    )
+    model.load_state_dict(ckpt["model_state"])
+    model.to(device).eval()
+
+    print("   building 50K vocab from corpus...")
+    vocab = build_morpheus_vocab(
+        morpheus_model=model,
+        corpus_path=corpus_path,
+        vocab_size=50_000,
+        min_freq=2,
+        device=device,
+    )
+
+    tokenizer = MorpheusTokenizer(
+        morpheus_model=model,
+        vocab=vocab,
+        device=device,
+    )
+    tokenizer.save(output_dir)
+
+    print(f"\n   vocab stats: {tokenizer.vocab_stats()}")
+    return _check_file(output_dir / "vocab.json", "vocab.json") and _check_file(
+        output_dir / "tokenizer_config.json", "tokenizer_config.json"
+    )
+
+
+def stage_eval() -> bool:
+    _banner("STAGE 6/6  ·  evaluations (paper_evaluation + sigmorphon_eval)")
+
+    print("\n   [6a] running paper_evaluation orchestrator...")
+    from src.model_development.evaluation.paper_evaluation import PaperEvaluator
+
+    checkpoint_path = BASE / "src/model_development/training/checkpoints/turkish_morpheus_a100_release_best.pt"
+    if not checkpoint_path.exists():
+        fallback = BASE / "src/model_development/training/checkpoints/turkish_morpheus_a100_best.pt"
+        if fallback.exists():
+            checkpoint_path = fallback
+        else:
+            print(f"   no checkpoint found — train first.")
+            return False
+
+    tokenizer_dir = BASE / "src/model_development/tokenizer/morpheus_50k"
+    morfessor_path = BASE / "src/benchmarker/results/morfessor_model.bin"
+    train_corpus = BASE / "src/benchmarker/dataset/splits/train.txt"
+    test_corpus = BASE / "src/benchmarker/dataset/splits/test.txt"
+    word_vocab_path = BASE / "src/benchmarker/dataset/splits/word_vocab.pt"
+    benchmarker_results = BASE / "src/benchmarker/results"
+    paper_eval_dir = BASE / "src/model_development/paper_eval_results"
+
+    evaluator = PaperEvaluator(
+        checkpoint_path=str(checkpoint_path),
+        tokenizer_dir=str(tokenizer_dir) if tokenizer_dir.exists() else None,
+        morfessor_path=str(morfessor_path),
+        train_corpus_path=str(train_corpus),
+        test_corpus_path=str(test_corpus),
+        word_vocab_path=str(word_vocab_path),
+        benchmarker_results_dir=str(benchmarker_results),
+        preferred_classical_vocab=64000,
+        output_dir=str(paper_eval_dir),
+        seed=1337,
+    )
+    evaluator.run_all()
+
+    sigmorphon_gold = BASE / "data/sigmorphon_tr/tur.gold"
+    if sigmorphon_gold.exists():
+        print("\n   [6b] running sigmorphon_eval against tur.gold...")
+        from src.model_development.evaluation.sigmorphon_eval import (
+            load_sigmorphon_inflection_gold,
+            build_segmenters,
+            evaluate,
+        )
+
+        entries = load_sigmorphon_inflection_gold(str(sigmorphon_gold))
+        if entries:
+            segmenters = build_segmenters(
+                checkpoint_path=str(checkpoint_path),
+                morfessor_path=str(morfessor_path),
+                benchmarker_results_dir=str(benchmarker_results),
+            )
+            evaluate(entries, segmenters, str(paper_eval_dir / "sigmorphon"))
+    else:
+        print(f"\n   [6b] SIGMORPHON gold not found at {sigmorphon_gold} — skipping")
+
+    return True
+
+
+STAGES: List[Tuple[str, Callable[[], bool]]] = [
+    ("data", stage_data),
+    ("benchmark", stage_benchmark),
+    ("dataset", stage_dataset),
+    ("train", stage_train),
+    ("tokenizer", stage_tokenizer),
+    ("eval", stage_eval),
+]
+
+
+def run_stages(stage_names: List[str]):
+    stage_map = dict(STAGES)
+    ordered = [s for s, _ in STAGES if s in stage_names]
+    unknown = [s for s in stage_names if s not in stage_map]
+    if unknown:
+        print(f"Unknown stage(s): {unknown}. Valid: {[s for s, _ in STAGES]}")
+        sys.exit(1)
+
+    t_start = time.time()
+    results = []
+    for name in ordered:
+        fn = stage_map[name]
+        t0 = time.time()
+        try:
+            ok = fn()
+        except Exception as e:
+            print(f"\n[run_pipeline] STAGE '{name}' RAISED EXCEPTION:")
+            traceback.print_exc()
+            ok = False
+        elapsed = time.time() - t0
+        results.append((name, ok, elapsed))
+        if not ok:
+            print(f"\n[run_pipeline] stage '{name}' did not complete cleanly. Stopping.")
+            break
+
+    _banner("PIPELINE SUMMARY")
+    total = time.time() - t_start
+    for name, ok, elapsed in results:
+        mark = "OK" if ok else "FAIL"
+        m, s = divmod(int(elapsed), 60)
+        print(f"   [{mark:4s}] {name:<12s} {m:>3d}m{s:02d}s")
+    print(f"\n   TOTAL: {int(total // 3600)}h{int((total % 3600) // 60):02d}m")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        prog="src.run_pipeline",
+        description="Orchestrate Morpheus pipeline stages",
+    )
+    parser.add_argument(
+        "--stage",
+        choices=["all"] + [s for s, _ in STAGES],
+        default="all",
+        help="Single stage to run, or 'all' for full pipeline",
+    )
+    parser.add_argument(
+        "--stages",
+        nargs="+",
+        help="Multiple stages (overrides --stage)",
+    )
+    parser.add_argument(
+        "--from",
+        dest="from_stage",
+        choices=[s for s, _ in STAGES],
+        help="Run from this stage onward",
+    )
+
+    args = parser.parse_args()
+    all_stage_names = [s for s, _ in STAGES]
+
+    if args.stages:
+        chosen = args.stages
+    elif args.from_stage:
+        start_idx = all_stage_names.index(args.from_stage)
+        chosen = all_stage_names[start_idx:]
+    elif args.stage == "all":
+        chosen = all_stage_names
+    else:
+        chosen = [args.stage]
+
+    print(f"[run_pipeline] running stages: {chosen}")
+    run_stages(chosen)
+
+
+if __name__ == "__main__":
+    main()
