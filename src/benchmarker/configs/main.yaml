@@ -8,7 +8,7 @@ huggingface:
   access_token: ""
 
 training:
-  vocab_size: [8000, 16000, 32000, 40000, 64000]
+  vocab_size: [50000, 64000]
 
 bpe_configs:
   model_type: "bpe"

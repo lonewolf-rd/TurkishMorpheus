@@ -1,5 +1,7 @@
 import math
+import random
 import time
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -51,6 +53,7 @@ class TrainingConfig:
     adam_beta2: float = 0.98
     adam_eps: float = 1e-6
     lr_min_ratio: float = 0.2
+    seed: int = 1337
 
     char_dim: int = 256
     char_embed_dim: int = 56
@@ -77,12 +80,12 @@ class TrainingConfig:
     ctr_temperature: float = 0.07
 
     aux_weight_start: float = 0.5
-    aux_weight_end: float = 0.10
-    aux_weight_decay: float = 0.92
+    aux_weight_end: float = 0.02
+    aux_weight_decay: float = 0.85
 
     sgns_weight: float = 0.7
-    ctr_weight: float = 0.5
-    mlm_weight: float = 0.7
+    ctr_weight: float = 0.6
+    mlm_weight: float = 0.8
 
     use_amp: bool = True
 
@@ -107,6 +110,13 @@ class MorpheusTrainer:
         self.config = config
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         global_logger.info(f"[Trainer] Device: {self.device}")
+
+        random.seed(config.seed)
+        np.random.seed(config.seed)
+        torch.manual_seed(config.seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(config.seed)
+        global_logger.info(f"[Trainer] Seed fixed: {config.seed}")
 
         self.train_dataset = MorpheusSentenceDataset(config.train_cache_path)
         self.val_dataset = MorpheusSentenceDataset(config.val_cache_path)
@@ -541,12 +551,12 @@ if __name__ == "__main__":
         val_cache_path=test_cache,
         word_vocab_path=word_vocab_path,
         checkpoint_dir=checkpoint_dir,
-        run_name="turkish_morpheus_a100",
-        batch_size=256,
+        run_name="turkish_morpheus_a100_release",
+        batch_size=512,
         grad_accum_steps=1,
-        n_epochs=16,
-        learning_rate=1.5e-4,
-        warmup_steps=2500,
+        n_epochs=25,
+        learning_rate=2.0e-4,
+        warmup_steps=1500,
         use_amp=False,
         num_workers=8,
     )
