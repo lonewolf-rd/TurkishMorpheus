@@ -27,21 +27,21 @@ def stage_data() -> bool:
     from src.model_development.data.preprocessor import DataPreprocessor
     from src.model_development.data.analyzer import DatasetAnalyzer
 
-    raw_path = BASE / "src/model_development/artifacts/datasets/raw/wiki_tr_raw.txt"
+    raw_path = BASE / "src/model_development/artifacts/datasets/raw/corpus.txt"
     train_path = BASE / "src/model_development/artifacts/datasets/splits/train.txt"
     test_path = BASE / "src/model_development/artifacts/datasets/splits/test.txt"
 
     if train_path.exists() and test_path.exists():
-        print(f"   train/test splits already exist — skipping data fetch.")
+        print(f"   train/test splits already exist — skipping data ingest.")
         _check_file(train_path, "train.txt")
         _check_file(test_path, "test.txt")
         return True
 
     if not raw_path.exists():
-        print("   raw corpus missing — fetching Wikipedia-tr...")
+        print("   raw corpus missing — ingesting from configured local_corpus_path...")
         DataPreprocessor().process_pipeline()
     else:
-        print(f"   raw corpus exists at {raw_path}, skipping fetch")
+        print(f"   raw corpus exists at {raw_path}, skipping ingest")
 
     print("\n   running DatasetAnalyzer.analyze_and_split() ...")
     DatasetAnalyzer().analyze_and_split()
@@ -85,9 +85,10 @@ def stage_dataset() -> bool:
         word_vocab_path=word_vocab_path,
         root_vocab_path=root_vocab_path,
         morfessor_path=morfessor_path,
-        max_sentences=1_500_000,
-        word_vocab_top_k=100_000,
-        word_vocab_min_freq=3,
+        max_sentences=5_000_000,
+        max_sent_len=32,
+        word_vocab_top_k=120_000,
+        word_vocab_min_freq=5,
         root_vocab_top_k=30_000,
         root_vocab_min_freq=2,
     )
@@ -99,9 +100,10 @@ def stage_dataset() -> bool:
         word_vocab_path=word_vocab_path,
         root_vocab_path=root_vocab_path,
         morfessor_path=morfessor_path,
-        max_sentences=150_000,
-        word_vocab_top_k=100_000,
-        word_vocab_min_freq=3,
+        max_sentences=500_000,
+        max_sent_len=32,
+        word_vocab_top_k=120_000,
+        word_vocab_min_freq=5,
         root_vocab_top_k=30_000,
         root_vocab_min_freq=2,
     )
@@ -128,14 +130,7 @@ def stage_train() -> bool:
         val_cache_path=test_cache,
         word_vocab_path=word_vocab_path,
         checkpoint_dir=str(checkpoint_dir),
-        run_name="turkish_morpheus_a100_release",
-        batch_size=512,
-        grad_accum_steps=1,
-        n_epochs=25,
-        learning_rate=2.0e-4,
-        warmup_steps=1500,
-        use_amp=False,
-        num_workers=8,
+        run_name="turkish_morpheus_a100_v3",
     )
 
     trainer = MorpheusTrainer(config, use_wandb=True)
@@ -154,11 +149,16 @@ def stage_tokenizer() -> bool:
         build_morpheus_vocab,
     )
 
-    checkpoint_path = BASE / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_release_best.pt"
+    checkpoint_path = BASE / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_v3_best.pt"
     if not checkpoint_path.exists():
-        fallback = BASE / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_best.pt"
-        if fallback.exists():
-            checkpoint_path = fallback
+        for cand in [
+            "turkish_morpheus_a100_release_best.pt",
+            "turkish_morpheus_a100_best.pt",
+        ]:
+            fallback = BASE / f"src/model_development/artifacts/checkpoints/{cand}"
+            if fallback.exists():
+                checkpoint_path = fallback
+                break
         else:
             print(f"   no checkpoint found — train first.")
             return False
@@ -217,11 +217,16 @@ def stage_eval() -> bool:
     print("\n   [6a] running paper_evaluation orchestrator...")
     from src.benchmarker.benchmarks.paper import PaperEvaluator
 
-    checkpoint_path = BASE / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_release_best.pt"
+    checkpoint_path = BASE / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_v3_best.pt"
     if not checkpoint_path.exists():
-        fallback = BASE / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_best.pt"
-        if fallback.exists():
-            checkpoint_path = fallback
+        for cand in [
+            "turkish_morpheus_a100_release_best.pt",
+            "turkish_morpheus_a100_best.pt",
+        ]:
+            fallback = BASE / f"src/model_development/artifacts/checkpoints/{cand}"
+            if fallback.exists():
+                checkpoint_path = fallback
+                break
         else:
             print(f"   no checkpoint found — train first.")
             return False
