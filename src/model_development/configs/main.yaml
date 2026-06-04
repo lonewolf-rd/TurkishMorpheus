@@ -1,8 +1,7 @@
 dataset:
-  limit_mb: 5120
-  fetch_wiki: true
-  fetch_oscar: false
-  shuffle_before_merge: true
+  local_corpus_path: "data/corpus_collector_tr/corpus.txt"
+  train_split_ratio: 0.95
+  seed: 42
 
 huggingface:
   access_token: ""

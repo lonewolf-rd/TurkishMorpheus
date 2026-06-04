@@ -248,7 +248,8 @@ class CharEncoder(nn.Module):
                 dim=char_dim,
                 num_heads=num_heads,
                 dropout=dropout,
-                window_size=8,
+                window_size=None,
+                max_seq_len=max_word_len,
             )
             for _ in range(n_attn_layers)
         ])

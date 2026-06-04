@@ -40,64 +40,65 @@ class TrainingConfig:
     val_cache_path: str = "cache/val_sentences.pt"
     word_vocab_path: str = "cache/word_vocab.pt"
     checkpoint_dir: str = "checkpoints/"
-    run_name: str = "morpheus_v2"
+    run_name: str = "morpheus_v3"
 
-    n_epochs: int = 20
-    batch_size: int = 64
-    grad_accum_steps: int = 2
-    learning_rate: float = 7e-5
-    warmup_steps: int = 1000
+    n_epochs: int = 22
+    batch_size: int = 512
+    grad_accum_steps: int = 1
+    learning_rate: float = 3.0e-4
+    warmup_steps: int = 2500
     weight_decay: float = 1e-2
-    grad_clip: float = 0.3
-    num_workers: int = 4
+    grad_clip: float = 0.5
+    num_workers: int = 8
     adam_beta2: float = 0.98
     adam_eps: float = 1e-6
     lr_min_ratio: float = 0.2
     seed: int = 1337
 
-    char_dim: int = 256
-    char_embed_dim: int = 56
-    case_embed_dim: int = 8
-    n_layers_encoder: int = 2
-    n_layers_detector: int = 3
-    num_heads: int = 4
+    char_dim: int = 320
+    char_embed_dim: int = 96
+    case_embed_dim: int = 16
+    n_layers_encoder: int = 3
+    n_layers_detector: int = 4
+    num_heads: int = 5
     max_word_len: int = 32
-    max_sent_len: int = 24
-    max_segs: int = 8
+    max_sent_len: int = 32
+    max_segs: int = 12
     dropout: float = 0.1
     threshold: float = 0.5
-    pos_weight: float = 2.5
-    count_loss_w: float = 0.1
+    pos_weight: float = 4.0
+    count_loss_w: float = 0.2
 
     use_mlm: bool = True
-    mlm_ctx_layers: int = 3
+    mlm_ctx_layers: int = 4
     mlm_dec_layers: int = 2
-    mlm_mask_rate: float = 0.15
+    mlm_mask_rate: float = 0.20
 
-    sgns_n_negatives: int = 8
-    sgns_window: int = 5
+    sgns_n_negatives: int = 16
+    sgns_window: int = 6
 
-    ctr_temperature: float = 0.07
+    ctr_temperature: float = 0.10
 
     aux_weight_start: float = 0.5
-    aux_weight_end: float = 0.02
-    aux_weight_decay: float = 0.85
+    aux_weight_end: float = 0.08
+    aux_weight_decay: float = 0.90
 
     sgns_weight: float = 0.7
-    ctr_weight: float = 0.6
-    mlm_weight: float = 0.8
+    ctr_weight: float = 0.3
+    mlm_weight: float = 1.0
 
-    use_amp: bool = True
+    use_amp: bool = False
+    use_tf32: bool = True
 
-    patience: int = 5
+    patience: int = 4
     min_delta: float = 1e-4
 
     log_every_n_steps: int = 100
     save_every_n_epochs: int = 1
 
     wandb_project: str = "morpheus-turkish"
-    wandb_tags: List[str] = field(default_factory=lambda: ["turkish", "morphology", "v2"])
-    wandb_notes: str = "Morpheus v2: SGNS + root-contrastive + MLM + deep supervision"
+    wandb_tags: List[str] = field(default_factory=lambda: ["turkish", "morphology", "v3", "a100"])
+    wandb_notes: str = "Morpheus v3: scaled (~25M params), TF32, clean Turkish corpus"
 
 
 class MorpheusTrainer:
@@ -110,6 +111,11 @@ class MorpheusTrainer:
         self.config = config
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         global_logger.info(f"[Trainer] Device: {self.device}")
+
+        if config.use_tf32 and self.device.type == "cuda":
+            torch.backends.cuda.matmul.allow_tf32 = True
+            torch.backends.cudnn.allow_tf32 = True
+            global_logger.info("[Trainer] TF32 enabled for matmul and cuDNN")
 
         random.seed(config.seed)
         np.random.seed(config.seed)
@@ -509,16 +515,16 @@ class MorpheusTrainer:
 
 
 if __name__ == "__main__":
-    base = Path(__file__).parent.parent.parent
+    base = Path(__file__).resolve().parents[3]
 
-    train_txt = str(base / "model_development/artifacts/datasets/splits/train.txt")
-    test_txt = str(base / "model_development/artifacts/datasets/splits/test.txt")
-    morfessor_path = str(base / "model_development/artifacts/tokenizers/classical/morfessor_model.bin")
-    word_vocab_path = str(base / "model_development/artifacts/datasets/splits/word_vocab.pt")
-    root_vocab_path = str(base / "model_development/artifacts/datasets/splits/root_vocab.pt")
-    train_cache = str(base / "model_development/artifacts/datasets/splits/train_sentences.pt")
-    test_cache = str(base / "model_development/artifacts/datasets/splits/test_sentences.pt")
-    checkpoint_dir = str(Path(__file__).parent / "checkpoints")
+    train_txt = str(base / "src/model_development/artifacts/datasets/splits/train.txt")
+    test_txt = str(base / "src/model_development/artifacts/datasets/splits/test.txt")
+    morfessor_path = str(base / "src/model_development/artifacts/tokenizers/classical/morfessor_model.bin")
+    word_vocab_path = str(base / "src/model_development/artifacts/datasets/splits/word_vocab.pt")
+    root_vocab_path = str(base / "src/model_development/artifacts/datasets/splits/root_vocab.pt")
+    train_cache = str(base / "src/model_development/artifacts/datasets/splits/train_sentences.pt")
+    test_cache = str(base / "src/model_development/artifacts/datasets/splits/test_sentences.pt")
+    checkpoint_dir = str(base / "src/model_development/artifacts/checkpoints")
 
     build_sentence_cache(
         txt_path=train_txt,
@@ -526,9 +532,10 @@ if __name__ == "__main__":
         word_vocab_path=word_vocab_path,
         root_vocab_path=root_vocab_path,
         morfessor_path=morfessor_path,
-        max_sentences=1_500_000,
-        word_vocab_top_k=100_000,
-        word_vocab_min_freq=3,
+        max_sentences=5_000_000,
+        max_sent_len=32,
+        word_vocab_top_k=120_000,
+        word_vocab_min_freq=5,
         root_vocab_top_k=30_000,
         root_vocab_min_freq=2,
     )
@@ -539,9 +546,10 @@ if __name__ == "__main__":
         word_vocab_path=word_vocab_path,
         root_vocab_path=root_vocab_path,
         morfessor_path=morfessor_path,
-        max_sentences=150_000,
-        word_vocab_top_k=100_000,
-        word_vocab_min_freq=3,
+        max_sentences=500_000,
+        max_sent_len=32,
+        word_vocab_top_k=120_000,
+        word_vocab_min_freq=5,
         root_vocab_top_k=30_000,
         root_vocab_min_freq=2,
     )
@@ -551,14 +559,7 @@ if __name__ == "__main__":
         val_cache_path=test_cache,
         word_vocab_path=word_vocab_path,
         checkpoint_dir=checkpoint_dir,
-        run_name="turkish_morpheus_a100_release",
-        batch_size=512,
-        grad_accum_steps=1,
-        n_epochs=25,
-        learning_rate=2.0e-4,
-        warmup_steps=1500,
-        use_amp=False,
-        num_workers=8,
+        run_name="turkish_morpheus_a100_v3",
     )
 
     trainer = MorpheusTrainer(config, use_wandb=True)
