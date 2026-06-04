@@ -24,7 +24,7 @@ from src.benchmarker.metrics.extrinsic import (
     same_root_probe,
     morpheme_count_probe,
 )
-from src.common.providers.logger_provider import bench_logger as global_logger
+from src.common.providers.logger_provider import global_logger
 
 sys.modules["__main__"].TrainingConfig = TrainingConfig
 

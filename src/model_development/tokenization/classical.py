@@ -1,6 +1,6 @@
 from tokenizers import (Tokenizer,models,trainers,pre_tokenizers,normalizers,decoders)
-from src.common.providers.config_provider import md_config as config_provider
-from src.common.providers.logger_provider import md_logger as global_logger
+from src.common.providers.config_provider import config_provider
+from src.common.providers.logger_provider import global_logger
 from src.common.text_utils import turkish_lower
 from collections import Counter
 from pathlib import Path
@@ -10,8 +10,8 @@ import sentencepiece as spm
 
 
 class TokenizerTrainer:
-    _DEFAULT_CORPUS_PATH: Path = Path(__file__).parent.parent / "dataset" / "splits" / "train.txt"
-    _DEFAULT_OUTPUT_PATH: Path = Path(__file__).parent.parent / "results"
+    _DEFAULT_CORPUS_PATH: Path = Path(__file__).parent.parent / "artifacts" / "datasets" / "splits" / "train.txt"
+    _DEFAULT_OUTPUT_PATH: Path = Path(__file__).parent.parent / "artifacts" / "tokenizers" / "classical"
 
 
     def __init__(self):
@@ -69,6 +69,7 @@ class TokenizerTrainer:
             "görevlendirilemeyeceklerinden",
         ]
         os.environ["HF_TOKEN"] = config_provider.cfg.huggingface.access_token
+        self._DEFAULT_OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
 
     def prepare_word_count(self) -> List[Tuple[int, str]]:
         try:
@@ -131,6 +132,7 @@ class TokenizerTrainer:
                 )
 
             model_file = self._DEFAULT_OUTPUT_PATH / "morfessor_model.bin"
+            model_file.parent.mkdir(parents=True, exist_ok=True)
             io_handler = morfessor.MorfessorIO()
             io_handler.write_binary_model_file(str(model_file), morph_model)
 
@@ -150,13 +152,18 @@ class TokenizerTrainer:
             segments, _ = model.viterbi_segment(turkish_lower(word))
             global_logger.info(f"  {word:35s} -> {' | '.join(segments)}")
 
-    def train_bpe(self, vocab_sizes: List[int] = config_provider.cfg.training.vocab_size) -> List[spm.SentencePieceProcessor]:
+    def train_bpe(self, vocab_sizes: List[int] = None) -> List[spm.SentencePieceProcessor]:
+        if vocab_sizes is None:
+            vocab_sizes = list(config_provider.cfg.training.vocab_size) or [50000, 64000]
+            if not vocab_sizes:
+                vocab_sizes = [50000, 64000]
         trained_processors = []
         try:
             global_logger.info(f"[TokenizerTrainer](train_bpe) Starting BPE training for sizes: {vocab_sizes}")
 
             for vs in vocab_sizes:
                 model_prefix = self._DEFAULT_OUTPUT_PATH / f"bpe_{vs}"
+                model_prefix.parent.mkdir(parents=True, exist_ok=True)
                 global_logger.info(f"[TokenizerTrainer](train_bpe) Training BPE-{vs // 1000}K...")
 
                 spm.SentencePieceTrainer.train(
@@ -191,14 +198,19 @@ class TokenizerTrainer:
 
     def train_unigram(
             self,
-            vocab_sizes: List[int] = config_provider.cfg.training.vocab_size
+            vocab_sizes: List[int] = None,
     ) -> List[spm.SentencePieceProcessor]:
+        if vocab_sizes is None:
+            vocab_sizes = list(config_provider.cfg.training.vocab_size) or [50000, 64000]
+            if not vocab_sizes:
+                vocab_sizes = [50000, 64000]
         trained_processors = []
         try:
             global_logger.info(f"[TokenizerTrainer](train_unigram) Starting Unigram training for sizes: {vocab_sizes}")
 
             for vs in vocab_sizes:
                 model_prefix = self._DEFAULT_OUTPUT_PATH / f"unigram_{vs}"
+                model_prefix.parent.mkdir(parents=True, exist_ok=True)
                 global_logger.info(f"[TokenizerTrainer](train_bpe) Training BPE-{vs // 1000}K...")
 
                 spm.SentencePieceTrainer.train(
@@ -233,7 +245,11 @@ class TokenizerTrainer:
             global_logger.error(f"[TokenizerTrainer](train_bpe) BPE training failed: {str(err)}")
             raise err
 
-    def train_wordpiece(self, vocab_sizes: List[int] = config_provider.cfg.training.vocab_size) -> List[Tokenizer]:
+    def train_wordpiece(self, vocab_sizes: List[int] = None) -> List[Tokenizer]:
+        if vocab_sizes is None:
+            vocab_sizes = list(config_provider.cfg.training.vocab_size) or [50000, 64000]
+            if not vocab_sizes:
+                vocab_sizes = [50000, 64000]
         trained_tokenizers = []
         try:
             global_logger.info(
@@ -261,6 +277,7 @@ class TokenizerTrainer:
                 tokenizer.train([str(self._DEFAULT_CORPUS_PATH)], trainer=trainer)
 
                 save_path = self._DEFAULT_OUTPUT_PATH / f"wordpiece_{vs}.json"
+                save_path.parent.mkdir(parents=True, exist_ok=True)
                 tokenizer.save(str(save_path))
                 trained_tokenizers.append(tokenizer)
 
@@ -279,8 +296,12 @@ class TokenizerTrainer:
 
     def train_byte_bpe(
             self,
-            vocab_sizes: List[int] = config_provider.cfg.training.vocab_size
+            vocab_sizes: List[int] = None,
     ) -> List[spm.SentencePieceProcessor]:
+        if vocab_sizes is None:
+            vocab_sizes = list(config_provider.cfg.training.vocab_size) or [50000, 64000]
+            if not vocab_sizes:
+                vocab_sizes = [50000, 64000]
         trained_processors = []
         try:
             global_logger.info(
@@ -288,6 +309,7 @@ class TokenizerTrainer:
 
             for vs in vocab_sizes:
                 model_prefix = self._DEFAULT_OUTPUT_PATH / f"byte_bpe_{vs}"
+                model_prefix.parent.mkdir(parents=True, exist_ok=True)
                 global_logger.info(f"[TokenizerTrainer](train_byte_bpe) Training ByteBPE-{vs // 1000}K...")
 
                 spm.SentencePieceTrainer.train(

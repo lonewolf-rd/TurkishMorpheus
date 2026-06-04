@@ -2,7 +2,7 @@ import time
 import math
 from collections import Counter
 from typing import List, Callable, Set, Dict, Any
-from src.common.providers.logger_provider import bench_logger as global_logger
+from src.common.providers.logger_provider import global_logger
 from src.common.text_utils import turkish_lower
 
 

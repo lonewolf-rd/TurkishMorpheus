@@ -3,8 +3,8 @@ import random
 from pathlib import Path
 from collections import Counter
 from typing import List, Dict, Any
-from src.common.providers.logger_provider import md_logger as global_logger
-from src.common.providers.config_provider import md_config as config_provider
+from src.common.providers.logger_provider import global_logger
+from src.common.providers.config_provider import config_provider
 
 
 class DatasetAnalyzer:

@@ -1,4 +1,0 @@
-evaluation:
-  preferred_classical_vocab: 64000
-  max_word_len: 32
-  seed: 1337
