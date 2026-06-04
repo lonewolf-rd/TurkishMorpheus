@@ -31,7 +31,7 @@ from src.model_development.training.callbacks import (
     EarlyStoppingCallback,
     WandBCallback,
 )
-from src.common.providers.logger_provider import md_logger as global_logger
+from src.common.providers.logger_provider import global_logger
 
 
 @dataclass

@@ -3,7 +3,7 @@ import torch.nn.functional as F
 from collections import defaultdict
 from typing import Dict, List, Tuple, Optional
 from src.model_development.model.char_encoder import CharEncoderHelper
-from src.common.providers.logger_provider import bench_logger as global_logger
+from src.common.providers.logger_provider import global_logger
 
 
 @torch.no_grad()

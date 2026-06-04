@@ -10,7 +10,7 @@ from src.model_development.model.char_encoder import CharEncoderHelper
 from src.model_development.training.dataset import MorfessorWrapper
 from src.model_development.training.trainer import TrainingConfig
 from src.common.text_utils import turkish_lower
-from src.common.providers.logger_provider import bench_logger as global_logger
+from src.common.providers.logger_provider import global_logger
 from src.benchmarker.benchmarks.paper import (
     ClassicalTokenizerWrapper,
     discover_classical_tokenizers,

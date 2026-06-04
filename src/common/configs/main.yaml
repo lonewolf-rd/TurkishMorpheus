@@ -24,3 +24,8 @@ unigram_configs:
   shuffle_input_sentence: true
   num_threads: 6
   pad_id: 3
+
+evaluation:
+  preferred_classical_vocab: 64000
+  max_word_len: 32
+  seed: 1337

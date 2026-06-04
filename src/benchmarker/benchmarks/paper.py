@@ -18,7 +18,7 @@ from src.model_development.training.dataset import (
 )
 from src.model_development.training.trainer import TrainingConfig
 from src.common.text_utils import turkish_lower
-from src.common.providers.logger_provider import bench_logger as global_logger
+from src.common.providers.logger_provider import global_logger
 from src.benchmarker.metrics.intrinsic import (
     embed_word_list,
     root_cluster_coherence,

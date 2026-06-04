@@ -1,4 +1,4 @@
-from src.common.providers.logger_provider import md_logger as global_logger
+from src.common.providers.logger_provider import global_logger
 from src.common.text_utils import turkish_lower
 from src.model_development.model.boundary_detector import RotaryEmbedding
 from typing import Tuple, Dict, Union, Optional, List

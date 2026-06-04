@@ -10,7 +10,7 @@ from typing import Dict, List, Optional, Tuple, Union
 from src.model_development.model.morpheus import Morpheus
 from src.model_development.model.char_encoder import CharEncoderHelper
 from src.common.text_utils import turkish_lower
-from src.common.providers.logger_provider import md_logger as global_logger
+from src.common.providers.logger_provider import global_logger
 
 
 WORD_BOUNDARY = "▁"

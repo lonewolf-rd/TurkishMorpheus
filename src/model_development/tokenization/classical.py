@@ -1,6 +1,6 @@
 from tokenizers import (Tokenizer,models,trainers,pre_tokenizers,normalizers,decoders)
-from src.common.providers.config_provider import md_config as config_provider
-from src.common.providers.logger_provider import md_logger as global_logger
+from src.common.providers.config_provider import config_provider
+from src.common.providers.logger_provider import global_logger
 from src.common.text_utils import turkish_lower
 from collections import Counter
 from pathlib import Path
@@ -152,7 +152,11 @@ class TokenizerTrainer:
             segments, _ = model.viterbi_segment(turkish_lower(word))
             global_logger.info(f"  {word:35s} -> {' | '.join(segments)}")
 
-    def train_bpe(self, vocab_sizes: List[int] = config_provider.cfg.training.vocab_size) -> List[spm.SentencePieceProcessor]:
+    def train_bpe(self, vocab_sizes: List[int] = None) -> List[spm.SentencePieceProcessor]:
+        if vocab_sizes is None:
+            vocab_sizes = list(config_provider.cfg.training.vocab_size) or [50000, 64000]
+            if not vocab_sizes:
+                vocab_sizes = [50000, 64000]
         trained_processors = []
         try:
             global_logger.info(f"[TokenizerTrainer](train_bpe) Starting BPE training for sizes: {vocab_sizes}")
@@ -194,8 +198,12 @@ class TokenizerTrainer:
 
     def train_unigram(
             self,
-            vocab_sizes: List[int] = config_provider.cfg.training.vocab_size
+            vocab_sizes: List[int] = None,
     ) -> List[spm.SentencePieceProcessor]:
+        if vocab_sizes is None:
+            vocab_sizes = list(config_provider.cfg.training.vocab_size) or [50000, 64000]
+            if not vocab_sizes:
+                vocab_sizes = [50000, 64000]
         trained_processors = []
         try:
             global_logger.info(f"[TokenizerTrainer](train_unigram) Starting Unigram training for sizes: {vocab_sizes}")
@@ -237,7 +245,11 @@ class TokenizerTrainer:
             global_logger.error(f"[TokenizerTrainer](train_bpe) BPE training failed: {str(err)}")
             raise err
 
-    def train_wordpiece(self, vocab_sizes: List[int] = config_provider.cfg.training.vocab_size) -> List[Tokenizer]:
+    def train_wordpiece(self, vocab_sizes: List[int] = None) -> List[Tokenizer]:
+        if vocab_sizes is None:
+            vocab_sizes = list(config_provider.cfg.training.vocab_size) or [50000, 64000]
+            if not vocab_sizes:
+                vocab_sizes = [50000, 64000]
         trained_tokenizers = []
         try:
             global_logger.info(
@@ -284,8 +296,12 @@ class TokenizerTrainer:
 
     def train_byte_bpe(
             self,
-            vocab_sizes: List[int] = config_provider.cfg.training.vocab_size
+            vocab_sizes: List[int] = None,
     ) -> List[spm.SentencePieceProcessor]:
+        if vocab_sizes is None:
+            vocab_sizes = list(config_provider.cfg.training.vocab_size) or [50000, 64000]
+            if not vocab_sizes:
+                vocab_sizes = [50000, 64000]
         trained_processors = []
         try:
             global_logger.info(

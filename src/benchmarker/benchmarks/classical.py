@@ -1,12 +1,12 @@
 import pandas as pd
 from typing import List
 from pathlib import Path
-from src.common.providers.logger_provider import bench_logger as global_logger
+from src.common.providers.logger_provider import global_logger
 from src.common.text_utils import turkish_lower
 from src.model_development.tokenization.classical import TokenizerTrainer
 from src.benchmarker.metrics.classical import MetricEvaluator
 from src.benchmarker.visualization.plots import ResultVisualizer
-from src.common.providers.config_provider import bench_config as config_provider
+from src.common.providers.config_provider import config_provider
 
 class TokenizerBenchmarker:
     _DEFAULT_RESULT_PATH: Path = Path(__file__).parent.parent / "results"
