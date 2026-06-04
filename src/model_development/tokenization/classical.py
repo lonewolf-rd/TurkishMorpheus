@@ -10,8 +10,8 @@ import sentencepiece as spm
 
 
 class TokenizerTrainer:
-    _DEFAULT_CORPUS_PATH: Path = Path(__file__).parent.parent / "dataset" / "splits" / "train.txt"
-    _DEFAULT_OUTPUT_PATH: Path = Path(__file__).parent.parent / "results"
+    _DEFAULT_CORPUS_PATH: Path = Path(__file__).parent.parent / "artifacts" / "datasets" / "splits" / "train.txt"
+    _DEFAULT_OUTPUT_PATH: Path = Path(__file__).parent.parent / "artifacts" / "tokenizers" / "classical"
 
 
     def __init__(self):
@@ -69,6 +69,7 @@ class TokenizerTrainer:
             "görevlendirilemeyeceklerinden",
         ]
         os.environ["HF_TOKEN"] = config_provider.cfg.huggingface.access_token
+        self._DEFAULT_OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
 
     def prepare_word_count(self) -> List[Tuple[int, str]]:
         try:
