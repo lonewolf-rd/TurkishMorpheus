@@ -1,27 +1,4 @@
-dataset:
-  limit_mb: 5120
-  fetch_wiki: true
-  fetch_oscar: false
-  shuffle_before_merge: true
-
-huggingface:
-  access_token: ""
-
-training:
-  vocab_size: [50000, 64000]
-
-bpe_configs:
-  model_type: "bpe"
-  coverage: 0.9999
-  input_sentence_size: 5_000_000
-  shuffle_input_sentence: true
-  num_threads: 6
-  pad_id: 3
-
-unigram_configs:
-  model_type: "bpe"
-  coverage: 0.9999
-  input_sentence_size: 5_000_000
-  shuffle_input_sentence: true
-  num_threads: 6
-  pad_id: 3
+evaluation:
+  preferred_classical_vocab: 64000
+  max_word_len: 32
+  seed: 1337

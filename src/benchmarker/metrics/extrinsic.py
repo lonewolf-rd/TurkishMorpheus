@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from typing import Dict, List, Tuple
 from collections import defaultdict
-from src.model_development.utils.providers.logger_provider import global_logger
+from src.common.providers.logger_provider import bench_logger as global_logger
 
 
 class LinearProbe(nn.Module):

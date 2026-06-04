@@ -17,9 +17,9 @@ from src.model_development.training.dataset import (
     clean_word_preserve_case,
 )
 from src.model_development.training.trainer import TrainingConfig
-from src.model_development.utils.text_utils import turkish_lower
-from src.model_development.utils.providers.logger_provider import global_logger
-from src.model_development.evaluation.intrinsic import (
+from src.common.text_utils import turkish_lower
+from src.common.providers.logger_provider import bench_logger as global_logger
+from src.benchmarker.metrics.intrinsic import (
     embed_word_list,
     root_cluster_coherence,
     morphological_analogy_accuracy,
@@ -163,7 +163,7 @@ class PaperEvaluator:
             word_vocab_path: str,
             benchmarker_results_dir: Optional[str] = None,
             preferred_classical_vocab: int = 64000,
-            output_dir: str = "paper_eval_results",
+            output_dir: str = "paper_eval",
             max_word_len: int = 32,
             seed: int = 1337,
             device: Optional[torch.device] = None,
@@ -618,7 +618,7 @@ class PaperEvaluator:
             global_logger.info("[PaperEval] No tokenizer dir — skipping fertility comparison")
             return pd.DataFrame()
 
-        from src.model_development.tokenizer.morpheus_tokenizer import MorpheusTokenizer
+        from src.model_development.tokenization.morpheus_tokenizer import MorpheusTokenizer
 
         global_logger.info(f"[PaperEval] Loading MorpheusTokenizer from {self.tokenizer_dir}")
         tok = MorpheusTokenizer.load(
@@ -785,7 +785,7 @@ class PaperEvaluator:
         if not self.classical_tokenizers:
             global_logger.warning(
                 f"[PaperEval] No classical tokenizers found in {self.benchmarker_results_dir}. "
-                f"Run `python -m src.benchmarker.helpers.benchmarker` first."
+                f"Run `python -m src.benchmarker.benchmarks.classical` first."
             )
 
     def segmentation_comparison(self) -> pd.DataFrame:
@@ -960,15 +960,15 @@ if __name__ == "__main__":
     base = Path(__file__).parent.parent.parent.parent
 
     checkpoint = str(
-        base / "src/model_development/training/checkpoints/turkish_morpheus_a100_best.pt"
+        base / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_best.pt"
     )
-    tokenizer_dir = str(base / "src/model_development/tokenizer/morpheus_50k")
-    morfessor_path = str(base / "src/benchmarker/results/morfessor_model.bin")
-    train_corpus = str(base / "src/benchmarker/dataset/splits/train.txt")
-    test_corpus = str(base / "src/benchmarker/dataset/splits/test.txt")
-    word_vocab_path = str(base / "src/benchmarker/dataset/splits/word_vocab.pt")
-    benchmarker_results = str(base / "src/benchmarker/results")
-    output_dir = str(base / "src/model_development/paper_eval_results")
+    tokenizer_dir = str(base / "src/model_development/artifacts/tokenizers/morpheus_50k")
+    morfessor_path = str(base / "src/model_development/artifacts/tokenizers/classical/morfessor_model.bin")
+    train_corpus = str(base / "src/model_development/artifacts/datasets/splits/train.txt")
+    test_corpus = str(base / "src/model_development/artifacts/datasets/splits/test.txt")
+    word_vocab_path = str(base / "src/model_development/artifacts/datasets/splits/word_vocab.pt")
+    benchmarker_results = str(base / "src/model_development/artifacts/tokenizers/classical")
+    output_dir = str(base / "src/benchmarker/results/paper_eval")
 
     evaluator = PaperEvaluator(
         checkpoint_path=checkpoint,

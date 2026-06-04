@@ -9,9 +9,9 @@ from src.model_development.model.morpheus import Morpheus
 from src.model_development.model.char_encoder import CharEncoderHelper
 from src.model_development.training.dataset import MorfessorWrapper
 from src.model_development.training.trainer import TrainingConfig
-from src.model_development.utils.text_utils import turkish_lower
-from src.model_development.utils.providers.logger_provider import global_logger
-from src.model_development.evaluation.paper_evaluation import (
+from src.common.text_utils import turkish_lower
+from src.common.providers.logger_provider import bench_logger as global_logger
+from src.benchmarker.benchmarks.paper import (
     ClassicalTokenizerWrapper,
     discover_classical_tokenizers,
 )
@@ -347,10 +347,10 @@ if __name__ == "__main__":
     base = Path(__file__).parent.parent.parent.parent
 
     gold_path = str(base / "data/sigmorphon_tr/tur.gold")
-    checkpoint = str(base / "src/model_development/training/checkpoints/turkish_morpheus_a100_best.pt")
-    morfessor_path = str(base / "src/benchmarker/results/morfessor_model.bin")
-    benchmarker_results = str(base / "src/benchmarker/results")
-    output_dir = str(base / "src/model_development/paper_eval_results/sigmorphon")
+    checkpoint = str(base / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_best.pt")
+    morfessor_path = str(base / "src/model_development/artifacts/tokenizers/classical/morfessor_model.bin")
+    benchmarker_results = str(base / "src/model_development/artifacts/tokenizers/classical")
+    output_dir = str(base / "src/benchmarker/results/paper_eval/sigmorphon")
 
     entries = load_sigmorphon_inflection_gold(gold_path)
     if not entries:

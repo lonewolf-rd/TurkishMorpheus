@@ -173,8 +173,8 @@ def run_comparison(
 
 if __name__ == "__main__":
     base = Path(__file__).parent.parent.parent.parent
-    runs_dir = str(base / "src/model_development/paper_eval_results_ablation")
-    output_dir = str(base / "src/model_development/paper_eval_results_ablation/_comparison")
+    runs_dir = str(base / "src/benchmarker/results/paper_eval_ablation")
+    output_dir = str(base / "src/benchmarker/results/paper_eval_ablation/_comparison")
 
     run_order = [
         "scale_500MB",

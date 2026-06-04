@@ -13,18 +13,18 @@ from src.model_development.training.dataset import (
     clean_word_preserve_case,
 )
 from src.model_development.training.trainer import TrainingConfig
-from src.model_development.evaluation.intrinsic import (
+from src.benchmarker.metrics.intrinsic import (
     embed_word_list,
     root_cluster_coherence,
     morphological_analogy_accuracy,
     nearest_neighbors,
     build_analogy_pairs,
 )
-from src.model_development.evaluation.extrinsic import (
+from src.benchmarker.metrics.extrinsic import (
     same_root_probe,
     morpheme_count_probe,
 )
-from src.model_development.utils.providers.logger_provider import global_logger
+from src.common.providers.logger_provider import bench_logger as global_logger
 
 sys.modules["__main__"].TrainingConfig = TrainingConfig
 
@@ -310,8 +310,8 @@ if __name__ == "__main__":
     checkpoint = str(
         Path(__file__).parent.parent / "training" / "checkpoints" / "morpheus_v2_epoch13.pt"
     )
-    morfessor_path = str(base / "benchmarker/results/morfessor_model.bin")
-    test_corpus = str(base / "benchmarker/dataset/splits/test.txt")
+    morfessor_path = str(base / "model_development/artifacts/tokenizers/classical/morfessor_model.bin")
+    test_corpus = str(base / "model_development/artifacts/datasets/splits/test.txt")
 
     query_words = [
         "kitaplar", "kitapta", "kitabı",

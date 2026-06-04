@@ -2,7 +2,7 @@ import os
 import torch
 from pathlib import Path
 from typing import List, Dict, Optional, TYPE_CHECKING
-from src.model_development.utils.providers.logger_provider import global_logger
+from src.common.providers.logger_provider import md_logger as global_logger
 
 if TYPE_CHECKING:
     from src.model_development.training.trainer import MorpheusTrainer

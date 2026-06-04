@@ -31,7 +31,7 @@ from src.model_development.training.callbacks import (
     EarlyStoppingCallback,
     WandBCallback,
 )
-from src.model_development.utils.providers.logger_provider import global_logger
+from src.common.providers.logger_provider import md_logger as global_logger
 
 
 @dataclass
@@ -511,13 +511,13 @@ class MorpheusTrainer:
 if __name__ == "__main__":
     base = Path(__file__).parent.parent.parent
 
-    train_txt = str(base / "benchmarker/dataset/splits/train.txt")
-    test_txt = str(base / "benchmarker/dataset/splits/test.txt")
-    morfessor_path = str(base / "benchmarker/results/morfessor_model.bin")
-    word_vocab_path = str(base / "benchmarker/dataset/splits/word_vocab.pt")
-    root_vocab_path = str(base / "benchmarker/dataset/splits/root_vocab.pt")
-    train_cache = str(base / "benchmarker/dataset/splits/train_sentences.pt")
-    test_cache = str(base / "benchmarker/dataset/splits/test_sentences.pt")
+    train_txt = str(base / "model_development/artifacts/datasets/splits/train.txt")
+    test_txt = str(base / "model_development/artifacts/datasets/splits/test.txt")
+    morfessor_path = str(base / "model_development/artifacts/tokenizers/classical/morfessor_model.bin")
+    word_vocab_path = str(base / "model_development/artifacts/datasets/splits/word_vocab.pt")
+    root_vocab_path = str(base / "model_development/artifacts/datasets/splits/root_vocab.pt")
+    train_cache = str(base / "model_development/artifacts/datasets/splits/train_sentences.pt")
+    test_cache = str(base / "model_development/artifacts/datasets/splits/test_sentences.pt")
     checkpoint_dir = str(Path(__file__).parent / "checkpoints")
 
     build_sentence_cache(

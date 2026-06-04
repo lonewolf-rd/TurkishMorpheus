@@ -9,8 +9,8 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from src.model_development.model.morpheus import Morpheus
 from src.model_development.model.char_encoder import CharEncoderHelper
-from src.model_development.utils.text_utils import turkish_lower
-from src.model_development.utils.providers.logger_provider import global_logger
+from src.common.text_utils import turkish_lower
+from src.common.providers.logger_provider import md_logger as global_logger
 
 
 WORD_BOUNDARY = "▁"
@@ -569,10 +569,10 @@ if __name__ == "__main__":
 
     base = Path(__file__).parent.parent.parent.parent
     checkpoint_path = str(
-        base / "src/model_development/training/checkpoints/turkish_morpheus_a100_best.pt"
+        base / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_best.pt"
     )
-    corpus_path = str(base / "src/benchmarker/dataset/splits/train.txt")
-    output_dir = base / "src/model_development/tokenizer/morpheus_50k"
+    corpus_path = str(base / "src/model_development/artifacts/datasets/splits/train.txt")
+    output_dir = base / "src/model_development/artifacts/tokenizers/morpheus_50k"
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     global_logger.info(f"[main] Loading checkpoint: {checkpoint_path}")
