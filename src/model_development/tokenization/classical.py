@@ -132,6 +132,7 @@ class TokenizerTrainer:
                 )
 
             model_file = self._DEFAULT_OUTPUT_PATH / "morfessor_model.bin"
+            model_file.parent.mkdir(parents=True, exist_ok=True)
             io_handler = morfessor.MorfessorIO()
             io_handler.write_binary_model_file(str(model_file), morph_model)
 
@@ -158,6 +159,7 @@ class TokenizerTrainer:
 
             for vs in vocab_sizes:
                 model_prefix = self._DEFAULT_OUTPUT_PATH / f"bpe_{vs}"
+                model_prefix.parent.mkdir(parents=True, exist_ok=True)
                 global_logger.info(f"[TokenizerTrainer](train_bpe) Training BPE-{vs // 1000}K...")
 
                 spm.SentencePieceTrainer.train(
@@ -200,6 +202,7 @@ class TokenizerTrainer:
 
             for vs in vocab_sizes:
                 model_prefix = self._DEFAULT_OUTPUT_PATH / f"unigram_{vs}"
+                model_prefix.parent.mkdir(parents=True, exist_ok=True)
                 global_logger.info(f"[TokenizerTrainer](train_bpe) Training BPE-{vs // 1000}K...")
 
                 spm.SentencePieceTrainer.train(
@@ -262,6 +265,7 @@ class TokenizerTrainer:
                 tokenizer.train([str(self._DEFAULT_CORPUS_PATH)], trainer=trainer)
 
                 save_path = self._DEFAULT_OUTPUT_PATH / f"wordpiece_{vs}.json"
+                save_path.parent.mkdir(parents=True, exist_ok=True)
                 tokenizer.save(str(save_path))
                 trained_tokenizers.append(tokenizer)
 
@@ -289,6 +293,7 @@ class TokenizerTrainer:
 
             for vs in vocab_sizes:
                 model_prefix = self._DEFAULT_OUTPUT_PATH / f"byte_bpe_{vs}"
+                model_prefix.parent.mkdir(parents=True, exist_ok=True)
                 global_logger.info(f"[TokenizerTrainer](train_byte_bpe) Training ByteBPE-{vs // 1000}K...")
 
                 spm.SentencePieceTrainer.train(
