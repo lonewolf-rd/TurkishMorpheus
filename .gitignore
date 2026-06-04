@@ -229,3 +229,5 @@ __marimo__/
 /src/model_development/training/debugging_logs.txt
 /src/model_development/evaluation_results/
 /src/model_development/evaluation/debugging_logs.txt
+/src/model_development/artifacts/datasets/
+/src/model_development/artifacts/checkpoints/

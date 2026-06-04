@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.ticker as mticker
 from pathlib import Path
-from src.benchmarker.utils.providers.logger_provider import global_logger
+from src.common.providers.logger_provider import bench_logger as global_logger
 
 
 class ResultVisualizer:

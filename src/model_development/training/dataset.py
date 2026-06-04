@@ -8,8 +8,8 @@ from typing import Dict, List, Tuple, Optional
 from pathlib import Path
 from collections import Counter
 from src.model_development.model.char_encoder import CharEncoderHelper
-from src.model_development.utils.providers.logger_provider import global_logger
-from src.model_development.utils.text_utils import turkish_lower
+from src.common.providers.logger_provider import md_logger as global_logger
+from src.common.text_utils import turkish_lower
 
 
 class MorfessorWrapper:
@@ -158,7 +158,7 @@ def build_sentence_cache(
 
     if morfessor_path is None:
         morfessor_path = str(
-            Path(__file__).parent.parent.parent / "benchmarker/results/morfessor_model.bin"
+            Path(__file__).parent.parent.parent / "model_development/artifacts/tokenizers/classical/morfessor_model.bin"
         )
 
     global_logger.info(f"[build_sentence_cache] Start: {txt_path}")
@@ -405,15 +405,15 @@ def get_sentence_loader(
 if __name__ == "__main__":
     base = Path(__file__).parent.parent.parent
 
-    train_txt = str(base / "benchmarker/dataset/splits/train.txt")
-    test_txt = str(base / "benchmarker/dataset/splits/test.txt")
-    morfessor_path = str(base / "benchmarker/results/morfessor_model.bin")
+    train_txt = str(base / "model_development/artifacts/datasets/splits/train.txt")
+    test_txt = str(base / "model_development/artifacts/datasets/splits/test.txt")
+    morfessor_path = str(base / "model_development/artifacts/tokenizers/classical/morfessor_model.bin")
 
-    word_vocab_path = str(base / "benchmarker/dataset/splits/word_vocab.pt")
-    root_vocab_path = str(base / "benchmarker/dataset/splits/root_vocab.pt")
+    word_vocab_path = str(base / "model_development/artifacts/datasets/splits/word_vocab.pt")
+    root_vocab_path = str(base / "model_development/artifacts/datasets/splits/root_vocab.pt")
 
-    train_cache = str(base / "benchmarker/dataset/splits/train_sentences.pt")
-    test_cache = str(base / "benchmarker/dataset/splits/test_sentences.pt")
+    train_cache = str(base / "model_development/artifacts/datasets/splits/train_sentences.pt")
+    test_cache = str(base / "model_development/artifacts/datasets/splits/test_sentences.pt")
 
     build_sentence_cache(
         txt_path=train_txt,

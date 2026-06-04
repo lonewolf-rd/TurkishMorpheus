@@ -81,8 +81,8 @@ def diagnose(words, morpheus_model, morfessor, helper, device, threshold=0.5, ma
 
 if __name__ == "__main__":
     base = Path(__file__).parent.parent.parent.parent
-    checkpoint_path = base / "src/model_development/training/checkpoints/turkish_morpheus_a100_best.pt"
-    morfessor_path = base / "src/benchmarker/results/morfessor_model.bin"
+    checkpoint_path = base / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_best.pt"
+    morfessor_path = base / "src/model_development/artifacts/tokenizers/classical/morfessor_model.bin"
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

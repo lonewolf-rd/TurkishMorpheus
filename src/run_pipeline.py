@@ -24,12 +24,12 @@ def _check_file(path: Path, label: str) -> bool:
 
 def stage_data() -> bool:
     _banner("STAGE 1/6  ·  data preprocess + analyze")
-    from src.benchmarker.helpers.data_preprocessor import DataPreprocessor
-    from src.benchmarker.helpers.dataset_analyzer import DatasetAnalyzer
+    from src.model_development.data.preprocessor import DataPreprocessor
+    from src.model_development.data.analyzer import DatasetAnalyzer
 
-    raw_path = BASE / "src/benchmarker/dataset/raw/wiki_tr_raw.txt"
-    train_path = BASE / "src/benchmarker/dataset/splits/train.txt"
-    test_path = BASE / "src/benchmarker/dataset/splits/test.txt"
+    raw_path = BASE / "src/model_development/artifacts/datasets/raw/wiki_tr_raw.txt"
+    train_path = BASE / "src/model_development/artifacts/datasets/splits/train.txt"
+    test_path = BASE / "src/model_development/artifacts/datasets/splits/test.txt"
 
     if train_path.exists() and test_path.exists():
         print(f"   train/test splits already exist — skipping data fetch.")
@@ -51,9 +51,9 @@ def stage_data() -> bool:
 
 def stage_benchmark() -> bool:
     _banner("STAGE 2/6  ·  classical tokenizer benchmark (BPE/ByteBPE/Unigram/WordPiece + Morfessor)")
-    from src.benchmarker.helpers.benchmarker import TokenizerBenchmarker
+    from src.benchmarker.benchmarks.classical import TokenizerBenchmarker
 
-    morfessor_path = BASE / "src/benchmarker/results/morfessor_model.bin"
+    morfessor_path = BASE / "src/model_development/artifacts/tokenizers/classical/morfessor_model.bin"
 
     hard_words = [
         "evlerimizdekiler", "muvaffakiyetsizleştiriciler",
@@ -70,13 +70,13 @@ def stage_dataset() -> bool:
     _banner("STAGE 3/6  ·  build sentence cache for Morpheus training")
     from src.model_development.training.dataset import build_sentence_cache
 
-    train_txt = str(BASE / "src/benchmarker/dataset/splits/train.txt")
-    test_txt = str(BASE / "src/benchmarker/dataset/splits/test.txt")
-    morfessor_path = str(BASE / "src/benchmarker/results/morfessor_model.bin")
-    word_vocab_path = str(BASE / "src/benchmarker/dataset/splits/word_vocab.pt")
-    root_vocab_path = str(BASE / "src/benchmarker/dataset/splits/root_vocab.pt")
-    train_cache = str(BASE / "src/benchmarker/dataset/splits/train_sentences.pt")
-    test_cache = str(BASE / "src/benchmarker/dataset/splits/test_sentences.pt")
+    train_txt = str(BASE / "src/model_development/artifacts/datasets/splits/train.txt")
+    test_txt = str(BASE / "src/model_development/artifacts/datasets/splits/test.txt")
+    morfessor_path = str(BASE / "src/model_development/artifacts/tokenizers/classical/morfessor_model.bin")
+    word_vocab_path = str(BASE / "src/model_development/artifacts/datasets/splits/word_vocab.pt")
+    root_vocab_path = str(BASE / "src/model_development/artifacts/datasets/splits/root_vocab.pt")
+    train_cache = str(BASE / "src/model_development/artifacts/datasets/splits/train_sentences.pt")
+    test_cache = str(BASE / "src/model_development/artifacts/datasets/splits/test_sentences.pt")
 
     print("   building train sentence cache...")
     build_sentence_cache(
@@ -118,10 +118,10 @@ def stage_train() -> bool:
     _banner("STAGE 4/6  ·  Morpheus training")
     from src.model_development.training.trainer import MorpheusTrainer, TrainingConfig
 
-    checkpoint_dir = BASE / "src/model_development/training/checkpoints"
-    train_cache = str(BASE / "src/benchmarker/dataset/splits/train_sentences.pt")
-    test_cache = str(BASE / "src/benchmarker/dataset/splits/test_sentences.pt")
-    word_vocab_path = str(BASE / "src/benchmarker/dataset/splits/word_vocab.pt")
+    checkpoint_dir = BASE / "src/model_development/artifacts/checkpoints"
+    train_cache = str(BASE / "src/model_development/artifacts/datasets/splits/train_sentences.pt")
+    test_cache = str(BASE / "src/model_development/artifacts/datasets/splits/test_sentences.pt")
+    word_vocab_path = str(BASE / "src/model_development/artifacts/datasets/splits/word_vocab.pt")
 
     config = TrainingConfig(
         train_cache_path=train_cache,
@@ -149,22 +149,22 @@ def stage_tokenizer() -> bool:
     _banner("STAGE 5/6  ·  build MorpheusTokenizer (50K vocab)")
     import torch
     from src.model_development.model.morpheus import Morpheus
-    from src.model_development.tokenizer.morpheus_tokenizer import (
+    from src.model_development.tokenization.morpheus_tokenizer import (
         MorpheusTokenizer,
         build_morpheus_vocab,
     )
 
-    checkpoint_path = BASE / "src/model_development/training/checkpoints/turkish_morpheus_a100_release_best.pt"
+    checkpoint_path = BASE / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_release_best.pt"
     if not checkpoint_path.exists():
-        fallback = BASE / "src/model_development/training/checkpoints/turkish_morpheus_a100_best.pt"
+        fallback = BASE / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_best.pt"
         if fallback.exists():
             checkpoint_path = fallback
         else:
             print(f"   no checkpoint found — train first.")
             return False
 
-    corpus_path = str(BASE / "src/benchmarker/dataset/splits/train.txt")
-    output_dir = BASE / "src/model_development/tokenizer/morpheus_50k"
+    corpus_path = str(BASE / "src/model_development/artifacts/datasets/splits/train.txt")
+    output_dir = BASE / "src/model_development/artifacts/tokenizers/morpheus_50k"
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"   loading checkpoint: {checkpoint_path.name}  (device={device})")
@@ -215,24 +215,24 @@ def stage_eval() -> bool:
     _banner("STAGE 6/6  ·  evaluations (paper_evaluation + sigmorphon_eval)")
 
     print("\n   [6a] running paper_evaluation orchestrator...")
-    from src.model_development.evaluation.paper_evaluation import PaperEvaluator
+    from src.benchmarker.benchmarks.paper import PaperEvaluator
 
-    checkpoint_path = BASE / "src/model_development/training/checkpoints/turkish_morpheus_a100_release_best.pt"
+    checkpoint_path = BASE / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_release_best.pt"
     if not checkpoint_path.exists():
-        fallback = BASE / "src/model_development/training/checkpoints/turkish_morpheus_a100_best.pt"
+        fallback = BASE / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_best.pt"
         if fallback.exists():
             checkpoint_path = fallback
         else:
             print(f"   no checkpoint found — train first.")
             return False
 
-    tokenizer_dir = BASE / "src/model_development/tokenizer/morpheus_50k"
-    morfessor_path = BASE / "src/benchmarker/results/morfessor_model.bin"
-    train_corpus = BASE / "src/benchmarker/dataset/splits/train.txt"
-    test_corpus = BASE / "src/benchmarker/dataset/splits/test.txt"
-    word_vocab_path = BASE / "src/benchmarker/dataset/splits/word_vocab.pt"
-    benchmarker_results = BASE / "src/benchmarker/results"
-    paper_eval_dir = BASE / "src/model_development/paper_eval_results"
+    tokenizer_dir = BASE / "src/model_development/artifacts/tokenizers/morpheus_50k"
+    morfessor_path = BASE / "src/model_development/artifacts/tokenizers/classical/morfessor_model.bin"
+    train_corpus = BASE / "src/model_development/artifacts/datasets/splits/train.txt"
+    test_corpus = BASE / "src/model_development/artifacts/datasets/splits/test.txt"
+    word_vocab_path = BASE / "src/model_development/artifacts/datasets/splits/word_vocab.pt"
+    benchmarker_results = BASE / "src/model_development/artifacts/tokenizers/classical"
+    paper_eval_dir = BASE / "src/benchmarker/results/paper_eval"
 
     evaluator = PaperEvaluator(
         checkpoint_path=str(checkpoint_path),
@@ -251,7 +251,7 @@ def stage_eval() -> bool:
     sigmorphon_gold = BASE / "data/sigmorphon_tr/tur.gold"
     if sigmorphon_gold.exists():
         print("\n   [6b] running sigmorphon_eval against tur.gold...")
-        from src.model_development.evaluation.sigmorphon_eval import (
+        from src.benchmarker.benchmarks.sigmorphon import (
             load_sigmorphon_inflection_gold,
             build_segmenters,
             evaluate,
