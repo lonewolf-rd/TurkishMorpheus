@@ -1,6 +1,6 @@
 # Morpheus: A Morphology-Aware Tokenizer for Turkish
 
-[![arXiv](https://img.shields.io/badge/arXiv-soon-b31b1b.svg)]() [![HuggingFace](https://img.shields.io/badge/🤗-huggingface-yellow.svg)](https://huggingface.co/lonewolflab/Morpheus-TR-50K) [![License](https://img.shields.io/badge/License-MIT-blue.svg)]()
+[![arXiv](https://img.shields.io/badge/arXiv-soon-b31b1b.svg)]() [![HuggingFace](https://img.shields.io/badge/🤗-Open_in_Spaces-yellow.svg)](https://huggingface.co/lonewolflab/Morpheus-TR-50K) [![License](https://img.shields.io/badge/License-MIT-blue.svg)]()
 
 **Morpheus** is a neural morpheme-aware tokenizer for **Turkish**, an agglutinative language whose semantic content is densely packed into productive suffix chains. It combines unsupervised morphological supervision (Morfessor) with self-supervised objectives (skip-gram negative sampling, root-family contrastive, masked language modeling) to learn segmentations that are simultaneously **morphologically aligned** and **language-modeling-friendly**.
 
