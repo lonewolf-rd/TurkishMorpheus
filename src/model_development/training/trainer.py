@@ -43,8 +43,8 @@ class TrainingConfig:
     run_name: str = "morpheus_v3"
 
     n_epochs: int = 22
-    batch_size: int = 512
-    grad_accum_steps: int = 1
+    batch_size: int = 256
+    grad_accum_steps: int = 2
     learning_rate: float = 3.0e-4
     warmup_steps: int = 2500
     weight_decay: float = 1e-2
