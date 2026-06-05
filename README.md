@@ -1,122 +1,233 @@
-# Morpheus: Morpheme-Aware Neural Tokenization for Turkish
+# Morpheus: A Morphology-Aware Tokenizer for Turkish
 
-A research codebase studying the gap between statistical subword tokenization (BPE, ByteBPE, Unigram, WordPiece) and morphologically grounded word representations for **Turkish**, an agglutinative language whose semantic content is densely packed into productive suffix chains.
+[![arXiv](https://img.shields.io/badge/arXiv-soon-b31b1b.svg)]() [![HuggingFace](https://img.shields.io/badge/🤗-coming_soon-yellow.svg)]() [![License](https://img.shields.io/badge/License-MIT-blue.svg)]()
 
-This repository contains:
-1. **Morpheus** — a neural encoder that learns soft morpheme boundaries under Morfessor distillation and produces morphologically coherent fixed-dimensional word embeddings.
-2. **A reproducible Turkish tokenization benchmark suite** — five vocab sizes × four classical tokenizers + Morfessor + Morpheus, evaluated under a unified metric set.
-3. **An intrinsic + extrinsic evaluation framework** designed to test morphological consistency of word representations rather than only compression efficiency.
+**Morpheus** is a neural morpheme-aware tokenizer for **Turkish**, an agglutinative language whose semantic content is densely packed into productive suffix chains. It combines unsupervised morphological supervision (Morfessor) with self-supervised objectives (skip-gram negative sampling, root-family contrastive, masked language modeling) to learn segmentations that are simultaneously **morphologically aligned** and **language-modeling-friendly**.
+
+```
+evlerimizdekiler  →  ev | leri | miz | deki | ler
+                     root  PL+POSS POSS  LOC+REL  PL
+                    ("the ones in our houses")
+```
+
+Where classical BPE/WordPiece fragment morphologically rich Turkish words into statistically convenient but linguistically opaque subwords, Morpheus produces **interpretable morpheme-level segmentations** while also yielding **structured word embeddings** with strong root-family clustering.
 
 ---
 
-## Motivation
+## Headline Results
 
-Modern large language models rely on subword tokenizers trained for compression and frequency, not linguistic structure. For high-resource fusional languages (English, French) this trade-off is acceptable. For **agglutinative languages**, however, semantically and grammatically loaded content lives in suffix chains:
+Evaluated on a curated 115 MB monolingual Turkish corpus (informal/academic/news mix), against five baseline tokenizers (BPE, ByteBPE, Unigram, WordPiece, Morfessor) and a fixed 58 M-parameter (param-equalized) GPT-style autoregressive language model:
 
-```
-evlerimizdekiler  →  ev + ler + imiz + de + ki + ler
-                     root  PL    POSS-1PL LOC REL PL
-                     ('the ones in our houses')
-```
+| Metric | Morpheus | Best baseline | Δ |
+|---|---|---|---|
+| **BPC (lower better)** | **1.640** | 1.698 (WordPiece) | **−3.5%** |
+| Token perplexity | 152 | 523 (WordPiece) | **3.4× lower** |
+| **Morphological Alignment Score (MAS) OOV** | **92.4%** | 5.76% (WordPiece) | **16×** |
+| Boundary F1 OOV vs Morfessor | **0.916** | — | (segmentation generalization) |
+| Root-cluster intra/inter cosine ratio | **274×** | — | (only Morpheus produces embeddings) |
+| Peak GPU memory (B=32 generation) | **2,270 MB** | 3,724 MB (classical) | **−39%** |
+| Tokenizer artifact size | **0.67 MB** | 2.65 MB (WordPiece) | **4× smaller** |
+| End-to-end generation (chars/sec) | 548 | 924 (WordPiece) | −41% (trade-off) |
 
-A frequency-based BPE will segment such words in ways that fragment morphemes (`evler | imizde | kiler`), forcing the model to relearn morphological generalization from distributional evidence. This is a known bottleneck for small-to-mid-scale models in agglutinative settings, where scale cannot fully compensate for inductive-bias mismatch.
+**Notable**: Morpheus **outperforms its own teacher Morfessor** (BPC 1.640 vs 1.705, −3.9%) — demonstrating that joint training with downstream LM signals refines the morpheme detector beyond pure unsupervised MDL boundaries.
 
-### Research questions
-
-1. Can a neural model learn *morphologically consistent* word representations from a statistical morphology teacher (Morfessor) plus distributional signal?
-2. How does such a model compare to standard subword tokenizers under metrics that measure morphological alignment (not just compression)?
-3. Does a Morpheus-derived tokenizer provide downstream sample-efficiency advantages over BPE for small Turkish language models?
-
-This repository supplies the code, training recipe, and evaluation harness to answer (1) and (2) directly, and provides the tokenizer artifact to enable (3) as follow-up work.
-
----
-
-## Key Contributions
-
-- **Morpheus architecture**: character-level encoder → RoPE-attended boundary detector with deep supervision → vectorized Poisson-binomial soft segmentation → segment-aware attention pooling. The pipeline is end-to-end trainable and produces a fixed-dimensional word embedding from raw characters.
-- **Multi-objective training recipe**: combines a decaying Morfessor distillation signal (boundary BCE + count regularization), Skip-Gram with Negative Sampling (SGNS) on a 50K context vocabulary, root-family contrastive (InfoNCE on Morfessor-derived root identities), and a word-level Masked LM with a character autoregressive decoder.
-- **Differentiable soft segmentation**: exact Poisson-binomial dynamic-programming gives a closed-form probabilistic membership of each character to a segment, removing the gradient discontinuity of hard segmentation while preserving its inference-time semantics.
-- **Turkish-specific design choices**: lowercase character vocabulary with a per-character case-flag side channel, Turkish-aware casefolding for the dotted/dotless `i` (`İ`/`I` → `i`/`ı`), and a curated priority list of common Turkish suffixes guaranteed in the tokenizer vocabulary.
-- **Benchmark and evaluation framework**: a unified metric suite (Fertility, Compression, Morphological Alignment Score, Subword Entropy, root-cluster coherence, morphological analogy, linear probes) and a comparison harness that plugs any external embedder via a callable.
-
----
-
-
-## Installation
-
-```bash
-python -m venv .venv
-source .venv/bin/activate              # or .venv\Scripts\activate on Windows
-pip install -e .
-```
-
-Python `>=3.13` is required. Dependencies are pinned in `pyproject.toml`. The codebase uses AMP fp16 throughout — any CUDA GPU with Tensor Cores will train end-to-end; we developed and tested on a 4 GB consumer card.
+Full results in [Evaluation](#evaluation) section and `src/benchmarker/results/`.
 
 ---
 
 ## Quick Start
 
-The pipeline is staged: benchmarker outputs (Morfessor model + train/test splits) feed the model_development training.
+### Install
 
 ```bash
-# Stage 1: Wikipedia-tr → train/test split, train classical tokenizers + Morfessor
-python -m src.benchmarker.helpers.benchmarker
+git clone https://github.com/<your-org>/TurkishTokenizer-Alpha-v1.git
+cd TurkishTokenizer-Alpha-v1
 
-# Stage 2: build sentence cache (uses Morfessor labels) and train Morpheus
-python -m src.model_development.training.trainer
-
-# Stage 3: build a 50K MorpheusTokenizer from the trained checkpoint
-python -m src.model_development.tokenizer.morpheus_tokenizer
-
-# Stage 4: run intrinsic + extrinsic evaluation against random-init baseline
-python -m src.model_development.evaluation.evaluator
+python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -e .
 ```
 
-Each model module also exposes an `__main__` smoke test (e.g. `python -m src.model_development.model.morpheus`) running a forward+backward pass on synthetic data.
+**Requirements**: Python ≥ 3.13. Training requires CUDA GPU (A100 80GB tested; smaller GPUs need batch_size reduction).
+
+### Provide a Turkish corpus
+
+Place a plain-text Turkish corpus at `data/corpus_collector_tr/corpus.txt` (one document/paragraph per line, UTF-8). The corpus used for the reported results was collected with [**CorpusCollector**](https://github.com/lonewolf-rd/CorpusCollector) — see [Corpus](#corpus) section below.
+
+### End-to-end pipeline
+
+Run all six stages with a single command:
+
+```bash
+python -m src.run_pipeline --stage all
+```
+
+Or run stages individually (each can resume from previous outputs):
+
+```bash
+python -m src.run_pipeline --stage data        # 1. corpus → train/test splits
+python -m src.run_pipeline --stage benchmark   # 2. train classical tokenizers + Morfessor
+python -m src.run_pipeline --stage dataset     # 3. build sentence caches with Morfessor labels
+python -m src.run_pipeline --stage train       # 4. train Morpheus neural model
+python -m src.run_pipeline --stage tokenizer   # 5. build 50K MorpheusTokenizer from checkpoint
+python -m src.run_pipeline --stage eval        # 6. intrinsic + SIGMORPHON evaluation
+```
+
+For downstream language-model evaluation (BPC + inference benchmarks):
+
+```bash
+python -m src.benchmarker.benchmarks.lm_eval --mode full
+python -m src.benchmarker.benchmarks.lm_eval --mode inference --trained-mode full
+```
+
+---
+
+## Pipeline Stages — Detailed
+
+### Stage 1: `data` — corpus ingest + train/test split
+
+**Input**: `data/corpus_collector_tr/corpus.txt`
+**Output**: `src/model_development/artifacts/datasets/{raw,splits}/`
+
+- `DataPreprocessor` copies the local corpus to `artifacts/datasets/raw/corpus.txt` (idempotent — skips if size matches)
+- `DatasetAnalyzer` prints quantitative stats (line/word/char counts, Turkish character frequencies, morphological density) and creates a 95/5 train/test split using a deterministic seed
+
+**Outputs produced**:
+```
+artifacts/datasets/raw/corpus.txt           # local corpus (vendored)
+artifacts/datasets/splits/train.txt         # 95% of lines, shuffled
+artifacts/datasets/splits/test.txt          # 5% held-out
+```
+
+### Stage 2: `benchmark` — classical tokenizer training
+
+**Input**: `artifacts/datasets/splits/train.txt`
+**Output**: `src/model_development/artifacts/tokenizers/classical/`
+
+Trains five baseline tokenizers on the same training corpus to enable fair comparison:
+
+- **Morfessor** (`morfessor_model.bin`) — unsupervised morphology baseline, 20 batch + 5 online epochs at `corpusweight=1.0`
+- **BPE** (`bpe_{50000,64000}.model`) — SentencePiece BPE
+- **ByteBPE** (`byte_bpe_{50000,64000}.model`) — byte-level BPE
+- **Unigram** (`unigram_{50000,64000}.model`) — SentencePiece Unigram LM
+- **WordPiece** (`wordpiece_{50000,64000}.json`) — HuggingFace `tokenizers` library
+
+**Critical for fairness**: all classical tokenizers train on the *same* corpus that supervises Morpheus.
+
+### Stage 3: `dataset` — sentence cache with Morfessor labels
+
+**Input**: `artifacts/datasets/splits/train.txt`, `artifacts/tokenizers/classical/morfessor_model.bin`
+**Output**: `artifacts/datasets/splits/{train,test}_sentences.pt`, `{word,root}_vocab.pt`
+
+`build_sentence_cache` pre-tokenizes each sentence into:
+- character IDs (per-word, padded to `max_word_len=32`)
+- case flags (per-character, for case-aware lowercase recovery)
+- Morfessor boundary labels (per-word, `(max_word_len−1)` binary vector)
+- per-word word IDs (against a 120K word vocab)
+- per-word root IDs (against a 30K root vocab; root = first Morfessor segment)
+- sentence attention mask
+
+This is computed once and cached as a `torch.save`-able tensor batch, eliminating per-epoch Morfessor inference overhead.
+
+### Stage 4: `train` — Morpheus neural training
+
+**Input**: sentence caches from Stage 3, Morfessor model from Stage 2
+**Output**: `artifacts/checkpoints/turkish_morpheus_a100_v3_best.pt`
+
+Trains the Morpheus neural model with `MorpheusTrainer`. See [Architecture](#architecture) and [Training Recipe](#training-recipe) below. Reported results use the v3 config:
+
+- 22 epochs, batch 256 × grad-accum 2 (effective batch 512), AdamW + cosine LR
+- Char dim 320, 3 encoder layers, 4 boundary detector layers, max sentence length 32
+- 4 MLM context-encoder layers, 16 SGNS negatives, contrastive temperature 0.10
+- TF32 enabled, AMP off (stability over speed)
+- ~18 min/epoch on a single A100 80GB
+
+Checkpoints saved every epoch; `_best.pt` tracks lowest validation loss.
+
+### Stage 5: `tokenizer` — discrete tokenizer build
+
+**Input**: trained Morpheus checkpoint, training corpus
+**Output**: `artifacts/tokenizers/morpheus_50k/{vocab.json,tokenizer_config.json}`
+
+`build_morpheus_vocab` segments every training word once using Morpheus's hard boundary predictions, accumulates segment frequencies weighted by word count, and selects the top-K (default 50K) most frequent segments plus a small curated set of Turkish suffix templates. The resulting `MorpheusTokenizer` is a standalone, lightweight (~0.7 MB) tokenizer file portable to any downstream pipeline.
+
+### Stage 6: `eval` — intrinsic and morphological evaluation
+
+**Input**: trained checkpoint + all classical tokenizers
+**Output**: `src/benchmarker/results/paper_eval/`
+
+Two evaluation suites:
+- **`PaperEvaluator`** — stratified test set (seen / OOV / curated_oov / nonce), measures: Boundary F1 vs Morfessor, MAS (morphological alignment), Fertility, Compression, root-cluster Coherence, kNN nearest neighbors per stratum, t-SNE projection of root families.
+- **`sigmorphon_eval`** — runs against the SIGMORPHON 2022 Turkish inflection gold set (`data/sigmorphon_tr/tur.gold`), measures lemma-prefix rate, root-in-segments rate, suffix-count accuracy.
+
+### Stage 7 (separate): downstream LM evaluation
+
+```bash
+python -m src.benchmarker.benchmarks.lm_eval --mode full
+python -m src.benchmarker.benchmarks.lm_eval --mode inference --trained-mode full
+```
+
+Trains a fixed 58 M-parameter (param-equalized) GPT with each of the six tokenizers on the same corpus, measures:
+- **BPC** (Bits Per Character) — the headline LM quality metric, normalized by character count so it's directly comparable across tokenizers
+- **Per-token perplexity** — secondary
+- **Encoding throughput** — chars/sec for the tokenizer alone
+- **End-to-end generation throughput** — chars/sec when running autoregressive sampling (batch sizes 1, 8, 32)
+- **Peak GPU memory** — during generation
+- **Tokenizer artifact size** — on-disk
+
+Outputs to `src/benchmarker/results/lm_eval/{full,inference}/`.
 
 ---
 
 ## Architecture
 
-### Morpheus (Stage 2)
-
 ```
 char_ids, case_flags
         │
         ▼
-   CharEncoder              MultiScaleCNN (kernels 2..6) + 2 × LocalSelfAttention with RoPE
-        │                   Output: (B, L, char_dim) context-aware character vectors
+   CharEncoder              Char + case embeddings → MultiScaleCNN (kernels 2..6)
+        │                   → 3 × full self-attention with RoPE (dim=320, heads=5)
+        │                   Output: (B, L=32, 320) context-aware char vectors
         ▼
-  BoundaryDetector          2 × RoPE attention with deep supervision
-        │                   Aux loss: weighted BCE + count regularization vs Morfessor labels
-        │                   Output: boundary_probs (B, L−1)
+  BoundaryDetector          4 × RoPE attention with adjacent-pair scoring head
+        │                   Deep-supervised aux loss (BCE + count regularization)
+        │                   vs Morfessor labels with depth-weighted schedule
+        │                   Output: boundary_probs ∈ [0,1] of shape (B, L−1=31)
         ▼
-  SegmentEncoder            Poisson-binomial DP → soft segment membership (B, L, S)
-        │                   Learned attention pooling per segment → segment vectors
-        │                   Mean over valid segments + FFN + LayerNorm
+  SegmentEncoder            Poisson-binomial DP → soft segment membership (B, L, S=12)
+        │                   Char-level attention pooling per segment → segment vectors
+        │                   Mean over valid segments + 2-layer FFN + LayerNorm
         ▼
-   word_embedding (B, char_dim)
+   word_embedding ∈ ℝ³²⁰ (B, 320)
 ```
 
-**Soft segmentation via Poisson-binomial DP.** Given boundary probabilities `p_i ∈ [0,1]` between adjacent characters, the probability that character `i` belongs to segment `k` is the probability of observing exactly `k` boundaries before position `i` — a Poisson-binomial distribution. We compute this via the recurrence
+### Soft segmentation via Poisson-binomial dynamic programming
+
+Given boundary probabilities `p_i ∈ [0,1]` between adjacent characters, the probability that character `i` belongs to segment `k` is the probability of observing exactly `k` boundaries before position `i` — a Poisson-binomial distribution computed via:
 
 ```
-f[i, k] = f[i-1, k] · (1 − p_i)   +   f[i-1, k-1] · p_i
+f[i, k] = f[i−1, k] · (1 − p_i) + f[i−1, k−1] · p_i
 ```
 
-This yields a differentiable membership matrix that converges to one-hot segment assignments as `p_i → {0, 1}`, recovering hard segmentation at inference time without an architectural switch.
+This gives a **differentiable** membership matrix that converges to one-hot segment assignments as `p_i → {0, 1}`, recovering hard segmentation at inference time without an architectural switch (model.training flag controls behavior).
 
-**Position-aware boundary prediction.** Both CharEncoder's `LocalSelfAttention` and BoundaryDetector's `BoundaryAttention` apply Rotary Position Embedding (RoPE) on a shared `head_dim`. This is motivated by the fact that morpheme identity in Turkish depends on *position relative to the root* (e.g. the third suffix slot is structurally constrained to host certain morpheme types). Encoding this relative offset directly is more sample-efficient than recovering it from distributional evidence alone.
+### Position-aware boundary prediction
 
-**Case as a side channel.** Rather than doubling the character vocabulary across uppercase/lowercase pairs, we lowercase the character input (Turkish-aware: `İ`→`i`, `I`→`ı`) and add a learned 2×8 case-flag embedding concatenated to the character embedding before projection. This halves the embedding rows and keeps morphologically equivalent forms (e.g. `İstanbul` vs `istanbul`) in the same orbit of the embedding space.
+Both `CharEncoder.LocalSelfAttention` and `BoundaryDetector.BoundaryAttention` apply Rotary Position Embedding (RoPE) on the per-head subspace. This is motivated by the fact that morpheme identity in Turkish depends on **position relative to the root** (e.g. the third suffix slot is structurally constrained to host certain morpheme types). Encoding this relative offset directly is more sample-efficient than recovering it from distributional evidence alone.
 
-### Word MLM Head (auxiliary semantic objective)
+### Case as a side channel
 
-A 2-layer transformer encoder operates over word embeddings within a sentence; 15 % of words are replaced with a learnable `[MASK]` token. For each masked position, a 1-layer transformer decoder generates the original word character-by-character, conditioned on the masked position's context vector. The cross-entropy on character predictions provides a vocabulary-free reconstruction signal that complements the discrete SGNS objective.
+Rather than doubling the character vocabulary across uppercase/lowercase pairs, we lowercase the input (Turkish-aware: `İ`→`i`, `I`→`ı`) and add a learned 2×16 case-flag embedding concatenated to the character embedding. This halves the embedding rows while keeping morphologically equivalent forms (e.g. `İstanbul` vs `istanbul`) in the same orbit of embedding space.
 
-### Training Objectives
+### Word MLM head (auxiliary semantic objective)
 
-The total loss is a weighted sum of four signals:
+A 4-layer transformer encoder operates over word embeddings within a sentence; 20% of words are replaced with a learnable `[MASK]` token. For each masked position, a 2-layer transformer decoder generates the original word character-by-character, conditioned on the masked position's context vector. The cross-entropy on character predictions provides a vocabulary-free reconstruction signal that complements the discrete SGNS objective.
+
+---
+
+## Training Recipe
+
+Total loss is a weighted sum:
 
 ```
 L = w_aux · L_aux + w_sgns · L_sgns + w_ctr · L_contrastive + w_mlm · L_mlm
@@ -124,81 +235,198 @@ L = w_aux · L_aux + w_sgns · L_sgns + w_ctr · L_contrastive + w_mlm · L_mlm
 
 | Loss | Role | Weight schedule |
 |---|---|---|
-| `L_aux` | Boundary BCE + count MSE under Morfessor supervision; deep-supervised across detector layers | Decays from `0.50` to a `0.10` floor (slow geometric) |
-| `L_sgns` | Skip-gram with negative sampling, ±5 window, 5 frequency-weighted negatives, 50K context vocab | Constant `0.7` |
-| `L_contrastive` | InfoNCE on root identity (positives share the first Morfessor segment), temperature `0.10` | Constant `0.5` |
-| `L_mlm` | Cross-entropy on character autoregressive reconstruction of masked words | Constant `0.7` |
+| `L_aux` | Boundary BCE + count MSE vs Morfessor (deep-supervised across detector layers) | Decays geometrically `0.50 → 0.08` over 22 epochs (`decay=0.90`) |
+| `L_sgns` | Skip-gram with 16 frequency-weighted negatives, ±6 window, 120K context vocab | Constant `0.7` |
+| `L_contrastive` | InfoNCE on root identity (Morfessor's first segment), temperature `0.10` | Constant `0.3` |
+| `L_mlm` | Cross-entropy on character autoregressive reconstruction (4 ctx + 2 dec layers) | Constant `1.0` |
 
-The auxiliary aux schedule realizes a **curriculum**: in early epochs the Morfessor teacher dominates and the model learns where morpheme boundaries lie; as it decays, distributional signals (SGNS, MLM) take over to shape semantic geometry, with contrastive enforcing morphological consistency throughout.
+The aux schedule realizes a **curriculum**: early epochs anchor on Morfessor (boundary learning); as it decays, distributional signals (SGNS, MLM) take over to shape semantic geometry, with contrastive enforcing morphological consistency throughout.
 
-Training uses AMP fp16 with a conservative GradScaler (init `2^10`, growth interval `4000`), AdamW with `β₂=0.98` for slower second-moment adaptation in the multi-objective setting, separate parameter groups so weight decay does not apply to biases/norms/embeddings, and gradient clipping at `0.3`. Loss components are computed in fp32 internally to avoid fp16 underflow in logsumexp/logsigmoid operations.
-
----
-
-## Tokenizer
-
-`MorpheusTokenizer` converts a trained Morpheus checkpoint into a discrete tokenizer compatible with standard LM pipelines:
-
-- **Vocabulary construction**: segments every word in the training corpus once using Morpheus's hard boundary predictions, accumulates segment frequencies weighted by word frequency, and selects the top-K segments. Special tokens, the full Turkish character set as fallback, and a curated list of ~90 frequent Turkish suffixes (`-lar`, `-ler`, `-de`, `-da`, `-ki`, `-im`, `-mış`, etc.) are seeded into the vocabulary unconditionally to guarantee morphological coverage.
-- **Word boundary**: SentencePiece convention (`▁` U+2581) marks the start of every word, making the format compatible with HuggingFace tokenizers and downstream LM training pipelines.
-- **Out-of-vocabulary fallback**: unseen segments decompose character-by-character into vocab IDs, preserving information without loss.
-- **Round-trip lossless**: `decode(encode(text))` recovers the original (lowercased) text exactly.
-
-The tokenizer serializes to `vocab.json` + `tokenizer_config.json` for portability and can be loaded for inference without the Morpheus model when cached segmentations cover the input.
+**Numerical stability**: TF32 enabled for matmul + cuDNN (free 1.5× on A100, FP32-equivalent dynamic range). Loss components computed in FP32 internally to avoid underflow in logsumexp/logsigmoid. AMP/BF16 left off in v3 release for maximum reproducibility.
 
 ---
 
-## Evaluation Framework
+## Evaluation
 
-### Intrinsic metrics (no labeled data)
+### Intrinsic — `Stage 6` outputs
 
-| Metric | What it measures |
-|---|---|
-| **Root cluster coherence** | Mean cosine similarity within a root family vs. across roots — the primary test of whether the embedding space geometrically organizes by morphological root identity. |
-| **Morphological analogy** | Mikolov-style offset arithmetic on Morfessor-derived `(root, root+suffix)` quartets; reports top-K accuracy and mean rank. |
-| **Nearest neighbors** | Qualitative inspection — given a query word, returns the K nearest neighbors with their cosine scores for visual sanity-checking. |
+Stratified test set: **seen** (800 frequent train-vocab words), **oov** (400 unseen rare), **curated_oov** (10 hand-picked long compounds), **nonce** (5 made-up words).
 
-### Extrinsic metrics (frozen embeddings + linear probe)
+```
+                    Boundary F1     MAS%     Coherence Δ    OOV F1
+Morpheus seen       1.000           100.0    0.982          1.000
+Morpheus oov        0.916            92.4    0.915          0.916
+Morpheus curated    1.000           100.0    —              1.000
+Morpheus nonce      0.788            72.2    —              0.788
 
-| Metric | What it measures |
-|---|---|
-| **Same-root probe** | Binary linear classifier on `[e₁, e₂, |e₁−e₂|, e₁⊙e₂]` features predicts whether two word embeddings share a root. |
-| **Morpheme count probe** | 6-class linear classifier predicts the number of morphemes from the word embedding. |
+vs classical (OOV):
+WordPiece           —                 5.76   N/A (no emb)   —
+Unigram             —                 4.53   N/A            —
+BPE                 —                 4.12   N/A            —
+```
 
-We document — and treat as a methodological caveat — that probes against Morfessor-derived labels are *partially circular* because Morfessor also supervises Morpheus during training. The headline metric (root cluster coherence) sidesteps this by measuring geometry directly rather than predictability.
+Full per-stratum breakdown: `src/benchmarker/results/paper_eval/`.
 
-### Comparison harness
+### Downstream language modeling — `Stage 7` outputs
 
-`MorpheusEvaluator.compare_against_random()` runs the full metric set against a randomly initialized Morpheus to quantify the learning lift. `MorpheusEvaluator.evaluate_external_embedder(embed_fn)` accepts any callable `List[str] → Tensor` and runs the identical evaluation pipeline — this is the integration point for fastText, BERTurk, or any future baseline.
+Param-equalized 58 M GPT, 2 epochs over 21 M tokens (BPE) / 14 M tokens (Morpheus, due to higher fertility):
+
+```
+                vocab    BPC ↓     tok_ppl ↓    fertility
+Morpheus        35,092   1.640     152          1.26
+WordPiece       64,000   1.698     523          1.01
+Morfessor       30,243   1.705     135          1.31
+Unigram         64,000   1.726     344          1.05
+BPE             64,000   1.737     397          1.03
+ByteBPE         64,000   1.755     383          1.11
+```
+
+Morpheus achieves the lowest BPC despite higher fertility — per-token entropy is **3-4× lower** than classical subwords because morpheme tokens are individually more predictable from context, more than compensating for the additional token count.
+
+### Inference
+
+```
+                Encode      Gen B=1     Gen B=32   GPU mem    Artifact
+                kchar/s     char/s      char/s     B=32 MB    MB
+Morpheus        3,885       548         13,843     2,270      0.67
+WordPiece       2,100       924         23,497     3,724      2.65
+BPE               984       853         21,138     3,724      4.50
+Unigram         4,517       823         20,538     3,724      4.91
+Morfessor       8,537*      519         12,305     2,022      1.40
+ByteBPE           922       835         20,526     3,724      4.44
+
+* warm-cache; cold-start significantly slower
+```
+
+**Pareto frontier**: {Morpheus, WordPiece} on (BPC, throughput). {Morpheus, Morfessor} on (BPC, memory). ByteBPE and Unigram dominated by BPE on most axes.
 
 ---
 
-## Reproducibility Notes
+## Project Structure
 
-- Boundary labels derived from Morfessor are produced by `MorfessorWrapper.get_boundary_labels` and use Turkish-aware lowercasing throughout the pipeline. A documented off-by-one bug in an earlier version of the label generator is fixed; older checkpoints can be used at inference via a `legacy_boundary_shift` flag in the tokenizer.
-- All training-time stochasticity (SGNS negative sampling, MLM mask positions, dropout) reads from the default PyTorch RNG; seed control for full reproducibility is not yet exposed but is a planned addition.
-- The Morfessor model is trained with `corpusweight=1.0` and 20 batch + 5 online epochs, using Turkish-aware lowercased word frequencies from the same corpus that supervises Morpheus.
+```
+.
+├── data/
+│   ├── corpus_collector_tr/corpus.txt    # local Turkish corpus (vendored)
+│   └── sigmorphon_tr/tur.gold            # SIGMORPHON 2022 Turkish gold (test set)
+│
+├── src/
+│   ├── common/                            # shared infrastructure
+│   │   ├── configs/                       # single source of truth: main.yaml + logging.yaml
+│   │   ├── config_manager.py              # per-configs-dir singleton
+│   │   ├── logger.py
+│   │   ├── text_utils.py                  # Turkish-aware lower/upper
+│   │   └── providers/                     # config_provider, logger_provider
+│   │
+│   ├── model_development/                 # everything that PRODUCES
+│   │   ├── data/                          # preprocessor, analyzer
+│   │   ├── model/                         # Morpheus + CharEncoder + BoundaryDetector + SegmentEncoder + MLM head
+│   │   ├── training/                      # trainer, dataset, loss, callbacks
+│   │   ├── tokenization/                  # classical baselines + MorpheusTokenizer + diagnose
+│   │   └── artifacts/                     # produced: datasets, tokenizers, checkpoints
+│   │
+│   ├── benchmarker/                       # everything that CONSUMES + COMPARES
+│   │   ├── metrics/                       # classical + intrinsic + extrinsic
+│   │   ├── benchmarks/                    # classical (orchestrator) + paper + sigmorphon + lm_eval
+│   │   ├── visualization/
+│   │   └── results/                       # paper_eval/ and lm_eval/ outputs
+│   │
+│   └── run_pipeline.py                    # 6-stage orchestrator
+│
+└── README.md
+```
+
+---
+
+## Corpus
+
+The reported results use a **115 MB curated monolingual Turkish corpus** (~17M words, 261K lines) covering three registers:
+
+| Source | Register | Notes |
+|---|---|---|
+| **Ekşisözlük** | Informal / colloquial | Rich morphological constructs (`-ymiş`, `-sin`, idiom-heavy) |
+| **Dergipark** | Academic / formal | Diverse terminology, derivational morphology |
+| **Turkish news sites** | Standard / journalistic | Neutral register, broad vocabulary |
+
+The corpus was collected and parsed with the companion repository:
+
+### 🔗 [**CorpusCollector**](https://github.com/lonewolf-rd/CorpusCollector)
+
+A standalone scraping + preprocessing toolkit that documents:
+- Source URLs, scraping protocol, rate-limiting policy
+- Per-source extraction logic (HTML stripping, URL removal, Unicode normalization)
+- License/ethical considerations per source
+- Deduplication and length-filtering scripts
+
+This separation enables **full reproducibility**: anyone can recreate an equivalent corpus by re-running CorpusCollector with the documented configurations. The frozen corpus used in the paper will be released on Hugging Face Datasets alongside its SHA-256 hash for exact reproduction.
+
+**For your own use**: drop any UTF-8 Turkish text file into `data/corpus_collector_tr/corpus.txt` and the pipeline will train on your data.
+
+---
+
+## Use Cases
+
+Morpheus is designed for applications where **morphological structure**, **interpretable token boundaries**, or **embedding quality** are valuable. Concrete recommended uses:
+
+### When to use Morpheus
+
+- **Turkish NLU / classification tasks**: where token boundaries align with morphemes, downstream classifiers can attend to specific morphological roles (case, tense, person, number) directly via attention.
+- **Morphologically-sensitive information retrieval**: stemming via root identification, suffix-aware query expansion.
+- **Linguistic research / corpus annotation**: morpheme-level analysis at scale without manual annotation.
+- **Pretraining smaller Turkish language models** (≤1B parameters): the lower BPC and structured embeddings give favorable scaling.
+- **Educational tools**: visualize Turkish morphology in real-time (e.g. learner apps).
+- **Memory-constrained inference**: 39% lower GPU memory than 64K-vocab classical tokenizers — relevant for consumer-GPU and edge deployment.
+
+### When NOT to use Morpheus
+
+- **Real-time generation latency-critical applications**: classical subword tokenizers achieve ~1.7× higher end-to-end character generation throughput (lower fertility = fewer forward passes per character).
+- **Multilingual models**: Morpheus is Turkish-specific by design (uses Turkish character vocabulary + Morfessor supervision on Turkish). Use multilingual SentencePiece for cross-lingual tasks.
+- **General-purpose LLM pretraining at frontier scale**: for trillion-token pretraining the inductive-bias advantage of morphology likely saturates and standard BPE remains the practical choice.
 
 ---
 
 ## Status
 
-Active research codebase. Empirical results (head-to-head comparison against BPE/Unigram/WordPiece baselines, sample-efficiency curves under a Morpheus-derived tokenizer for downstream Turkish LM pretraining) are forthcoming and will be reported in a separate technical write-up.
+**v3 (current)** — empirical evaluation complete. Reported results in this README and in `src/benchmarker/results/`. Paper preprint forthcoming on arXiv.
 
-The architectural and training-recipe components — Morpheus, the Poisson-binomial soft segmentation, the multi-objective curriculum, the evaluation harness — are stable and reusable.
+The architectural components (Morpheus model, Poisson-binomial soft segmentation, multi-objective curriculum, evaluation harness, LM benchmark suite) are stable and documented.
+
+### Planned releases
+- arXiv preprint (this paper)
+- Hugging Face model card + tokenizer release (`morpheus-tr-50k`)
+- Hugging Face Spaces demo (interactive segmentation)
+- TACL / Cambridge NLP journal submission
+
+### Known limitations
+- Single language (Turkish-only by design)
+- Single train corpus (115 MB; scaling laws across corpus size not characterized)
+- Generation throughput trade-off: ~40% slower chars/sec than BPE in B=1 autoregressive sampling
+- Not yet tested as drop-in tokenizer for large pretrained LLMs (Gemma, LLaMA, Mistral) — future work
 
 ---
 
 ## Citation
 
-If you use this codebase or build on the architectural ideas, please cite:
-
 ```bibtex
 @misc{sakar2026morpheus,
-  title  = {Morpheus: Morpheme-Aware Neural Tokenization for Turkish},
+  title  = {Morpheus: A Morphology-Aware Tokenizer for Turkish},
   author = {Şakar, Tolga},
   year   = {2026},
-  note   = {lonewolfrd research notes}
+  note   = {Preprint forthcoming on arXiv}
+}
+```
+
+Related prior work by the same author (RAG efficiency in NLP):
+
+```bibtex
+@article{sakar2025rag,
+  title   = {Maximizing {RAG} efficiency: A comparative analysis of {RAG} methods},
+  author  = {Şakar, Tolga and Emekci, Hakan},
+  journal = {Natural Language Processing},
+  volume  = {31},
+  number  = {1},
+  year    = {2025},
+  publisher = {Cambridge University Press}
 }
 ```
 
@@ -206,12 +434,13 @@ If you use this codebase or build on the architectural ideas, please cite:
 
 ## License
 
-See `LICENSE`.
+MIT. See `LICENSE`.
 
 ---
 
 ## Acknowledgments
 
-- **Morfessor** (Creutz & Lagus 2002, 2007) as the unsupervised morphology teacher and reference for the Morphological Alignment Score.
-- **SentencePiece**, **HuggingFace tokenizers** for the BPE/Unigram/WordPiece baselines.
-- The Turkish NLP community for prior work on morphologically aware tokenization (BERTurk, Zemberek, TRMorph, and others) that motivated this study.
+- **Morfessor** (Creutz & Lagus, 2002, 2007) as unsupervised morphological supervisor and reference baseline.
+- **SentencePiece** (Kudo & Richardson, 2018) and **HuggingFace tokenizers** for the BPE / Unigram / WordPiece baselines.
+- **SIGMORPHON 2022 Turkish task** organizers for the inflection gold standard used in morphological evaluation.
+- The Turkish NLP community for prior work on morphologically-aware processing (BERTurk, TURNA, Zemberek, TRMorph) that motivated this study.
