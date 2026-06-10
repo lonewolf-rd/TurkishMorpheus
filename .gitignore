@@ -231,3 +231,6 @@ __marimo__/
 /src/model_development/evaluation/debugging_logs.txt
 /src/model_development/artifacts/datasets/
 /src/model_development/artifacts/checkpoints/
+/hf_space/
+/evaluations/paper_eval/
+/evaluations/

@@ -212,7 +212,7 @@ def stage_tokenizer() -> bool:
 
 
 def stage_eval() -> bool:
-    _banner("STAGE 6/6  ·  evaluations (paper_evaluation + sigmorphon_eval)")
+    _banner("STAGE 6/6  ·  evaluations (paper_evaluation + sigmorphon + trmmlu + morphscore)")
 
     print("\n   [6a] running paper_evaluation orchestrator...")
     from src.benchmarker.benchmarks.paper import PaperEvaluator
@@ -272,6 +272,22 @@ def stage_eval() -> bool:
             evaluate(entries, segmenters, str(paper_eval_dir / "sigmorphon"))
     else:
         print(f"\n   [6b] SIGMORPHON gold not found at {sigmorphon_gold} — skipping")
+
+    print("\n   [6c] running TR-MMLU %TR / %Pure / Rényi evaluation...")
+    try:
+        from src.benchmarker.benchmarks.trmmlu_eval import run as trmmlu_run
+        trmmlu_run(classical_vocab=64000, use_analyzer=True)
+    except Exception:
+        print("   [6c] trmmlu_eval FAILED (non-fatal):")
+        traceback.print_exc()
+
+    print("\n   [6d] running MorphScore v2 evaluation (UD_Turkish-Kenet gold)...")
+    try:
+        from src.benchmarker.benchmarks.morphscore_eval import run as morphscore_run
+        morphscore_run(classical_vocab=64000)
+    except Exception:
+        print("   [6d] morphscore_eval FAILED (non-fatal):")
+        traceback.print_exc()
 
     return True
 

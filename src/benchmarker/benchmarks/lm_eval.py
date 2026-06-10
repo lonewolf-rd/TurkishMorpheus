@@ -437,7 +437,7 @@ PILOT_CONFIG = LMTrainConfig(
 
 FULL_CONFIG = LMTrainConfig(
     dim=512, n_layer=8, n_head=8, seq_len=512,
-    batch_size=32, n_epochs=2.0,
+    batch_size=32, n_epochs=4.0,
     learning_rate=3e-4, warmup_steps=500, grad_clip=1.0,
     weight_decay=0.01, dropout=0.1,
     eval_every_n_steps=1000, log_every_n_steps=100,
@@ -807,6 +807,7 @@ def build_all_adapters(
         artifacts_dir: Path,
         train_corpus_path: Path,
         cache_dir: Path,
+        classical_vocab: Optional[int] = None,
 ) -> List[TokenizerAdapter]:
     adapters: List[TokenizerAdapter] = []
     classical = artifacts_dir / "tokenizers" / "classical"
@@ -824,7 +825,10 @@ def build_all_adapters(
         if not cands:
             global_logger.warning(f"[lm_eval] no {prefix} model found in {classical}")
             continue
-        chosen = max(cands, key=_vocab_size_from_name)
+        if classical_vocab is not None:
+            chosen = min(cands, key=lambda c: abs(_vocab_size_from_name(c) - classical_vocab))
+        else:
+            chosen = max(cands, key=_vocab_size_from_name)
         vsize = _vocab_size_from_name(chosen)
         name = f"{prefix.replace('_', '-')}-{vsize // 1000}k"
         if kind == "spm":
@@ -1022,6 +1026,11 @@ def main():
     parser.add_argument("--trained-mode", choices=["pilot", "full"], default="full",
                         help="Which trained-model directory to load from for inference mode")
     parser.add_argument("--encode-chars", type=int, default=200_000)
+    parser.add_argument(
+        "--classical-vocab", type=int, default=None,
+        help="Pick classical tokenizers closest to this vocab size instead of the largest "
+             "(vocab-matched comparison); outputs go to a _cv<N>k-suffixed directory",
+    )
     parser.add_argument("--gen-tokens", type=int, default=200)
     parser.add_argument(
         "--tokenizers", default=None,
@@ -1042,7 +1051,8 @@ def main():
     train_corpus = artifacts / "datasets" / "splits" / "train.txt"
     test_corpus = artifacts / "datasets" / "splits" / "test.txt"
 
-    output_dir = BASE / "src" / "benchmarker" / "results" / "lm_eval" / args.mode
+    dir_suffix = f"_cv{args.classical_vocab // 1000}k" if args.classical_vocab else ""
+    output_dir = BASE / "src" / "benchmarker" / "results" / "lm_eval" / (args.mode + dir_suffix)
     output_dir.mkdir(parents=True, exist_ok=True)
     cache_dir = artifacts / "lm_eval_cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
@@ -1075,7 +1085,10 @@ def main():
         f"[lm_eval] train_chars={train_char_count:,}  test_chars={test_char_count:,}"
     )
 
-    adapters = build_all_adapters(artifacts, train_corpus, cache_dir)
+    adapters = build_all_adapters(
+        artifacts, train_corpus, cache_dir,
+        classical_vocab=args.classical_vocab,
+    )
     if args.tokenizers:
         wanted = set(s.strip() for s in args.tokenizers.split(","))
         adapters = [a for a in adapters if a.name in wanted]
@@ -1083,7 +1096,7 @@ def main():
     global_logger.info(f"[lm_eval] adapters to run: {[a.name for a in adapters]}")
 
     if args.mode == "inference":
-        trained_dir = BASE / "src" / "benchmarker" / "results" / "lm_eval" / args.trained_mode
+        trained_dir = BASE / "src" / "benchmarker" / "results" / "lm_eval" / (args.trained_mode + dir_suffix)
         if not trained_dir.exists():
             global_logger.error(
                 f"[lm_eval] No trained models found at {trained_dir}. "
