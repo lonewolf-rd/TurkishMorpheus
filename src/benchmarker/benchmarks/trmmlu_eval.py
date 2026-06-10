@@ -164,6 +164,72 @@ class MorpheusPieceAdapter(PieceAdapter):
         return out
 
 
+class HFTokenizerAdapter(PieceAdapter):
+    def __init__(self, name: str, model_id: str):
+        from transformers import AutoTokenizer
+        self.tok = AutoTokenizer.from_pretrained(model_id)
+        self.name = name
+        self.vocab_size = getattr(self.tok, "vocab_size", None)
+
+    def pieces(self, lines: List[str]) -> List[str]:
+        out: List[str] = []
+        for line in lines:
+            for tid in self.tok.encode(line, add_special_tokens=False):
+                out.append(self.tok.decode([tid]))
+        return out
+
+
+class TiktokenAdapter(PieceAdapter):
+    def __init__(self, name: str, encoding_name: str):
+        import tiktoken
+        self.enc = tiktoken.get_encoding(encoding_name)
+        self.name = name
+        self.vocab_size = self.enc.n_vocab
+
+    def pieces(self, lines: List[str]) -> List[str]:
+        out: List[str] = []
+        decode = self.enc.decode
+        for line in lines:
+            for tid in self.enc.encode(line):
+                out.append(decode([tid]))
+        return out
+
+
+def build_reference_adapters(
+        reference_hf: Optional[str],
+        reference_tiktoken: Optional[str],
+) -> List[PieceAdapter]:
+    adapters: List[PieceAdapter] = []
+
+    if reference_hf:
+        for spec in reference_hf.split(","):
+            spec = spec.strip()
+            if not spec:
+                continue
+            model_id, _, name = spec.partition("=")
+            name = name or model_id.split("/")[-1]
+            try:
+                adapters.append(HFTokenizerAdapter(name, model_id))
+                global_logger.info(f"[trmmlu_eval](reference) loaded HF tokenizer {model_id} as '{name}'")
+            except Exception as e:
+                global_logger.error(f"[trmmlu_eval](reference) HF {model_id} failed: {e}")
+
+    if reference_tiktoken:
+        for spec in reference_tiktoken.split(","):
+            spec = spec.strip()
+            if not spec:
+                continue
+            encoding, _, name = spec.partition("=")
+            name = name or encoding
+            try:
+                adapters.append(TiktokenAdapter(name, encoding))
+                global_logger.info(f"[trmmlu_eval](reference) loaded tiktoken {encoding} as '{name}'")
+            except Exception as e:
+                global_logger.error(f"[trmmlu_eval](reference) tiktoken {encoding} failed: {e}")
+
+    return adapters
+
+
 def find_morpheus_checkpoint(checkpoints_dir: Path) -> Optional[Path]:
     for cand in MORPHEUS_PREFERRED_CHECKPOINTS:
         p = checkpoints_dir / cand
@@ -272,20 +338,31 @@ def evaluate_adapter(
     return row
 
 
+def build_validator(validator_kind: str, base: Path, use_analyzer: bool):
+    if validator_kind == "kalbur":
+        from src.benchmarker.metrics.kalbur_validator import KalburValidator
+        return KalburValidator(base / "data" / "tr_lexicon" / "kalbur")
+    lexicon_path = base / "data" / "tr_lexicon" / "turkish_ekler_kokler.txt"
+    return TurkishLexicalValidator(lexicon_path, use_analyzer=use_analyzer)
+
+
 def run(
         classical_vocab: int = 64000,
         tokenizers: Optional[str] = None,
         use_analyzer: bool = True,
+        validator_kind: str = "kalbur",
+        reference_hf: Optional[str] = None,
+        reference_tiktoken: Optional[str] = None,
 ) -> List[Dict]:
     base = Path(__file__).resolve().parents[3]
     artifacts = base / "src" / "model_development" / "artifacts"
     text_cache = base / "data" / "trmmlu" / "trmmlu_text.txt"
-    lexicon_path = base / "data" / "tr_lexicon" / "turkish_ekler_kokler.txt"
     output_dir = base / "src" / "benchmarker" / "results" / "paper_eval" / "trmmlu"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     text = load_trmmlu_text(text_cache)
-    lines = [turkish_lower(line) for line in text.splitlines() if line.strip()]
+    raw_lines = [line for line in text.splitlines() if line.strip()]
+    lines = [turkish_lower(line) for line in raw_lines]
     n_words = sum(len(line.split()) for line in lines)
     n_chars = sum(len(line) for line in lines)
     global_logger.info(
@@ -293,14 +370,19 @@ def run(
         f"{n_words:,} words, {n_chars:,} chars"
     )
 
-    validator = TurkishLexicalValidator(lexicon_path, use_analyzer=use_analyzer)
+    validator = build_validator(validator_kind, base, use_analyzer)
 
     adapters = build_adapters(artifacts, classical_vocab)
     if tokenizers:
         wanted = {s.strip() for s in tokenizers.split(",")}
         adapters = [a for a in adapters if a.name in wanted]
 
-    global_logger.info(f"[trmmlu_eval](run) adapters: {[a.name for a in adapters]}")
+    reference_adapters = build_reference_adapters(reference_hf, reference_tiktoken)
+
+    global_logger.info(
+        f"[trmmlu_eval](run) adapters: {[a.name for a in adapters]} "
+        f"| references: {[a.name for a in reference_adapters]}"
+    )
 
     rows: List[Dict] = []
     for adapter in adapters:
@@ -308,6 +390,16 @@ def run(
             rows.append(evaluate_adapter(adapter, lines, n_words, validator, output_dir))
         except Exception as e:
             global_logger.error(f"[trmmlu_eval](run) {adapter.name} FAILED: {e}")
+            import traceback
+            traceback.print_exc()
+
+    for adapter in reference_adapters:
+        try:
+            row = evaluate_adapter(adapter, raw_lines, n_words, validator, output_dir)
+            row["is_reference"] = True
+            rows.append(row)
+        except Exception as e:
+            global_logger.error(f"[trmmlu_eval](run) reference {adapter.name} FAILED: {e}")
             import traceback
             traceback.print_exc()
 
@@ -337,10 +429,11 @@ def run(
     )
     for r in sorted(rows, key=lambda r: -r["tr_pct"]):
         vocab_str = f"{r['vocab_size']:,}" if r["vocab_size"] else "n/a"
+        marker = " [ref]" if r.get("is_reference") else ""
         print(
             f"  {r['tokenizer']:<18s} {vocab_str:>7s} {r['total_tokens']:>10,} "
             f"{r['unique_tokens']:>8,} {r['tr_pct']:>7.2f} {r['pure_pct']:>7.2f} "
-            f"{r['renyi_efficiency_observed']:>9.4f} {r['process_time_s']:>8.2f}"
+            f"{r['renyi_efficiency_observed']:>9.4f} {r['process_time_s']:>8.2f}{marker}"
         )
     print("=" * 88)
     print(f"Validator: {validator.analyzer_name}")
@@ -355,12 +448,23 @@ def main():
                         help="Comma-separated subset of tokenizer names to run (default: all)")
     parser.add_argument("--no-analyzer", action="store_true",
                         help="Disable zeyrek fallback; %%TR uses lexicon-only matching")
+    parser.add_argument("--validator", choices=["kalbur", "lexical"], default="kalbur",
+                        help="kalbur: offline KOKLER/EKLER root+suffix (faithful to Bayram). "
+                             "lexical: turkish_ekler_kokler + harvested/zeyrek.")
+    parser.add_argument("--reference-hf", default=None,
+                        help="Comma-separated HF tokenizer ids for calibration, "
+                             "e.g. 'Qwen/Qwen2.5-7B=qwen2.5,google/gemma-2-9b=gemma-2'")
+    parser.add_argument("--reference-tiktoken", default=None,
+                        help="Comma-separated tiktoken encodings, e.g. 'o200k_base=gpt-4o'")
     args = parser.parse_args()
 
     rows = run(
         classical_vocab=args.classical_vocab,
         tokenizers=args.tokenizers,
         use_analyzer=not args.no_analyzer,
+        validator_kind=args.validator,
+        reference_hf=args.reference_hf,
+        reference_tiktoken=args.reference_tiktoken,
     )
     if not rows:
         sys.exit(1)

@@ -1,6 +1,7 @@
+import json
 import urllib.request
 from pathlib import Path
-from typing import Dict, Iterable, Set, Tuple, Union
+from typing import Dict, Iterable, Optional, Set, Tuple, Union
 
 from src.common.text_utils import turkish_lower
 from src.common.providers.logger_provider import global_logger
@@ -12,6 +13,8 @@ LEXICON_URL = (
 )
 
 _SUBWORD_MARKERS = ("▁", "##", "Ġ", "Ċ")
+
+_SOFTENING = {"b": "p", "c": "ç", "d": "t", "g": "k", "ğ": "k"}
 
 
 TURKISH_AFFIXES: frozenset = frozenset({
@@ -94,12 +97,38 @@ def ensure_lexicon(path: Union[str, Path]) -> Path:
     return path
 
 
+def quiet_zeyrek_logging() -> None:
+    import logging
+    for name in list(logging.root.manager.loggerDict.keys()) + ["zeyrek"]:
+        if name == "zeyrek" or name.startswith("zeyrek."):
+            logging.getLogger(name).setLevel(logging.ERROR)
+
+
+def ensure_nltk_data() -> None:
+    try:
+        import nltk
+    except ImportError:
+        global_logger.warning(
+            "[ensure_nltk_data] nltk not importable — zeyrek will fail to tokenize"
+        )
+        return
+    for resource in ("punkt_tab", "punkt"):
+        try:
+            nltk.download(resource, quiet=True)
+        except Exception as e:
+            global_logger.warning(
+                f"[ensure_nltk_data] nltk.download('{resource}') failed: "
+                f"{type(e).__name__}: {e}"
+            )
+
+
 class TurkishLexicalValidator:
     def __init__(
             self,
             lexicon_path: Union[str, Path],
             use_analyzer: bool = True,
             include_affixes: bool = True,
+            inventory_path: Optional[Union[str, Path]] = None,
     ):
         self.affixes: frozenset = TURKISH_AFFIXES if include_affixes else frozenset()
         self.lexicon: Set[str] = set()
@@ -115,31 +144,94 @@ class TurkishLexicalValidator:
             f"{len(self.lexicon):,} entries from {path}"
         )
 
+        self.harvested_morphemes: Set[str] = set()
+        self.harvested_words: Set[str] = set()
+        inv_path = Path(inventory_path) if inventory_path else (
+            Path(path).parent / "harvested_morphemes.json"
+        )
+        if inv_path.exists():
+            with open(inv_path, "r", encoding="utf-8") as f:
+                inv = json.load(f)
+            self.harvested_morphemes = {turkish_lower(m) for m in inv.get("morphemes", [])}
+            self.harvested_words = {turkish_lower(w) for w in inv.get("words", [])}
+            global_logger.info(
+                f"[TurkishLexicalValidator](__init__) Harvested inventory: "
+                f"{len(self.harvested_morphemes):,} morphemes, "
+                f"{len(self.harvested_words):,} words from {inv_path}"
+            )
+
         self.analyzer = None
         self.analyzer_name = "lexicon-only"
+        self._analyzer_error_logged = False
+        self._analysis_cache: Dict[str, bool] = {}
+
+        if self.harvested_words:
+            use_analyzer = False
+            self.analyzer_name = "harvested-offline"
+
         if use_analyzer:
             try:
                 import zeyrek
+                ensure_nltk_data()
                 self.analyzer = zeyrek.MorphAnalyzer()
-                self.analyzer_name = "zeyrek"
-                global_logger.info(
-                    "[TurkishLexicalValidator](__init__) zeyrek morphological analyzer active"
-                )
+                if self._analyzer_selftest():
+                    self.analyzer_name = "zeyrek"
+                    global_logger.info(
+                        "[TurkishLexicalValidator](__init__) zeyrek morphological analyzer active"
+                    )
+                else:
+                    self.analyzer = None
+                    global_logger.error(
+                        "[TurkishLexicalValidator](__init__) zeyrek imported but self-test "
+                        "FAILED — disabling analyzer; %TR will equal %Pure. "
+                        "Fix: python -c \"import nltk; nltk.download('punkt_tab')\""
+                    )
             except ImportError:
                 global_logger.warning(
                     "[TurkishLexicalValidator](__init__) zeyrek not installed — "
                     "%TR falls back to lexicon-only matching (pip install zeyrek)"
                 )
 
-        self._analysis_cache: Dict[str, bool] = {}
+    def _analyzer_selftest(self) -> bool:
+        probes = ["gidiyor", "evlerimizde", "kitap"]
+        n_ok = 0
+        for w in probes:
+            try:
+                parses = self.analyzer.analyze(w)
+                if any(len(wp) > 0 for wp in parses):
+                    n_ok += 1
+            except Exception as e:
+                global_logger.error(
+                    f"[TurkishLexicalValidator](_analyzer_selftest) zeyrek.analyze('{w}') "
+                    f"raised {type(e).__name__}: {str(e).splitlines()[0]}"
+                )
+                return False
+        global_logger.info(
+            f"[TurkishLexicalValidator](_analyzer_selftest) zeyrek parsed "
+            f"{n_ok}/{len(probes)} probe words"
+        )
+        return n_ok > 0
+
+    def _lexicon_has(self, token: str) -> bool:
+        if token in self.lexicon:
+            return True
+        tl = turkish_lower(token)
+        if tl in self.lexicon:
+            return True
+        if tl and tl[-1] in _SOFTENING:
+            hardened = tl[:-1] + _SOFTENING[tl[-1]]
+            if hardened in self.lexicon:
+                return True
+        return False
 
     def is_pure(self, token: str) -> bool:
         t = clean_token(token)
         if not t:
             return False
-        if t in self.lexicon or turkish_lower(t) in self.lexicon:
+        if self._lexicon_has(t):
             return True
-        return turkish_lower(t) in self.affixes
+        tl = turkish_lower(t)
+        return tl in self.affixes or tl in self.harvested_morphemes
 
     def _analyzer_accepts(self, word: str) -> bool:
         cached = self._analysis_cache.get(word)
@@ -149,9 +241,26 @@ class TurkishLexicalValidator:
         if self.analyzer is not None and word:
             try:
                 parses = self.analyzer.analyze(word)
-                ok = any(bool(word_parses) for word_parses in parses)
-            except Exception:
+                for word_parses in parses:
+                    for parse in word_parses:
+                        pos = getattr(parse, "pos", None)
+                        if pos is None:
+                            ok = bool(parse)
+                        elif str(pos).lower() not in ("unk", "unknown", "punc"):
+                            ok = True
+                        if ok:
+                            break
+                    if ok:
+                        break
+            except Exception as e:
                 ok = False
+                if not self._analyzer_error_logged:
+                    self._analyzer_error_logged = True
+                    global_logger.error(
+                        f"[TurkishLexicalValidator](_analyzer_accepts) zeyrek.analyze raised "
+                        f"{type(e).__name__}: {str(e).splitlines()[0]} "
+                        f"(further errors suppressed; %TR may be understated)"
+                    )
         self._analysis_cache[word] = ok
         return ok
 
@@ -161,12 +270,24 @@ class TurkishLexicalValidator:
             return False
         if self.is_pure(t):
             return True
-        return self._analyzer_accepts(turkish_lower(t))
+        tl = turkish_lower(t)
+        return tl in self.harvested_words or self._analyzer_accepts(tl)
 
     def classify(self, tokens: Iterable[str]) -> Dict[str, Tuple[bool, bool]]:
         results: Dict[str, Tuple[bool, bool]] = {}
+        rescued = 0
         for tok in tokens:
             pure = self.is_pure(tok)
-            turkish = True if pure else self.is_turkish(tok)
+            if pure:
+                turkish = True
+            else:
+                tl = turkish_lower(clean_token(tok))
+                turkish = tl in self.harvested_words or self._analyzer_accepts(tl)
+                if turkish:
+                    rescued += 1
             results[tok] = (turkish, pure)
+        global_logger.info(
+            f"[TurkishLexicalValidator](classify) {len(results):,} unique tokens, "
+            f"validator ({self.analyzer_name}) credited {rescued:,} non-pure tokens as Turkish"
+        )
         return results
