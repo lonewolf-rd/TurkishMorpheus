@@ -1,7 +1,7 @@
 logging:
   version: 1
   disable_existing_loggers: false
-  app_name: "TurkishTokenizer"
+  app_name: "TurkishMorpheus"
 
   formatters:
     standard:
