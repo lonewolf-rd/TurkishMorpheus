@@ -411,6 +411,7 @@ class LMTrainConfig:
     eval_every_n_steps: int
     log_every_n_steps: int
     equalize_params: bool = True
+    max_steps: Optional[int] = None
 
 
 def _estimate_params(vocab_size: int, dim: int, n_layer: int, seq_len: int) -> int:
@@ -518,7 +519,10 @@ def train_one_tokenizer(
     )
 
     micro_steps_per_epoch = len(loader)
-    total_steps = max(1, int(micro_steps_per_epoch * cfg.n_epochs))
+    if cfg.max_steps:
+        total_steps = cfg.max_steps
+    else:
+        total_steps = max(1, int(micro_steps_per_epoch * cfg.n_epochs))
     warmup = min(cfg.warmup_steps, max(1, total_steps // 5))
     global_logger.info(
         f"[{name}] {micro_steps_per_epoch:,} steps/epoch, "
@@ -1047,6 +1051,12 @@ def main():
                         help="Which trained-model directory to load from for inference mode")
     parser.add_argument("--encode-chars", type=int, default=200_000)
     parser.add_argument(
+        "--max-steps", type=int, default=None,
+        help="Train every tokenizer for exactly this many optimizer steps "
+             "(equal compute budget + identical LR schedule across tokenizers). "
+             "Overrides epoch-based step count.",
+    )
+    parser.add_argument(
         "--classical-vocab", type=int, default=None,
         help="Pick classical tokenizers closest to this vocab size instead of the largest "
              "(vocab-matched comparison); outputs go to a _cv<N>k-suffixed directory",
@@ -1088,6 +1098,8 @@ def main():
         cfg = FULL_CONFIG if args.trained_mode == "full" else PILOT_CONFIG
     else:
         cfg = PILOT_CONFIG if args.mode == "pilot" else FULL_CONFIG
+    if args.max_steps:
+        cfg.max_steps = args.max_steps
     global_logger.info(f"[lm_eval] mode={args.mode}  device={device}")
     global_logger.info(f"[lm_eval] config={cfg}")
 
