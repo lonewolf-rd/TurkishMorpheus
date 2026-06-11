@@ -339,6 +339,11 @@ def build_segmenters(
         for tok in classical:
             segmenters[tok.name.lower()] = tok.segment
 
+    from src.benchmarker.metrics.external_tokenizers import load_turkish_tokenizer_or_none
+    tt = load_turkish_tokenizer_or_none()
+    if tt is not None:
+        segmenters[tt.name] = tt.segment
+
     global_logger.info(f"[SIGMORPHON] Loaded {len(segmenters)} segmenters: {list(segmenters.keys())}")
     return segmenters
 

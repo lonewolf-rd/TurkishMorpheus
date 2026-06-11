@@ -199,6 +199,16 @@ class MorpheusAdapter(TokenizerAdapter):
         return self.tokenizer.encode(text, add_special_tokens=False)
 
 
+class TurkishTokenizerLMAdapter(TokenizerAdapter):
+    def __init__(self, wrapper):
+        self.wrapper = wrapper
+        self.name = wrapper.name
+        self.vocab_size = wrapper.vocab_size
+
+    def encode(self, text: str) -> List[int]:
+        return self.wrapper.encode_ids(text)
+
+
 def encode_corpus_to_tensor(
         adapter: TokenizerAdapter,
         corpus_path: Path,
@@ -871,6 +881,11 @@ def build_all_adapters(
                 ckpt_path = any_pts[0]
                 global_logger.info(f"[lm_eval] Morpheus checkpoint fallback (most recent .pt): {ckpt_path.name}")
 
+    from src.benchmarker.metrics.external_tokenizers import load_turkish_tokenizer_or_none
+    tt = load_turkish_tokenizer_or_none()
+    if tt is not None:
+        adapters.append(TurkishTokenizerLMAdapter(tt))
+
     if ckpt_path and morpheus_50k.exists():
         adapters.append(MorpheusAdapter(
             "morpheus-50k",
@@ -1144,6 +1159,15 @@ def main():
 
             train_tokens = encode_corpus_to_tensor(adapter, train_corpus, train_cache)
             test_tokens = encode_corpus_to_tensor(adapter, test_corpus, test_cache)
+
+            if len(train_tokens) and len(test_tokens):
+                observed_vocab = int(max(train_tokens.max().item(), test_tokens.max().item())) + 1
+                if observed_vocab > adapter.vocab_size:
+                    global_logger.warning(
+                        f"[{adapter.name}] observed max token id implies vocab "
+                        f"{observed_vocab:,} > declared {adapter.vocab_size:,}; bumping."
+                    )
+                    adapter.vocab_size = observed_vocab
 
             row = train_one_tokenizer(
                 adapter, train_tokens, test_tokens, test_char_count,

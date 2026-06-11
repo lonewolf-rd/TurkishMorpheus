@@ -230,6 +230,19 @@ def build_reference_adapters(
     return adapters
 
 
+class TurkishTokenizerPieceAdapter(PieceAdapter):
+    def __init__(self, wrapper):
+        self.wrapper = wrapper
+        self.name = wrapper.name
+        self.vocab_size = wrapper.vocab_size
+
+    def pieces(self, lines: List[str]) -> List[str]:
+        out: List[str] = []
+        for line in lines:
+            out.extend(self.wrapper.pieces(line))
+        return out
+
+
 def find_morpheus_checkpoint(checkpoints_dir: Path) -> Optional[Path]:
     for cand in MORPHEUS_PREFERRED_CHECKPOINTS:
         p = checkpoints_dir / cand
@@ -275,6 +288,11 @@ def build_adapters(
             f"[trmmlu_eval](build_adapters) Morpheus tokenizer missing "
             f"(ckpt={ckpt}, tokenizer_dir_exists={morpheus_dir.exists()})"
         )
+
+    from src.benchmarker.metrics.external_tokenizers import load_turkish_tokenizer_or_none
+    tt = load_turkish_tokenizer_or_none()
+    if tt is not None:
+        adapters.append(TurkishTokenizerPieceAdapter(tt))
 
     return adapters
 

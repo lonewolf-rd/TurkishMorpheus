@@ -782,6 +782,10 @@ class PaperEvaluator:
             self.benchmarker_results_dir,
             preferred_vocab=self.preferred_classical_vocab,
         )
+        from src.benchmarker.metrics.external_tokenizers import load_turkish_tokenizer_or_none
+        tt = load_turkish_tokenizer_or_none()
+        if tt is not None:
+            self.classical_tokenizers.append(tt)
         if not self.classical_tokenizers:
             global_logger.warning(
                 f"[PaperEval] No classical tokenizers found in {self.benchmarker_results_dir}. "
