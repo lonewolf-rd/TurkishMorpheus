@@ -964,7 +964,7 @@ if __name__ == "__main__":
     base = Path(__file__).parent.parent.parent.parent
 
     checkpoint = str(
-        base / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_best.pt"
+        base / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_v3_final.pt"
     )
     tokenizer_dir = str(base / "src/model_development/artifacts/tokenizers/morpheus_50k")
     morfessor_path = str(base / "src/model_development/artifacts/tokenizers/classical/morfessor_model.bin")

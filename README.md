@@ -132,7 +132,7 @@ This is computed once and cached as a `torch.save`-able tensor batch, eliminatin
 ### Stage 4: `train` — Morpheus neural training
 
 **Input**: sentence caches from Stage 3, Morfessor model from Stage 2
-**Output**: `artifacts/checkpoints/turkish_morpheus_a100_v3_best.pt`
+**Output**: `artifacts/checkpoints/turkish_morpheus_a100_v3_final.pt`
 
 Trains the Morpheus neural model with `MorpheusTrainer`. See [Architecture](#architecture) and [Training Recipe](#training-recipe) below. Reported results use the v3 config:
 

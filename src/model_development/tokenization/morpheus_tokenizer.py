@@ -569,7 +569,7 @@ if __name__ == "__main__":
 
     base = Path(__file__).parent.parent.parent.parent
     checkpoint_path = str(
-        base / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_best.pt"
+        base / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_v3_final.pt"
     )
     corpus_path = str(base / "src/model_development/artifacts/datasets/splits/train.txt")
     output_dir = base / "src/model_development/artifacts/tokenizers/morpheus_50k"

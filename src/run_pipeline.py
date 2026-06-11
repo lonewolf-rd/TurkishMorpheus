@@ -136,8 +136,8 @@ def stage_train() -> bool:
     trainer = MorpheusTrainer(config, use_wandb=True)
     trainer.train()
 
-    best_ckpt = checkpoint_dir / f"{config.run_name}_best.pt"
-    return _check_file(best_ckpt, "best checkpoint")
+    final_ckpt = checkpoint_dir / f"{config.run_name}_final.pt"
+    return _check_file(final_ckpt, "final checkpoint")
 
 
 def stage_tokenizer() -> bool:
@@ -149,9 +149,10 @@ def stage_tokenizer() -> bool:
         build_morpheus_vocab,
     )
 
-    checkpoint_path = BASE / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_v3_best.pt"
+    checkpoint_path = BASE / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_v3_final.pt"
     if not checkpoint_path.exists():
         for cand in [
+            "turkish_morpheus_a100_v3_best.pt",
             "turkish_morpheus_a100_release_best.pt",
             "turkish_morpheus_a100_best.pt",
         ]:
@@ -217,9 +218,10 @@ def stage_eval() -> bool:
     print("\n   [6a] running paper_evaluation orchestrator...")
     from src.benchmarker.benchmarks.paper import PaperEvaluator
 
-    checkpoint_path = BASE / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_v3_best.pt"
+    checkpoint_path = BASE / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_v3_final.pt"
     if not checkpoint_path.exists():
         for cand in [
+            "turkish_morpheus_a100_v3_best.pt",
             "turkish_morpheus_a100_release_best.pt",
             "turkish_morpheus_a100_best.pt",
         ]:

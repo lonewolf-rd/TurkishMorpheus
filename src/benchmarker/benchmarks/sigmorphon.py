@@ -352,7 +352,7 @@ if __name__ == "__main__":
     base = Path(__file__).parent.parent.parent.parent
 
     gold_path = str(base / "data/sigmorphon_tr/tur.gold")
-    checkpoint = str(base / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_best.pt")
+    checkpoint = str(base / "src/model_development/artifacts/checkpoints/turkish_morpheus_a100_v3_final.pt")
     morfessor_path = str(base / "src/model_development/artifacts/tokenizers/classical/morfessor_model.bin")
     benchmarker_results = str(base / "src/model_development/artifacts/tokenizers/classical")
     output_dir = str(base / "src/benchmarker/results/paper_eval/sigmorphon")

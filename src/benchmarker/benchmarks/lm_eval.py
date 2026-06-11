@@ -783,13 +783,17 @@ def get_tokenizer_artifact_size_mb(adapter: TokenizerAdapter, artifacts_dir: Pat
             candidates.extend(morpheus_50k.rglob("*"))
         ckpt_dir = artifacts_dir / "checkpoints"
         if ckpt_dir.exists():
-            for f in ckpt_dir.glob("*v3_best*.pt"):
+            for f in ckpt_dir.glob("*v3_final*.pt"):
                 candidates.append(f)
                 break
             else:
-                for f in ckpt_dir.glob("*_best.pt"):
+                for f in ckpt_dir.glob("*_final.pt"):
                     candidates.append(f)
                     break
+                else:
+                    for f in ckpt_dir.glob("*_best.pt"):
+                        candidates.append(f)
+                        break
     elif "morfessor" in name:
         f = classical / "morfessor_model.bin"
         if f.exists():
@@ -860,6 +864,7 @@ def build_all_adapters(
 
     ckpt_path: Optional[Path] = None
     preferred = [
+        "turkish_morpheus_a100_v3_final.pt",
         "turkish_morpheus_a100_v3_best.pt",
         "turkish_morpheus_a100_release_best.pt",
         "turkish_morpheus_a100_best.pt",

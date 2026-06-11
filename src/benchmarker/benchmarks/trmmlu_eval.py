@@ -25,6 +25,7 @@ TRMMLU_PARQUET_URL = (
 )
 
 MORPHEUS_PREFERRED_CHECKPOINTS = [
+    "turkish_morpheus_a100_v3_final.pt",
     "turkish_morpheus_a100_v3_best.pt",
     "turkish_morpheus_a100_release_best.pt",
     "turkish_morpheus_a100_best.pt",
@@ -249,13 +250,14 @@ def find_morpheus_checkpoint(checkpoints_dir: Path) -> Optional[Path]:
         if p.exists():
             return p
     if checkpoints_dir.exists():
-        best_pts = sorted(
-            checkpoints_dir.glob("*_best.pt"),
-            key=lambda p: p.stat().st_mtime,
-            reverse=True,
-        )
-        if best_pts:
-            return best_pts[0]
+        for pattern in ("*_final.pt", "*_best.pt"):
+            found = sorted(
+                checkpoints_dir.glob(pattern),
+                key=lambda p: p.stat().st_mtime,
+                reverse=True,
+            )
+            if found:
+                return found[0]
     return None
 
 
