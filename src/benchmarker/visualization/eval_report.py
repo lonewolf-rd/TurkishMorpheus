@@ -268,13 +268,13 @@ def plot_encode_speed(inference_summary: Path, out: Path) -> None:
 
 def plot_decode_speed(roundtrip_summary: Path, out: Path) -> None:
     df = pd.read_csv(roundtrip_summary)
-    if "recon_words_per_sec" not in df.columns:
+    if "decode_words_per_sec" not in df.columns:
         return
     names, vals = _sorted_names(df["tokenizer"].tolist(),
-                                df["recon_words_per_sec"].tolist(), ascending=False)
+                                df["decode_words_per_sec"].tolist(), ascending=False)
     fig, ax = plt.subplots(figsize=(7.2, 0.55 * len(names) + 1.6))
     _hbar(ax, names, vals, "{:.0f}")
-    ax.set_title("Reconstruction throughput (encode→decode) — higher is better")
+    ax.set_title("Detokenization (decode) throughput — higher is better")
     ax.set_xlabel("words/sec")
     fig.savefig(out)
     plt.close(fig)
