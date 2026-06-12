@@ -1,4 +1,6 @@
+import os
 import re
+import sys
 import argparse
 import hashlib
 from pathlib import Path
@@ -165,6 +167,9 @@ def main():
         limit=args.limit,
         append_to=Path(args.append_to) if args.append_to else None,
     )
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(0)
 
 
 if __name__ == "__main__":
