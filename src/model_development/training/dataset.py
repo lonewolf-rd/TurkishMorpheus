@@ -10,6 +10,23 @@ from collections import Counter
 from src.model_development.model.char_encoder import CharEncoderHelper
 from src.common.providers.logger_provider import global_logger
 from src.common.text_utils import turkish_lower
+from src.common.kalbur import KalburRoots
+
+
+def apply_kalbur_root_correction(
+        labels: List[int],
+        word: str,
+        kalbur: KalburRoots,
+        max_word_len: int,
+) -> List[int]:
+    root_len = kalbur.root_split(word)
+    if root_len is None or not (0 < root_len < len(word)) or root_len > max_word_len - 2:
+        return labels
+    if labels[root_len] != 1:
+        return labels
+    for bidx in range(1, root_len):
+        labels[bidx] = 0
+    return labels
 
 
 class MorfessorWrapper:
@@ -202,7 +219,9 @@ def build_sentence_cache(
         global_logger.info(f"[build_sentence_cache] Saved root vocab: {root_vocab_path}")
 
     wrapper = MorfessorWrapper(morfessor_path)
+    kalbur = KalburRoots()
     helper = CharEncoderHelper()
+    n_root_corrected = 0
 
     char_ids_all = []
     case_flags_all = []
@@ -245,6 +264,10 @@ def build_sentence_cache(
                 for w in chunk:
                     ids, flags, rl = helper.word_to_char_ids(w, max_len=max_word_len)
                     labels, conf, root = wrapper.get_boundary_labels(w, max_len=max_word_len)
+                    before = labels[:]
+                    labels = apply_kalbur_root_correction(labels, w, kalbur, max_word_len)
+                    if labels != before:
+                        n_root_corrected += 1
                     wid = word_vocab.get(turkish_lower(w), 0)
                     rid = root_vocab.get(root, 0)
                     s_char_ids.append(ids)
@@ -293,6 +316,9 @@ def build_sentence_cache(
             if n_sents >= max_sentences:
                 break
 
+    global_logger.info(
+        f"[build_sentence_cache] Kalbur root-correction applied to {n_root_corrected:,} word occurrences"
+    )
     global_logger.info(f"[build_sentence_cache] Packing tensors (N={n_sents})...")
 
     cache = {
