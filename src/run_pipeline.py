@@ -291,6 +291,22 @@ def stage_eval() -> bool:
         print("   [6d] morphscore_eval FAILED (non-fatal):")
         traceback.print_exc()
 
+    print("\n   [6e] running roundtrip reconstruction evaluation...")
+    try:
+        from src.benchmarker.benchmarks.roundtrip_eval import run as roundtrip_run
+        roundtrip_run(classical_vocab=64000)
+    except Exception:
+        print("   [6e] roundtrip_eval FAILED (non-fatal):")
+        traceback.print_exc()
+
+    print("\n   [6f] generating comparison figures...")
+    try:
+        from src.benchmarker.visualization.eval_report import run as eval_report_run
+        eval_report_run(base=BASE)
+    except Exception:
+        print("   [6f] eval_report FAILED (non-fatal):")
+        traceback.print_exc()
+
     return True
 
 

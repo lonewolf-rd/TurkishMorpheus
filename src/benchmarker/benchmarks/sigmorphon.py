@@ -102,29 +102,40 @@ def load_sigmorphon_inflection_gold(
     return entries
 
 
+CANONICALIZE_MORPH = True
+_LENITION_HARDEN = {"b": "p", "c": "ç", "d": "t", "g": "k", "ğ": "k"}
+
+
+def _morph_canon(s: str) -> str:
+    t = turkish_lower(s)
+    if CANONICALIZE_MORPH and t and t[-1] in _LENITION_HARDEN:
+        t = t[:-1] + _LENITION_HARDEN[t[-1]]
+    return t
+
+
 def lemma_preserved_as_prefix(segments: List[str], gold_root: str) -> bool:
     if not segments or not gold_root:
         return False
-    gold_lower = turkish_lower(gold_root)
+    gold_c = _morph_canon(gold_root)
     accumulated = ""
     for seg in segments:
         accumulated += turkish_lower(seg)
-        if accumulated == gold_lower:
+        if _morph_canon(accumulated) == gold_c:
             return True
-        if len(accumulated) > len(gold_lower):
+        if len(accumulated) > len(gold_c):
             return False
     return False
 
 
 def root_in_segments(segments: List[str], gold_root: str) -> bool:
-    gold_lower = turkish_lower(gold_root)
-    return any(turkish_lower(s) == gold_lower for s in segments)
+    gold_c = _morph_canon(gold_root)
+    return any(_morph_canon(s) == gold_c for s in segments)
 
 
 def first_segment_match(segments: List[str], gold_root: str) -> bool:
     if not segments:
         return False
-    return turkish_lower(segments[0]) == turkish_lower(gold_root)
+    return _morph_canon(segments[0]) == _morph_canon(gold_root)
 
 
 def morpheus_segment(

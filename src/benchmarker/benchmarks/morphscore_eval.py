@@ -97,6 +97,7 @@ def evaluate(
         "micro_pred": 0,
         "n_words": 0,
         "n_single_token": 0,
+        "n_len_mismatch": 0,
         "n_failed": 0,
     })
     detail_rows: List[Dict] = []
@@ -163,6 +164,8 @@ def evaluate(
             s["micro_gold"] += len(gold_bnds)
             s["micro_pred"] += n_pred
             s["n_words"] += 1
+            if sum(len(x) for x in segs) != len(word):
+                s["n_len_mismatch"] += 1
 
             detail[f"{name}_seg"] = " | ".join(segs)
             detail[f"{name}_recall"] = round(recall, 4)
@@ -199,6 +202,7 @@ def evaluate(
             "freq_weighted_recall": round(s["weighted_recall_sum"] / w, 4),
             "freq_weighted_precision": round(s["weighted_precision_sum"] / w, 4),
             "single_token_rate": round(s["n_single_token"] / n, 4),
+            "len_mismatch_rate": round(s["n_len_mismatch"] / n, 4),
             "n_failed": int(s["n_failed"]),
         })
 
