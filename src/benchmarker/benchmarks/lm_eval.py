@@ -213,12 +213,13 @@ def encode_corpus_to_tensor(
         adapter: TokenizerAdapter,
         corpus_path: Path,
         cache_path: Optional[Path] = None,
+        max_lines: Optional[int] = None,
 ) -> torch.Tensor:
     if cache_path and cache_path.exists():
         global_logger.info(f"[{adapter.name}] Loading token stream from cache: {cache_path}")
         return torch.load(cache_path)
 
-    global_logger.info(f"[{adapter.name}] Encoding {corpus_path}...")
+    global_logger.info(f"[{adapter.name}] Encoding {corpus_path} (max_lines={max_lines})...")
     t0 = time.time()
     all_ids: List[int] = []
     n_lines = 0
@@ -229,6 +230,8 @@ def encode_corpus_to_tensor(
                 continue
             n_lines += 1
             all_ids.extend(adapter.encode(line))
+            if max_lines is not None and n_lines >= max_lines:
+                break
             if n_lines % 25_000 == 0:
                 elapsed = time.time() - t0
                 global_logger.info(
@@ -251,11 +254,18 @@ def encode_corpus_to_tensor(
     return tensor
 
 
-def count_corpus_chars(corpus_path: Path) -> int:
+def count_corpus_chars(corpus_path: Path, max_lines: Optional[int] = None) -> int:
     n = 0
+    n_lines = 0
     with open(corpus_path, "r", encoding="utf-8") as f:
         for line in f:
-            n += len(line.strip())
+            stripped = line.strip()
+            if not stripped:
+                continue
+            n += len(stripped)
+            n_lines += 1
+            if max_lines is not None and n_lines >= max_lines:
+                break
     return n
 
 
@@ -448,7 +458,7 @@ PILOT_CONFIG = LMTrainConfig(
 
 FULL_CONFIG = LMTrainConfig(
     dim=512, n_layer=8, n_head=8, seq_len=512,
-    batch_size=32, n_epochs=4.0,
+    batch_size=32, n_epochs=4.0, max_steps=10000,
     learning_rate=3e-4, warmup_steps=500, grad_clip=1.0,
     weight_decay=0.01, dropout=0.1,
     eval_every_n_steps=1000, log_every_n_steps=100,
@@ -1057,6 +1067,15 @@ def main():
              "Overrides epoch-based step count.",
     )
     parser.add_argument(
+        "--train-cap-lines", type=int, default=1_000_000,
+        help="Encode at most this many corpus lines for LM training "
+             "(bounds Morpheus encode time; same for all tokenizers).",
+    )
+    parser.add_argument(
+        "--test-cap-lines", type=int, default=100_000,
+        help="Encode at most this many lines of the test split for BPC.",
+    )
+    parser.add_argument(
         "--classical-vocab", type=int, default=None,
         help="Pick classical tokenizers closest to this vocab size instead of the largest "
              "(vocab-matched comparison); outputs go to a _cv<N>k-suffixed directory",
@@ -1111,10 +1130,11 @@ def main():
         )
         sys.exit(1)
 
-    train_char_count = count_corpus_chars(train_corpus)
-    test_char_count = count_corpus_chars(test_corpus)
+    train_char_count = count_corpus_chars(train_corpus, max_lines=args.train_cap_lines)
+    test_char_count = count_corpus_chars(test_corpus, max_lines=args.test_cap_lines)
     global_logger.info(
-        f"[lm_eval] train_chars={train_char_count:,}  test_chars={test_char_count:,}"
+        f"[lm_eval] train_chars={train_char_count:,} (cap={args.train_cap_lines:,} lines)  "
+        f"test_chars={test_char_count:,} (cap={args.test_cap_lines:,} lines)"
     )
 
     adapters = build_all_adapters(
@@ -1171,11 +1191,14 @@ def main():
             continue
 
         try:
-            train_cache = None if args.no_cache else cache_dir / f"{adapter.name}_train_tokens.pt"
-            test_cache = None if args.no_cache else cache_dir / f"{adapter.name}_test_tokens.pt"
+            cap_tag = f"_t{args.train_cap_lines // 1000}k"
+            train_cache = None if args.no_cache else cache_dir / f"{adapter.name}_train_tokens{cap_tag}.pt"
+            test_cache = None if args.no_cache else cache_dir / f"{adapter.name}_test_tokens{cap_tag}.pt"
 
-            train_tokens = encode_corpus_to_tensor(adapter, train_corpus, train_cache)
-            test_tokens = encode_corpus_to_tensor(adapter, test_corpus, test_cache)
+            train_tokens = encode_corpus_to_tensor(
+                adapter, train_corpus, train_cache, max_lines=args.train_cap_lines)
+            test_tokens = encode_corpus_to_tensor(
+                adapter, test_corpus, test_cache, max_lines=args.test_cap_lines)
 
             if len(train_tokens) and len(test_tokens):
                 observed_vocab = int(max(train_tokens.max().item(), test_tokens.max().item())) + 1
