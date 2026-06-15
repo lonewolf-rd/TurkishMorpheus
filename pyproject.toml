@@ -26,6 +26,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+embeddings = [
+    "transformers==5.12.0",
+]
 dev = [
     "pytest==8.0.0",
     "black==24.1.1",
