@@ -14,6 +14,7 @@ sys.modules["__main__"].TrainingConfig = TrainingConfig
 
 
 BERTURK_MODEL = "dbmdz/bert-base-turkish-cased"
+BGE_MODEL = "BAAI/bge-m3"
 
 
 class WordEncoder:
@@ -95,25 +96,42 @@ class MorpheusEncoder(WordEncoder):
         return self.encode_words(sentence_tokens)
 
 
-class BERTurkEncoder(WordEncoder):
-    name = "berturk"
-
+class HFEncoder(WordEncoder):
     def __init__(
             self,
-            model_name: str = BERTURK_MODEL,
+            model_name: str,
+            name: str,
+            pooling: str = "mean",
+            normalize: bool = False,
             device: Optional[torch.device] = None,
             batch_size: int = 64,
-            layer: int = -1,
+            max_length: int = 16,
     ):
         from transformers import AutoTokenizer, AutoModel
 
+        self.name = name
+        self.pooling = pooling
+        self.normalize = normalize
+        self.max_length = max_length
         self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.batch_size = batch_size
-        self.layer = layer
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModel.from_pretrained(model_name).to(self.device).eval()
         self.dim = self.model.config.hidden_size
-        global_logger.info(f"[BERTurkEncoder] Loaded {model_name} (dim={self.dim})")
+        global_logger.info(
+            f"[HFEncoder] Loaded {model_name} as '{name}' "
+            f"(dim={self.dim}, pooling={pooling}, normalize={normalize})"
+        )
+
+    def _pool(self, hidden: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+        if self.pooling == "cls":
+            pooled = hidden[:, 0]
+        else:
+            m = mask.unsqueeze(-1).float()
+            pooled = (hidden * m).sum(dim=1) / m.sum(dim=1).clamp(min=1e-9)
+        if self.normalize:
+            pooled = torch.nn.functional.normalize(pooled, p=2, dim=-1)
+        return pooled
 
     @torch.no_grad()
     def encode_words(self, words: List[str]) -> np.ndarray:
@@ -121,27 +139,19 @@ class BERTurkEncoder(WordEncoder):
         for start in range(0, len(words), self.batch_size):
             chunk = words[start: start + self.batch_size]
             enc = self.tokenizer(
-                chunk,
-                return_tensors="pt",
-                padding=True,
-                truncation=True,
-                max_length=16,
+                chunk, return_tensors="pt", padding=True,
+                truncation=True, max_length=self.max_length,
             ).to(self.device)
             out = self.model(**enc)
-            hidden = out.last_hidden_state
-            mask = enc["attention_mask"].unsqueeze(-1).float()
-            pooled = (hidden * mask).sum(dim=1) / mask.sum(dim=1).clamp(min=1e-9)
+            pooled = self._pool(out.last_hidden_state, enc["attention_mask"])
             vecs.append(pooled.float().cpu().numpy())
         return np.concatenate(vecs, axis=0) if vecs else np.zeros((0, self.dim), dtype=np.float32)
 
     @torch.no_grad()
     def encode_tokens_in_context(self, sentence_tokens: List[str]) -> np.ndarray:
         enc = self.tokenizer(
-            sentence_tokens,
-            is_split_into_words=True,
-            return_tensors="pt",
-            truncation=True,
-            max_length=256,
+            sentence_tokens, is_split_into_words=True, return_tensors="pt",
+            truncation=True, max_length=256,
         ).to(self.device)
         out = self.model(**enc)
         hidden = out.last_hidden_state[0]
@@ -158,9 +168,20 @@ class BERTurkEncoder(WordEncoder):
         return vecs / counts[:, None]
 
 
+def BERTurkEncoder(device: Optional[torch.device] = None, **kw) -> HFEncoder:
+    return HFEncoder(BERTURK_MODEL, name="berturk", pooling="mean",
+                     normalize=False, device=device, **kw)
+
+
+def BGEEncoder(device: Optional[torch.device] = None, **kw) -> HFEncoder:
+    return HFEncoder(BGE_MODEL, name="bge-m3", pooling="cls",
+                     normalize=True, device=device, max_length=24, **kw)
+
+
 def build_encoders(
         checkpoint_path: str,
         include_berturk: bool = True,
+        include_bge: bool = True,
         device: Optional[torch.device] = None,
 ) -> List[WordEncoder]:
     encoders: List[WordEncoder] = [MorpheusEncoder(checkpoint_path, device=device)]
@@ -169,6 +190,11 @@ def build_encoders(
             encoders.append(BERTurkEncoder(device=device))
         except Exception as e:
             global_logger.warning(f"[build_encoders] BERTurk unavailable, skipping: {e}")
+    if include_bge:
+        try:
+            encoders.append(BGEEncoder(device=device))
+        except Exception as e:
+            global_logger.warning(f"[build_encoders] BGE-M3 unavailable, skipping: {e}")
     return encoders
 
 

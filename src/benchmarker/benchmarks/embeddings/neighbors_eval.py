@@ -27,16 +27,45 @@ def cosine_matrix(vecs: np.ndarray) -> np.ndarray:
     return norm @ norm.T
 
 
-def cluster_purity_at_k(vecs: np.ndarray, labels: np.ndarray, k: int = 5) -> float:
+def retrieval_metrics(vecs: np.ndarray, labels: np.ndarray, k: int = 5) -> Dict[str, float]:
     sim = cosine_matrix(vecs)
     np.fill_diagonal(sim, -np.inf)
-    hits = 0
-    total = 0
-    for i in range(len(vecs)):
-        topk = np.argsort(-sim[i])[:k]
-        hits += int((labels[topk] == labels[i]).sum())
-        total += k
-    return hits / max(total, 1)
+    order = np.argsort(-sim, axis=1)
+
+    purity_hits = purity_total = 0
+    precR_sum = ap_sum = mrr_sum = r1_sum = r5_sum = 0.0
+    n = len(vecs)
+    for i in range(n):
+        ranked = order[i]
+        rel = (labels[ranked] == labels[i])
+        n_rel = int(rel.sum())
+        if n_rel == 0:
+            continue
+
+        topk = ranked[:k]
+        purity_hits += int((labels[topk] == labels[i]).sum())
+        purity_total += k
+
+        precR_sum += float(rel[:n_rel].sum()) / n_rel
+        r1_sum += float(rel[0])
+        r5_sum += float(rel[:5].sum()) / min(5, n_rel)
+
+        first_hit = int(np.argmax(rel)) if rel.any() else -1
+        mrr_sum += 1.0 / (first_hit + 1) if first_hit >= 0 else 0.0
+
+        cum = np.cumsum(rel)
+        ranks = np.arange(1, len(rel) + 1)
+        precisions = cum / ranks
+        ap_sum += float((precisions * rel).sum()) / n_rel
+
+    return {
+        "MAP": ap_sum / max(n, 1),
+        "MRR": mrr_sum / max(n, 1),
+        "recall_at_1": r1_sum / max(n, 1),
+        "recall_at_5": r5_sum / max(n, 1),
+        "precision_at_R": precR_sum / max(n, 1),
+        f"purity_at_{k}": purity_hits / max(purity_total, 1),
+    }
 
 
 def _resolve_families() -> Dict[str, List[str]]:
@@ -49,7 +78,7 @@ def _resolve_families() -> Dict[str, List[str]]:
     return FALLBACK_FAMILIES
 
 
-def run(include_berturk: bool = True, k: int = 5, make_umap: bool = True) -> None:
+def run(include_berturk: bool = True, k: int = 5) -> None:
     base = Path(__file__).resolve().parents[4]
     artifacts = base / "src" / "model_development" / "artifacts"
     output_dir = base / "src" / "benchmarker" / "results" / "paper_eval" / "embeddings" / "neighbors"
@@ -72,15 +101,19 @@ def run(include_berturk: bool = True, k: int = 5, make_umap: bool = True) -> Non
 
     encoders = build_encoders(str(checkpoint), include_berturk=include_berturk)
 
+    sizes = [len(families[r]) for r in roots]
     summary_rows = []
     for enc in encoders:
         vecs = enc.encode_words(words)
-        purity = cluster_purity_at_k(vecs, label_ids, k=k)
-        summary_rows.append({"encoder": enc.name, "dim": enc.dim, f"purity_at_{k}": round(purity, 4)})
-        global_logger.info(f"[neighbors_eval] {enc.name}: root purity@{k} = {purity:.4f}")
+        m = retrieval_metrics(vecs, label_ids, k=k)
+        row = {"encoder": enc.name, "dim": enc.dim}
+        row.update({key: round(val, 4) for key, val in m.items()})
+        summary_rows.append(row)
+        global_logger.info(
+            f"[neighbors_eval] {enc.name}: MAP={m['MAP']:.4f} MRR={m['MRR']:.4f} "
+            f"R@1={m['recall_at_1']:.4f} R@5={m['recall_at_5']:.4f}"
+        )
         _save_coords(vecs, label_names, words, enc.name, output_dir)
-        if make_umap:
-            _plot_umap(vecs, label_names, words, enc.name, output_dir)
 
     summary_path = output_dir / "neighbors_summary.csv"
     with open(summary_path, "w", newline="", encoding="utf-8") as f:
@@ -89,12 +122,17 @@ def run(include_berturk: bool = True, k: int = 5, make_umap: bool = True) -> Non
         writer.writerows(summary_rows)
 
     print()
-    print("=" * 70)
-    print(f"NEAREST-NEIGHBOUR ROOT COHERENCE  (k={k}, {len(roots)} root families)")
-    print("=" * 70)
+    print("=" * 78)
+    print(f"ROOT-FAMILY RETRIEVAL  (lexical / keyword-style)")
+    print(f"  {len(roots)} root families, {len(words)} words, "
+          f"family size min/mean/max = {min(sizes)}/{np.mean(sizes):.1f}/{max(sizes)}")
+    print("=" * 78)
+    print(f"  {'encoder':<12s} {'MAP':>8s} {'MRR':>8s} {'R@1':>8s} {'R@5':>8s} {'P@R':>8s}")
     for r in summary_rows:
-        print(f"  {r['encoder']:<12s} dim={r['dim']:<4d} purity@{k}={r[f'purity_at_{k}']:.4f}")
-    print("=" * 70)
+        print(f"  {r['encoder']:<12s} {r['MAP']:>8.4f} {r['MRR']:>8.4f} "
+              f"{r['recall_at_1']:>8.4f} {r['recall_at_5']:>8.4f} {r['precision_at_R']:>8.4f}")
+    print("=" * 78)
+    print("Family-size invariant metrics. purity@k (in CSV) is capped by family size.")
     print(f"Summary: {summary_path}")
     print(f"Artifacts: {output_dir}")
 
@@ -114,36 +152,6 @@ def _save_coords(vecs, label_names, words, enc_name, output_dir) -> None:
         writer.writerow(["word", "root", "x", "y"])
         for (x, y), name, word in zip(coords, label_names, words):
             writer.writerow([word, name, f"{x:.6f}", f"{y:.6f}"])
-
-
-def _plot_umap(vecs, label_names, words, enc_name, output_dir) -> None:
-    try:
-        import umap
-        import matplotlib
-        matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
-    except Exception as e:
-        global_logger.warning(f"[neighbors_eval] UMAP/matplotlib unavailable: {e}")
-        return
-
-    n_neighbors = min(8, max(2, len(vecs) - 1))
-    reducer = umap.UMAP(n_neighbors=n_neighbors, min_dist=0.15, metric="cosine", random_state=42)
-    emb2d = reducer.fit_transform(vecs)
-
-    roots = sorted(set(label_names))
-    cmap = plt.get_cmap("tab20")
-    color_of = {r: cmap(i % 20) for i, r in enumerate(roots)}
-
-    fig, ax = plt.subplots(figsize=(11, 9))
-    for (x, y), name, word in zip(emb2d, label_names, words):
-        ax.scatter(x, y, color=color_of[name], s=55, alpha=0.85)
-        ax.annotate(word, (x, y), fontsize=6, alpha=0.7)
-    ax.set_title(f"{enc_name} — root-family clustering (UMAP, cosine)")
-    ax.set_xticks([])
-    ax.set_yticks([])
-    fig.tight_layout()
-    fig.savefig(output_dir / f"umap_{enc_name}.png", dpi=160)
-    plt.close(fig)
 
 
 if __name__ == "__main__":

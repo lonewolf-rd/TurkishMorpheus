@@ -95,10 +95,11 @@ def run(results_root: Optional[str] = None) -> None:
         summ = neighbors / "neighbors_summary.csv"
         if summ.exists():
             df = pd.read_csv(summ)
-            value_col = next((c for c in df.columns if c.startswith("purity_at_")), None)
+            value_col = "MAP" if "MAP" in df.columns else next(
+                (c for c in df.columns if c.startswith("purity_at_")), None)
             if value_col:
                 _simple_bar(df, value_col, "encoder",
-                            "Root-family neighbour purity", value_col, fig_dir / "neighbors_purity.png")
+                            "Root-family retrieval (MAP)", value_col, fig_dir / "neighbors_map.png")
 
     probing = root / "probing" / "probing_summary.csv"
     if probing.exists():
@@ -106,6 +107,12 @@ def run(results_root: Optional[str] = None) -> None:
         _grouped_bar(df, "probe_acc", "task", "encoder",
                      "Morphological probing accuracy", "linear probe acc",
                      fig_dir / "probing_accuracy.png")
+
+    dedup = root / "dedup" / "dedup_summary.csv"
+    if dedup.exists():
+        df = pd.read_csv(dedup)
+        _simple_bar(df, "roc_auc", "encoder",
+                    "Same-root verification (ROC-AUC)", "ROC-AUC", fig_dir / "dedup_auc.png")
 
     ner = root / "ner" / "ner_summary.csv"
     if ner.exists():

@@ -17,9 +17,9 @@ def default_gold_path() -> Path:
 
 def load_root_families(
         gold_path: str,
-        min_members: int = 4,
-        max_families: int = 40,
-        max_per_family: int = 8,
+        min_members: int = 8,
+        max_families: int = 120,
+        max_per_family: int = 20,
 ) -> Dict[str, List[str]]:
     entries = load_sigmorphon_inflection_gold(gold_path)
     by_root: Dict[str, List[str]] = defaultdict(list)
