@@ -1,5 +1,5 @@
 [project]
-name = "turkish-tokenizer"
+name = "turkish-morpheus"
 version = "0.1.0"
 description = "A research-grade framework for evaluating subword vs. semantic-morphological encoders for Turkish."
 authors = [{name = "Tolga Şakar", email = "lonewolf_rd@protonmail.com"}]
