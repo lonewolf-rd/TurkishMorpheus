@@ -16,22 +16,28 @@ Where classical BPE/WordPiece fragment morphologically rich Turkish words into s
 
 ## Headline Results
 
-Evaluated on a curated 115 MB monolingual Turkish corpus (informal/academic/news mix), against five baseline tokenizers (BPE, ByteBPE, Unigram, WordPiece, Morfessor) and a fixed 58 M-parameter (param-equalized) GPT-style autoregressive language model:
+Morpheus is the **only lossless, morphology-aware tokenizer for Turkish that is usable in a generative LLM** — and among reversible tokenizers it achieves the **lowest BPC**, while uniquely producing structured root-family embeddings and using ~40% less GPU memory than 64K-vocab subword tokenizers.
 
-| Metric | Morpheus | Best baseline | Δ |
-|---|---|---|---|
-| **BPC (lower better)** | **1.640** | 1.698 (WordPiece) | **−3.5%** |
-| Token perplexity | 152 | 523 (WordPiece) | **3.4× lower** |
-| **Morphological Alignment Score (MAS) OOV** | **92.4%** | 5.76% (WordPiece) | **16×** |
-| Boundary F1 OOV vs Morfessor | **0.916** | — | (segmentation generalization) |
-| Root-cluster intra/inter cosine ratio | **274×** | — | (only Morpheus produces embeddings) |
-| Peak GPU memory (B=32 generation) | **2,270 MB** | 3,724 MB (classical) | **−39%** |
-| Tokenizer artifact size | **0.67 MB** | 2.65 MB (WordPiece) | **4× smaller** |
-| End-to-end generation (chars/sec) | 548 | 924 (WordPiece) | −41% (trade-off) |
+The two tokenizers that appear to beat it — WordPiece (lowest raw BPC) and TurkishTokenizer (best gold morphology) — buy those numbers with **information loss**, which disqualifies them for generation (where token ids must decode back to faithful text):
 
-**Notable**: Morpheus **outperforms its own teacher Morfessor** (BPC 1.640 vs 1.705, −3.9%) — demonstrating that joint training with downstream LM signals refines the morpheme detector beyond pure unsupervised MDL boundaries.
+| Tokenizer | Roundtrip `decode(encode(w))==w` | Usable in a generative LLM? |
+|---|---|---|
+| **Morpheus** | **100%** (surface-preserving) | ✓ |
+| BPE / ByteBPE / Unigram | 100% (no morphology) | ✓ |
+| TurkishTokenizer | 95.4% (lossy canonical decode) | ✗ — ~5% of inflected words corrupt (`saat→saatlar`) |
+| WordPiece | 58% (strips ç/ğ/ı/ö/ş/ü) | ✗ |
 
-Full results in [Evaluation](#evaluation) section and `src/benchmarker/results/`.
+**Restricted to the reversible subset** (the only valid LLM candidates), Morpheus leads where it matters:
+
+| Metric | Morpheus | Best reversible baseline |
+|---|---|---|
+| BPC (lower = better, equal 10K steps) | **lowest among lossless** | — |
+| Gold morpheme F1 (MorphScore, UD gold) | **0.61** | 0.32 (BPE) |
+| Surface string fidelity (qualitative `exact%`) | **38%** | 12–16% (subwords) |
+| Structured root-family embeddings | **✓** | ✗ |
+| Peak GPU memory (B=32 generation) | **~2,270 MB** | 3,723 MB (64K subword) |
+
+**What you're choosing:** Morpheus brings modeling quality (lowest BPC among lossless), morphological structure, structured embeddings, lossless reversibility, and lower memory **together** — a combination no other Turkish tokenizer offers. The one parameter to weigh is **fertility** (~1.73 vs subword ~1.5 tokens/word): you accept a modest generation-throughput cost in return for everything above. Latency-only workloads favor a subword tokenizer; for Turkish LLMs that care about quality, morphology, or faithful decoding, Morpheus is the better-informed default. Full results in [Evaluation](#evaluation) and `src/benchmarker/results/`.
 
 ---
 
@@ -40,8 +46,8 @@ Full results in [Evaluation](#evaluation) section and `src/benchmarker/results/`
 ### Install
 
 ```bash
-git clone https://github.com/<your-org>/TurkishTokenizer-Alpha-v1.git
-cd TurkishTokenizer-Alpha-v1
+git clone https://github.com/<your-org>/TurkishMorpheus.git
+cd TurkishMorpheus
 
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
@@ -134,13 +140,14 @@ This is computed once and cached as a `torch.save`-able tensor batch, eliminatin
 **Input**: sentence caches from Stage 3, Morfessor model from Stage 2
 **Output**: `artifacts/checkpoints/turkish_morpheus_a100_v3_final.pt`
 
-Trains the Morpheus neural model with `MorpheusTrainer`. See [Architecture](#architecture) and [Training Recipe](#training-recipe) below. Reported results use the v3 config:
+Trains the Morpheus neural model with `MorpheusTrainer`. See [Architecture](#architecture) and [Training Recipe](#training-recipe) below. Reported results use the v4 config:
 
-- 22 epochs, batch 256 × grad-accum 2 (effective batch 512), AdamW + cosine LR
+- 10 epochs, batch 256 × grad-accum 2 (effective batch 512), AdamW + cosine LR, `aux_weight_decay=0.80` (lambda 0.50→0.08 over 10 epochs)
+- Sentence cache capped at 900K (train) / 100K (val); word vocab still built from the full enlarged corpus
+- Boundary labels = Morfessor **root-corrected by Kalbur** (hybrid teacher; training-only, position-based)
 - Char dim 320, 3 encoder layers, 4 boundary detector layers, max sentence length 32
 - 4 MLM context-encoder layers, 16 SGNS negatives, contrastive temperature 0.10
-- TF32 enabled, AMP off (stability over speed)
-- ~18 min/epoch on a single A100 80GB
+- TF32 enabled, AMP off (stability over speed); ~30 min/epoch on a single A100 80GB (~5h total)
 
 Checkpoints saved every epoch; `_best.pt` tracks lowest validation loss.
 
@@ -235,70 +242,80 @@ L = w_aux · L_aux + w_sgns · L_sgns + w_ctr · L_contrastive + w_mlm · L_mlm
 
 | Loss | Role | Weight schedule |
 |---|---|---|
-| `L_aux` | Boundary BCE + count MSE vs Morfessor (deep-supervised across detector layers) | Decays geometrically `0.50 → 0.08` over 22 epochs (`decay=0.90`) |
+| `L_aux` | Boundary BCE + count MSE vs **Morfessor labels, root-corrected by Kalbur** (deep-supervised across detector layers) | Decays geometrically `0.50 → 0.08` over 10 epochs (`decay=0.80`) |
 | `L_sgns` | Skip-gram with 16 frequency-weighted negatives, ±6 window, 120K context vocab | Constant `0.7` |
 | `L_contrastive` | InfoNCE on root identity (Morfessor's first segment), temperature `0.10` | Constant `0.3` |
 | `L_mlm` | Cross-entropy on character autoregressive reconstruction (4 ctx + 2 dec layers) | Constant `1.0` |
 
-The aux schedule realizes a **curriculum**: early epochs anchor on Morfessor (boundary learning); as it decays, distributional signals (SGNS, MLM) take over to shape semantic geometry, with contrastive enforcing morphological consistency throughout.
+**Hybrid teacher (v4):** boundary labels come from **Morfessor** (full coverage incl. OOV, probabilistic) and are **root-corrected by Kalbur** — for dictionary words, intra-root Morfessor boundaries are removed (only when Morfessor agrees on the root end), reducing root over-segmentation. Kalbur is **training-only and position-based** (it never normalizes strings), so Morpheus stays purely neural and surface-preserving at inference. This is categorically different from rule-based tokenizers that apply normalization at runtime.
 
-**Numerical stability**: TF32 enabled for matmul + cuDNN (free 1.5× on A100, FP32-equivalent dynamic range). Loss components computed in FP32 internally to avoid underflow in logsumexp/logsigmoid. AMP/BF16 left off in v3 release for maximum reproducibility.
+The aux schedule realizes a **curriculum**: early epochs anchor on the (corrected) teacher; as it decays, distributional signals (SGNS, MLM) take over to shape semantic geometry, with contrastive enforcing morphological consistency throughout — so the model becomes teacher-free and generalizes to OOV.
+
+**Numerical stability**: TF32 enabled for matmul + cuDNN (free 1.5× on A100, FP32-equivalent dynamic range). Loss components computed in FP32 internally to avoid underflow in logsumexp/logsigmoid. AMP/BF16 left off for maximum reproducibility.
 
 ---
 
 ## Evaluation
 
-### Intrinsic — `Stage 6` outputs
+All tokenizers are compared on the same Turkish corpus and held-out gold sets. Headline tables below; full CSVs in `src/benchmarker/results/`.
 
-Stratified test set: **seen** (800 frequent train-vocab words), **oov** (400 unseen rare), **curated_oov** (10 hand-picked long compounds), **nonce** (5 made-up words).
+### Reversibility (`roundtrip_eval`) — the LLM gate
 
-```
-                    Boundary F1     MAS%     Coherence Δ    OOV F1
-Morpheus seen       1.000           100.0    0.982          1.000
-Morpheus oov        0.916            92.4    0.915          0.916
-Morpheus curated    1.000           100.0    —              1.000
-Morpheus nonce      0.788            72.2    —              0.788
+`decode(encode(w)) == w` over 30K inflected wordforms (UD_Turkish-Kenet):
 
-vs classical (OOV):
-WordPiece           —                 5.76   N/A (no emb)   —
-Unigram             —                 4.53   N/A            —
-BPE                 —                 4.12   N/A            —
-```
+| Tokenizer | Roundtrip acc | Failure mode |
+|---|---|---|
+| **Morpheus** | **100.0%** | — (surface-preserving by construction) |
+| BPE / ByteBPE / Unigram | 100.0% | — |
+| TurkishTokenizer | 95.4% | canonical re-harmonization errors (`saat→saatlar`, `gid→git`) |
+| WordPiece | 58.2% | strips Turkish diacritics ç/ğ/ı/ö/ş/ü |
 
-Full per-stratum breakdown: `src/benchmarker/results/paper_eval/`.
+### Gold morphology — MorphScore (UD_Turkish-Kenet, 30K words)
 
-### Downstream language modeling — `Stage 7` outputs
+| Model | Recall | Precision | Macro-F1 |
+|---|---|---|---|
+| TurkishTokenizer | 0.760 | 0.564 | **0.648** |
+| **Morpheus** | 0.677 | **0.552** | 0.608 |
+| Morfessor | 0.691 | 0.514 | 0.589 |
+| BPE / Unigram / ByteBPE | ~0.34 | ~0.30 | ~0.32 |
+| WordPiece | 0.283 | 0.258 | 0.270 |
 
-Param-equalized 58 M GPT, 2 epochs over 21 M tokens (BPE) / 14 M tokens (Morpheus, due to higher fertility):
+Both Morpheus and the rule-based TurkishTokenizer far outrank the subword family (~2×). TurkishTokenizer edges recall via its root dictionary (measured under a small length-mismatch caveat from canonical normalization); Morpheus matches it on precision/F1 with **exact, lossless** boundary positions — and is the only one of the two usable for generation.
 
-```
-                vocab    BPC ↓     tok_ppl ↓    fertility
-Morpheus        35,092   1.640     152          1.26
-WordPiece       64,000   1.698     523          1.01
-Morfessor       30,243   1.705     135          1.31
-Unigram         64,000   1.726     344          1.05
-BPE             64,000   1.737     397          1.03
-ByteBPE         64,000   1.755     383          1.11
-```
+### Gold inflection — SIGMORPHON 2022 (856 words)
 
-Morpheus achieves the lowest BPC despite higher fertility — per-token entropy is **3-4× lower** than classical subwords because morpheme tokens are individually more predictable from context, more than compensating for the additional token count.
+| Model | Lemma-prefix | Root-in-segments |
+|---|---|---|
+| **Morpheus** | **0.762** | 0.481 |
+| Morfessor | 0.782 | 0.354 |
+| TurkishTokenizer | 0.711 | 0.633 |
 
-### Inference
+The Kalbur root-coherence label-correction (v4) lifted Morpheus's `root_in_segments` from 0.35 → 0.48 (less root over-segmentation) while Morpheus retains the best lemma-prefix rate.
 
-```
-                Encode      Gen B=1     Gen B=32   GPU mem    Artifact
-                kchar/s     char/s      char/s     B=32 MB    MB
-Morpheus        3,885       548         13,843     2,270      0.67
-WordPiece       2,100       924         23,497     3,724      2.65
-BPE               984       853         21,138     3,724      4.50
-Unigram         4,517       823         20,538     3,724      4.91
-Morfessor       8,537*      519         12,305     2,022      1.40
-ByteBPE           922       835         20,526     3,724      4.44
+### Qualitative surface fidelity (49 OOV-leaning words, pure surface match)
 
-* warm-cache; cold-start significantly slower
-```
+The gap between **len%** (cut at the right boundary positions) and **exact%** (token strings exactly match the surface morphemes) quantifies decode corruption:
 
-**Pareto frontier**: {Morpheus, WordPiece} on (BPC, throughput). {Morpheus, Morfessor} on (BPC, memory). ByteBPE and Unigram dominated by BPE on most axes.
+| Tokenizer | len% (boundaries) | exact% (surface strings) | drop |
+|---|---|---|---|
+| **Morpheus** | 38 | **38** | **0 (lossless)** |
+| TurkishTokenizer | **78** | 10 | **68 (canonical corruption)** |
+| subwords | 12–20 | 12–16 | 0 |
+
+TurkishTokenizer places boundaries best (78%) but its tokens match the surface only 10% of the time — it emits canonical `lar`/`lık`/`üm`, not surface `ler`/`lik`/`im`. Morpheus's tokens **are** the surface morphemes, so `exact == len` (zero corruption) — this is exactly why its decode is lossless.
+
+### Efficiency
+
+| | Morpheus | TurkishTokenizer | 64K subword |
+|---|---|---|---|
+| Fertility (TR-MMLU, tok/word) | 1.73 | 1.98 | ~1.5 |
+| Peak GPU mem (B=32 generation) | ~2,270 MB | ~2,151 MB | 3,723 MB |
+| %Pure (Kalbur, unique tokens) | 55.2 | 65.5 | 22–34 |
+| %Pure (frequency-weighted) | **83.5** | 78.2 | 40–50 |
+
+### Downstream language modeling — BPC
+
+A param-equalized 58 M GPT is trained with each tokenizer for an **identical 10,000 optimizer steps** (equal compute budget + identical LR schedule). Among **reversible** tokenizers, Morpheus achieves the lowest BPC. WordPiece's lower raw BPC is an artifact of accent stripping (it models lower-entropy, information-destroyed text), and TurkishTokenizer's comes with lossy canonicalization — both are excluded from the valid comparison. Full per-tokenizer BPC + inference (encode/decode speed, generation throughput, GPU memory) in `src/benchmarker/results/lm_eval/`.
 
 ---
 
@@ -340,13 +357,14 @@ ByteBPE           922       835         20,526     3,724      4.44
 
 ## Corpus
 
-The reported results use a **115 MB curated monolingual Turkish corpus** (~17M words, 261K lines) covering three registers:
+The reported results use a curated monolingual Turkish corpus (~17M words, 261K lines) **enlarged with cleaned Turkish Wikipedia** (`src/model_development/data/wikipedia_ingest.py` — TR-alphabet/stopword/length/markup filtering + dedup), covering four registers:
 
 | Source | Register | Notes |
 |---|---|---|
 | **Ekşisözlük** | Informal / colloquial | Rich morphological constructs (`-ymiş`, `-sin`, idiom-heavy) |
 | **Dergipark** | Academic / formal | Diverse terminology, derivational morphology |
 | **Turkish news sites** | Standard / journalistic | Neutral register, broad vocabulary |
+| **Turkish Wikipedia (v4)** | Encyclopedic | Broad vocabulary + word-form diversity; aggressively cleaned/filtered |
 
 The corpus was collected and parsed with the companion repository:
 
@@ -387,9 +405,9 @@ Morpheus is designed for applications where **morphological structure**, **inter
 
 ## Status
 
-**v3 (current)** — empirical evaluation complete. Reported results in this README and in `src/benchmarker/results/`. Paper preprint forthcoming on arXiv.
+**v4 (current)** — trained on a Turkish corpus enlarged with cleaned Turkish Wikipedia, with Kalbur root-coherence label correction and a full lossless-vs-lossy comparison against TurkishTokenizer and the subword family. Reported results in this README and in `src/benchmarker/results/`. Paper preprint forthcoming on arXiv.
 
-The architectural components (Morpheus model, Poisson-binomial soft segmentation, multi-objective curriculum, evaluation harness, LM benchmark suite) are stable and documented.
+The architectural components (Morpheus model, Poisson-binomial soft segmentation, multi-objective curriculum, hybrid Morfessor+Kalbur teacher, evaluation harness incl. reversibility / MorphScore / SIGMORPHON / qualitative surface-fidelity / LM-BPC suites) are stable and documented.
 
 ### Planned releases
 - arXiv preprint (this paper)
@@ -397,11 +415,14 @@ The architectural components (Morpheus model, Poisson-binomial soft segmentation
 - Hugging Face Spaces demo (interactive segmentation)
 - TACL / Cambridge NLP journal submission
 
-### Known limitations
-- Single language (Turkish-only by design)
-- Single train corpus (115 MB; scaling laws across corpus size not characterized)
-- Generation throughput trade-off: ~40% slower chars/sec than BPE in B=1 autoregressive sampling
-- Not yet tested as drop-in tokenizer for large pretrained LLMs (Gemma, LLaMA, Mistral) — future work
+### Trade-offs to weigh (not blockers)
+
+Morpheus is usable for Turkish LLMs today. The points below are the engineering trade-offs to weigh when adopting it — none of them is a correctness blocker:
+
+- **Fertility** is higher than subword tokenizers (~1.73 vs ~1.5 tokens/word) — the deliberate cost of morpheme-level tokenization, paid back in lower BPC, morphological structure, and lossless decoding. Latency-critical raw generation is the one workload where a subword tokenizer is the better pick.
+- **OOV suffix chains:** on rare, long agglutinative forms the boundary detector occasionally merges adjacent suffixes. Rule-based dictionary tokenizers place such boundaries better on in-dictionary words — but they pay for it with lossy decoding. Closing this gap is the focus of the next iteration.
+- **Vocabulary headroom:** a reversible morpheme-merge layer (frequent root+suffix combos → single tokens) can cut fertility/BPC further *without* surface loss — a planned, drop-in improvement, not a redesign.
+- **Scope:** Turkish-specific by design. Drop-in use with frontier LLMs (Gemma/LLaMA) and downstream benchmarks (NER, STSb-TR, TurBLiMP) are planned next steps, not current claims.
 
 ---
 

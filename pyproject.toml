@@ -1,10 +1,10 @@
 [project]
-name = "turkish-tokenizer"
+name = "turkish-morpheus"
 version = "0.1.0"
 description = "A research-grade framework for evaluating subword vs. semantic-morphological encoders for Turkish."
 authors = [{name = "Tolga Şakar", email = "lonewolf_rd@protonmail.com"}]
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
     "numpy==2.4.4",
     "sentencepiece==0.2.1",
@@ -26,6 +26,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+embeddings = [
+    "transformers==5.12.0",
+]
 dev = [
     "pytest==8.0.0",
     "black==24.1.1",

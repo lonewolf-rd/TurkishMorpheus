@@ -42,11 +42,11 @@ class TrainingConfig:
     checkpoint_dir: str = "checkpoints/"
     run_name: str = "morpheus_v3"
 
-    n_epochs: int = 22
+    n_epochs: int = 10
     batch_size: int = 256
     grad_accum_steps: int = 2
     learning_rate: float = 3.0e-4
-    warmup_steps: int = 2500
+    warmup_steps: int = 1000
     weight_decay: float = 1e-2
     grad_clip: float = 0.5
     num_workers: int = 8
@@ -81,7 +81,7 @@ class TrainingConfig:
 
     aux_weight_start: float = 0.5
     aux_weight_end: float = 0.08
-    aux_weight_decay: float = 0.90
+    aux_weight_decay: float = 0.80
 
     sgns_weight: float = 0.7
     ctr_weight: float = 0.3
