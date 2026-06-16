@@ -1,0 +1,341 @@
+stratum,query,rank,trained_neighbor,trained_sim,random_neighbor,random_sim,morfessor_seg,morpheus_seg
+curated_suffix,ev,1,evler,0.9896,ve,0.8675,ev,ev
+curated_suffix,ev,2,evden,0.9872,evden,0.8585,ev,ev
+curated_suffix,ev,3,evde,0.987,eve,0.8479,ev,ev
+curated_suffix,ev,4,evlerimizde,0.981,evde,0.8443,ev,ev
+curated_suffix,ev,5,evlerimizdeki,0.9789,evet,0.8416,ev,ev
+curated_suffix,ev,6,evlerimizdekiler,0.9616,şevde,0.839,ev,ev
+curated_suffix,ev,7,evim,0.6356,veren,0.8366,ev,ev
+curated_suffix,ev,8,evimde,0.5448,şveren,0.8298,ev,ev
+curated_suffix,ev,9,eve,0.5192,vs,0.8248,ev,ev
+curated_suffix,ev,10,avın,0.4713,evim,0.8204,ev,ev
+curated_suffix,evler,1,evlerimizdeki,0.9917,eklemler,0.9564,ev | ler,ev | ler
+curated_suffix,evler,2,evden,0.9917,şeyler,0.9487,ev | ler,ev | ler
+curated_suffix,evler,3,evde,0.9915,eğer,0.9354,ev | ler,ev | ler
+curated_suffix,evler,4,evlerimizde,0.9913,değer,0.9353,ev | ler,ev | ler
+curated_suffix,evler,5,ev,0.9896,işler,0.9343,ev | ler,ev | ler
+curated_suffix,evler,6,evlerimizdekiler,0.98,kerevitler,0.9327,ev | ler,ev | ler
+curated_suffix,evler,7,evim,0.6431,eder,0.923,ev | ler,ev | ler
+curated_suffix,evler,8,evimde,0.5536,der,0.9015,ev | ler,ev | ler
+curated_suffix,evler,9,eve,0.5236,yer,0.9002,ev | ler,ev | ler
+curated_suffix,evler,10,avın,0.4929,ventriküler,0.8969,ev | ler,ev | ler
+curated_suffix,evde,1,evden,0.9987,şevde,0.9787,ev | de,ev | de
+curated_suffix,evde,2,evlerimizdeki,0.9922,eve,0.9427,ev | de,ev | de
+curated_suffix,evde,3,evler,0.9915,evimde,0.9416,ev | de,ev | de
+curated_suffix,evde,4,evlerimizde,0.9905,elde,0.9371,ev | de,ev | de
+curated_suffix,evde,5,ev,0.987,de,0.9334,ev | de,ev | de
+curated_suffix,evde,6,evlerimizdekiler,0.9803,şmede,0.9224,ev | de,ev | de
+curated_suffix,evde,7,evim,0.6618,ve,0.9222,ev | de,ev | de
+curated_suffix,evde,8,evimde,0.5711,bölgede,0.9151,ev | de,ev | de
+curated_suffix,evde,9,eve,0.5491,şlerde,0.9111,ev | de,ev | de
+curated_suffix,evde,10,avın,0.4671,evlerimizde,0.9058,ev | de,ev | de
+curated_suffix,evden,1,evde,0.9987,eden,0.9698,ev | den,ev | den
+curated_suffix,evden,2,evler,0.9917,neden,0.9637,ev | den,ev | den
+curated_suffix,evden,3,evlerimizdeki,0.9909,veren,0.9556,ev | den,ev | den
+curated_suffix,evden,4,evlerimizde,0.9886,den,0.955,ev | den,ev | den
+curated_suffix,evden,5,ev,0.9872,şveren,0.9474,ev | den,ev | den
+curated_suffix,evden,6,evlerimizdekiler,0.9793,sden,0.9451,ev | den,ev | den
+curated_suffix,evden,7,evim,0.6569,verilen,0.9431,ev | den,ev | den
+curated_suffix,evden,8,evimde,0.5663,en,0.9422,ev | den,ev | den
+curated_suffix,evden,9,eve,0.5445,hemen,0.9392,ev | den,ev | den
+curated_suffix,evden,10,avın,0.4735,şverenin,0.9372,ev | den,ev | den
+curated_suffix,eve,1,evet,0.7124,ve,0.9535,eve,eve
+curated_suffix,eve,2,evim,0.6376,evde,0.9427,eve,eve
+curated_suffix,eve,3,evimde,0.6006,şevde,0.9364,eve,eve
+curated_suffix,eve,4,evlerimizdekiler,0.5558,elde,0.9103,eve,eve
+curated_suffix,eve,5,evlerimizdeki,0.5506,ele,0.9093,eve,eve
+curated_suffix,eve,6,evde,0.5491,şmede,0.9047,eve,eve
+curated_suffix,eve,7,evden,0.5445,müşavere,0.9043,eve,eve
+curated_suffix,eve,8,evlerimizde,0.5413,neredeyse,0.9029,eve,eve
+curated_suffix,eve,9,evler,0.5236,sene,0.8989,eve,eve
+curated_suffix,eve,10,ev,0.5192,şse,0.8987,eve,eve
+curated_suffix,evim,1,evimde,0.9804,seçim,0.9182,evi | m,evi | m
+curated_suffix,evim,2,evlerimizdekiler,0.6641,gideceğim,0.9172,evi | m,evi | m
+curated_suffix,evim,3,evlerimizdeki,0.6627,dedim,0.9143,evi | m,evi | m
+curated_suffix,evim,4,evde,0.6618,benim,0.9083,evi | m,evi | m
+curated_suffix,evim,5,evlerimizde,0.6607,gelirim,0.9044,evi | m,evi | m
+curated_suffix,evim,6,evden,0.6569,ederim,0.9042,evi | m,evi | m
+curated_suffix,evim,7,evler,0.6431,eğitim,0.9026,evi | m,evi | m
+curated_suffix,evim,8,eve,0.6376,öğretim,0.8938,evi | m,evi | m
+curated_suffix,evim,9,ev,0.6356,kardeşim,0.887,evi | m,evi | m
+curated_suffix,evim,10,evimiz,0.4787,ksilem,0.8861,evi | m,evi | m
+curated_suffix,evimiz,1,ekotip,0.9619,deniz,0.9274,ev | imiz,e | vimiz
+curated_suffix,evimiz,2,ebo,0.9581,bildirimsiz,0.8994,ev | imiz,e | vimiz
+curated_suffix,evimiz,3,ekotiplerinin,0.9442,kidiz,0.89,ev | imiz,e | vimiz
+curated_suffix,evimiz,4,eurasian,0.934,qiz,0.8878,ev | imiz,e | vimiz
+curated_suffix,evimiz,5,eyrenci,0.5455,takipsiz,0.8851,ev | imiz,e | vimiz
+curated_suffix,evimiz,6,evim,0.4787,gideceğim,0.8812,ev | imiz,e | vimiz
+curated_suffix,evimiz,7,ekbh,0.4722,evlerimizdeki,0.8811,ev | imiz,e | vimiz
+curated_suffix,evimiz,8,omh,0.4613,evlerimizde,0.8804,ev | imiz,e | vimiz
+curated_suffix,evimiz,9,oguz,0.4419,kelfeyimsi,0.8752,ev | imiz,e | vimiz
+curated_suffix,evimiz,10,evimde,0.4261,disgenezisi,0.8705,ev | imiz,e | vimiz
+curated_suffix,evimde,1,evim,0.9804,evlerimizde,0.9525,evimde,evi | m | de
+curated_suffix,evimde,2,eve,0.6006,dönemde,0.9427,evimde,evi | m | de
+curated_suffix,evimde,3,evlerimizdekiler,0.574,evde,0.9416,evimde,evi | m | de
+curated_suffix,evimde,4,evlerimizdeki,0.5722,şmede,0.941,evimde,evi | m | de
+curated_suffix,evimde,5,evde,0.5711,şevde,0.9346,evimde,evi | m | de
+curated_suffix,evimde,6,evlerimizde,0.5693,şeklinde,0.924,evimde,evi | m | de
+curated_suffix,evimde,7,evden,0.5663,beytinde,0.9233,evimde,evi | m | de
+curated_suffix,evimde,8,evler,0.5536,mrgde,0.9228,evimde,evi | m | de
+curated_suffix,evimde,9,ev,0.5448,elde,0.9198,evimde,evi | m | de
+curated_suffix,evimde,10,edit,0.4433,şekilde,0.9189,evimde,evi | m | de
+curated_suffix,evlerimizde,1,evlerimizdeki,0.9961,şeklinde,0.9599,ev | ler | imizde,ev | leri | mizde
+curated_suffix,evlerimizde,2,evler,0.9913,şekilde,0.9552,ev | ler | imizde,ev | leri | mizde
+curated_suffix,evlerimizde,3,evde,0.9905,evimde,0.9525,ev | ler | imizde,ev | leri | mizde
+curated_suffix,evlerimizde,4,evlerimizdekiler,0.9904,frezelenmesinde,0.9472,ev | ler | imizde,ev | leri | mizde
+curated_suffix,evlerimizde,5,evden,0.9886,yerinde,0.9455,ev | ler | imizde,ev | leri | mizde
+curated_suffix,evlerimizde,6,ev,0.981,üzerinde,0.9441,ev | ler | imizde,ev | leri | mizde
+curated_suffix,evlerimizde,7,evim,0.6607,içerisinde,0.9426,ev | ler | imizde,ev | leri | mizde
+curated_suffix,evlerimizde,8,evimde,0.5693,ingiltere,0.9418,ev | ler | imizde,ev | leri | mizde
+curated_suffix,evlerimizde,9,eve,0.5413,şmede,0.9404,ev | ler | imizde,ev | leri | mizde
+curated_suffix,evlerimizde,10,avın,0.4556,beytinde,0.9402,ev | ler | imizde,ev | leri | mizde
+curated_suffix,evlerimizdeki,1,evlerimizde,0.9961,sözleşmesindeki,0.9487,ev | leri | miz | deki,ev | ler | imiz | deki
+curated_suffix,evlerimizdeki,2,evlerimizdekiler,0.9949,evlerimizdekiler,0.947,ev | leri | miz | deki,ev | ler | imiz | deki
+curated_suffix,evlerimizdeki,3,evde,0.9922,üniversitelerindeki,0.9425,ev | leri | miz | deki,ev | ler | imiz | deki
+curated_suffix,evlerimizdeki,4,evler,0.9917,belki,0.9423,ev | leri | miz | deki,ev | ler | imiz | deki
+curated_suffix,evlerimizdeki,5,evden,0.9909,gerekli,0.9398,ev | leri | miz | deki,ev | ler | imiz | deki
+curated_suffix,evlerimizdeki,6,ev,0.9789,önceki,0.9362,ev | leri | miz | deki,ev | ler | imiz | deki
+curated_suffix,evlerimizdeki,7,evim,0.6627,pekiştirilmesi,0.9356,ev | leri | miz | deki,ev | ler | imiz | deki
+curated_suffix,evlerimizdeki,8,evimde,0.5722,değiştiricilerde,0.931,ev | leri | miz | deki,ev | ler | imiz | deki
+curated_suffix,evlerimizdeki,9,eve,0.5506,peki,0.9302,ev | leri | miz | deki,ev | ler | imiz | deki
+curated_suffix,evlerimizdeki,10,avın,0.4659,ifadelerini,0.9273,ev | leri | miz | deki,ev | ler | imiz | deki
+curated_suffix,evlerimizdekiler,1,evlerimizdeki,0.9949,üniversitelerindeki,0.9524,ev | leri | miz | deki | ler,ev | ler | imiz | deki | ler
+curated_suffix,evlerimizdekiler,2,evlerimizde,0.9904,görevlendirilemeyeceklerinden,0.95,ev | leri | miz | deki | ler,ev | ler | imiz | deki | ler
+curated_suffix,evlerimizdekiler,3,evde,0.9803,evlerimizdeki,0.947,ev | leri | miz | deki | ler,ev | ler | imiz | deki | ler
+curated_suffix,evlerimizdekiler,4,evler,0.98,yüzdelikler,0.9441,ev | leri | miz | deki | ler,ev | ler | imiz | deki | ler
+curated_suffix,evlerimizdekiler,5,evden,0.9793,değiştiricilerde,0.942,ev | leri | miz | deki | ler,ev | ler | imiz | deki | ler
+curated_suffix,evlerimizdekiler,6,ev,0.9616,kerevitlerin,0.9367,ev | leri | miz | deki | ler,ev | ler | imiz | deki | ler
+curated_suffix,evlerimizdekiler,7,evim,0.6641,ventriküler,0.9366,ev | leri | miz | deki | ler,ev | ler | imiz | deki | ler
+curated_suffix,evlerimizdekiler,8,evimde,0.574,meşcerelerinin,0.9332,ev | leri | miz | deki | ler,ev | ler | imiz | deki | ler
+curated_suffix,evlerimizdekiler,9,eve,0.5558,kerevitler,0.9323,ev | leri | miz | deki | ler,ev | ler | imiz | deki | ler
+curated_suffix,evlerimizdekiler,10,avın,0.448,evlerimizde,0.932,ev | leri | miz | deki | ler,ev | ler | imiz | deki | ler
+curated_suffix,kitap,1,kitapta,0.999,takip,0.9444,kitap,kitap
+curated_suffix,kitap,2,kitaplıkta,0.9975,tip,0.9203,kitap,kitap
+curated_suffix,kitap,3,kitaplar,0.9975,akp,0.8975,kitap,kitap
+curated_suffix,kitap,4,kitaplarımı,0.9955,yap,0.8917,kitap,kitap
+curated_suffix,kitap,5,kitapçısı,0.9891,top,0.8911,kitap,kitap
+curated_suffix,kitap,6,kitabımdaki,0.5629,ekotip,0.887,kitap,kitap
+curated_suffix,kitap,7,kitabım,0.519,kitapta,0.878,kitap,kitap
+curated_suffix,kitap,8,ortak,0.3274,sahip,0.8767,kitap,kitap
+curated_suffix,kitap,9,hata,0.2953,çıkmaktad,0.8744,kitap,kitap
+curated_suffix,kitap,10,dair,0.2918,kitaplıkta,0.8701,kitap,kitap
+curated_suffix,kitaplar,1,kitaplarımı,0.9986,kanatçıklar,0.9562,kitap | lar,kitap | lar
+curated_suffix,kitaplar,2,kitaplıkta,0.9986,kadınlar,0.9556,kitap | lar,kitap | lar
+curated_suffix,kitaplar,3,kitapta,0.9981,arkadaşlar,0.9483,kitap | lar,kitap | lar
+curated_suffix,kitaplar,4,kitap,0.9975,akarlar,0.9426,kitap | lar,kitap | lar
+curated_suffix,kitaplar,5,kitapçısı,0.9865,gürpınar,0.9395,kitap | lar,kitap | lar
+curated_suffix,kitaplar,6,kitabımdaki,0.5684,karayollar,0.9375,kitap | lar,kitap | lar
+curated_suffix,kitaplar,7,kitabım,0.5253,qalar,0.9349,kitap | lar,kitap | lar
+curated_suffix,kitaplar,8,ortak,0.3323,kervanlar,0.934,kitap | lar,kitap | lar
+curated_suffix,kitaplar,9,dair,0.2985,dolar,0.9324,kitap | lar,kitap | lar
+curated_suffix,kitaplar,10,hata,0.288,adamlar,0.9285,kitap | lar,kitap | lar
+curated_suffix,kitapta,1,kitap,0.999,kitaplıkta,0.9672,kitap | ta,kitap | ta
+curated_suffix,kitapta,2,kitaplıkta,0.9985,hatta,0.8966,kitap | ta,kitap | ta
+curated_suffix,kitapta,3,kitaplar,0.9981,havuçta,0.8941,kitap | ta,kitap | ta
+curated_suffix,kitapta,4,kitaplarımı,0.9965,kitap,0.878,kitap | ta,kitap | ta
+curated_suffix,kitapta,5,kitapçısı,0.9899,orta,0.876,kitap | ta,kitap | ta
+curated_suffix,kitapta,6,kitabımdaki,0.5684,hata,0.8742,kitap | ta,kitap | ta
+curated_suffix,kitapta,7,kitabım,0.5234,fetusta,0.8734,kitap | ta,kitap | ta
+curated_suffix,kitapta,8,ortak,0.3146,ıtaya,0.8733,kitap | ta,kitap | ta
+curated_suffix,kitapta,9,dair,0.2954,frostadottir,0.8692,kitap | ta,kitap | ta
+curated_suffix,kitapta,10,hata,0.2892,başta,0.8647,kitap | ta,kitap | ta
+curated_suffix,kitabım,1,kitabımdaki,0.9254,takım,0.9393,kitab | ım,kitabı | m
+curated_suffix,kitabım,2,kitapçısı,0.5466,tanım,0.9242,kitab | ım,kitabı | m
+curated_suffix,kitabım,3,kitaplar,0.5253,bakalım,0.9163,kitab | ım,kitabı | m
+curated_suffix,kitabım,4,kitaplıkta,0.5253,kadının,0.8885,kitab | ım,kitabı | m
+curated_suffix,kitabım,5,kitapta,0.5234,kadın,0.8796,kitab | ım,kitabı | m
+curated_suffix,kitabım,6,kitaplarımı,0.5197,lazım,0.8794,kitab | ım,kitabı | m
+curated_suffix,kitabım,7,kitap,0.519,adım,0.879,kitab | ım,kitabı | m
+curated_suffix,kitabım,8,bilimsel,0.2859,yardım,0.8774,kitab | ım,kitabı | m
+curated_suffix,kitabım,9,bizim,0.2747,yakın,0.8733,kitab | ım,kitabı | m
+curated_suffix,kitabım,10,dergisi,0.266,sanırım,0.8679,kitab | ım,kitabı | m
+curated_suffix,kitaplarımı,1,kitaplar,0.9986,kitapçısı,0.9262,kitap | lar | ımı,kitap | lar | ımı
+curated_suffix,kitaplarımı,2,kitaplıkta,0.9978,açıkladı,0.9242,kitap | lar | ımı,kitap | lar | ımı
+curated_suffix,kitaplarımı,3,kitapta,0.9965,adamı,0.9241,kitap | lar | ımı,kitap | lar | ımı
+curated_suffix,kitaplarımı,4,kitap,0.9955,okuryazarlığını,0.9214,kitap | lar | ımı,kitap | lar | ımı
+curated_suffix,kitaplarımı,5,kitapçısı,0.9884,çınaraltı,0.9208,kitap | lar | ımı,kitap | lar | ımı
+curated_suffix,kitaplarımı,6,kitabımdaki,0.5657,hayatını,0.9127,kitap | lar | ımı,kitap | lar | ımı
+curated_suffix,kitaplarımı,7,kitabım,0.5197,yaptığı,0.905,kitap | lar | ımı,kitap | lar | ımı
+curated_suffix,kitaplarımı,8,ortak,0.3333,olmadığını,0.905,kitap | lar | ımı,kitap | lar | ımı
+curated_suffix,kitaplarımı,9,dair,0.2979,kanatçıklı,0.8993,kitap | lar | ımı,kitap | lar | ımı
+curated_suffix,kitaplarımı,10,hata,0.2976,olmadığı,0.8953,kitap | lar | ımı,kitap | lar | ımı
+curated_suffix,kitabımdaki,1,kitabım,0.9254,arasındaki,0.9417,kitab | ım | daki,kitabım | daki
+curated_suffix,kitabımdaki,2,kitapçısı,0.612,kanunundaki,0.9396,kitab | ım | daki,kitabım | daki
+curated_suffix,kitabımdaki,3,kitaplar,0.5684,mickoski,0.9349,kitab | ım | daki,kitabım | daki
+curated_suffix,kitabımdaki,4,kitapta,0.5684,hukukundaki,0.9259,kitab | ım | daki,kitabım | daki
+curated_suffix,kitabımdaki,5,kitaplıkta,0.5682,sonraki,0.9233,kitab | ım | daki,kitabım | daki
+curated_suffix,kitabımdaki,6,kitaplarımı,0.5657,iki,0.9168,kitab | ım | daki,kitabım | daki
+curated_suffix,kitabımdaki,7,kitap,0.5629,aritmiyi,0.9143,kitab | ım | daki,kitabım | daki
+curated_suffix,kitabımdaki,8,kitaroviç,0.3573,dakika,0.9068,kitab | ım | daki,kitabım | daki
+curated_suffix,kitabımdaki,9,bizim,0.3093,sanki,0.9065,kitab | ım | daki,kitabım | daki
+curated_suffix,kitabımdaki,10,ki,0.2881,evlerimizdeki,0.9053,kitab | ım | daki,kitabım | daki
+curated_suffix,kitaplıkta,1,kitaplar,0.9986,kitapta,0.9672,kitap | lık | ta,kitap | lıkta
+curated_suffix,kitaplıkta,2,kitapta,0.9985,frostadottir,0.8797,kitap | lık | ta,kitap | lıkta
+curated_suffix,kitaplıkta,3,kitaplarımı,0.9978,havuçta,0.8766,kitap | lık | ta,kitap | lıkta
+curated_suffix,kitaplıkta,4,kitap,0.9975,hakkında,0.8747,kitap | lık | ta,kitap | lıkta
+curated_suffix,kitaplıkta,5,kitapçısı,0.9877,dikkat,0.8724,kitap | lık | ta,kitap | lıkta
+curated_suffix,kitaplıkta,6,kitabımdaki,0.5682,toplumsallıktan,0.8713,kitap | lık | ta,kitap | lıkta
+curated_suffix,kitaplıkta,7,kitabım,0.5253,kitap,0.8701,kitap | lık | ta,kitap | lıkta
+curated_suffix,kitaplıkta,8,ortak,0.3292,hatta,0.8688,kitap | lık | ta,kitap | lıkta
+curated_suffix,kitaplıkta,9,hata,0.3011,fetusta,0.8645,kitap | lık | ta,kitap | lıkta
+curated_suffix,kitaplıkta,10,dair,0.2951,çıkmaktad,0.863,kitap | lık | ta,kitap | lıkta
+curated_suffix,gel,1,gelip,0.9907,el,0.9608,gel,gel
+curated_suffix,gel,2,gelmiş,0.988,genel,0.957,gel,gel
+curated_suffix,gel,3,geliyor,0.9863,güzel,0.9492,gel,gel
+curated_suffix,gel,4,gelebilseydik,0.9807,özel,0.9421,gel,gel
+curated_suffix,gel,5,gelecek,0.9806,gamliel,0.9332,gel,gel
+curated_suffix,gel,6,geliyorduk,0.8842,model,0.9285,gel,gel
+curated_suffix,gel,7,gelmedik,0.5136,gol,0.918,gel,gel
+curated_suffix,gel,8,gestalt,0.5083,temel,0.9115,gel,gel
+curated_suffix,gel,9,geldi,0.4459,gelen,0.9063,gel,gel
+curated_suffix,gel,10,gelen,0.3964,bilimsel,0.9023,gel,gel
+curated_suffix,geldi,1,geliyorduk,0.5363,edildi,0.9531,geldi,geldi
+curated_suffix,geldi,2,gitti,0.4935,söyledi,0.9493,geldi,geldi
+curated_suffix,geldi,3,geçti,0.4614,belirtildi,0.946,geldi,geldi
+curated_suffix,geldi,4,geliyor,0.4553,güvenli,0.9364,geldi,geldi
+curated_suffix,geldi,5,gelip,0.4526,gelip,0.9263,geldi,geldi
+curated_suffix,geldi,6,gel,0.4459,dedi,0.9247,geldi,geldi
+curated_suffix,geldi,7,kaldı,0.4452,kendi,0.9182,geldi,geldi
+curated_suffix,geldi,8,gelmiş,0.4352,bilgi,0.9173,geldi,geldi
+curated_suffix,geldi,9,verdi,0.4238,edilmesi,0.9169,geldi,geldi
+curated_suffix,geldi,10,gelecek,0.4201,kendili,0.9161,geldi,geldi
+curated_suffix,geliyor,1,gelip,0.9912,ediyor,0.9602,geliyor,gel | iyor
+curated_suffix,geliyor,2,gelmiş,0.9893,gerekiyor,0.9574,geliyor,gel | iyor
+curated_suffix,geliyor,3,gel,0.9863,veriyor,0.9514,geliyor,gel | iyor
+curated_suffix,geliyor,4,gelecek,0.9851,diyor,0.9342,geliyor,gel | iyor
+curated_suffix,geliyor,5,gelebilseydik,0.9818,gidiyor,0.9318,geliyor,gel | iyor
+curated_suffix,geliyor,6,geliyorduk,0.897,gelir,0.9158,geliyor,gel | iyor
+curated_suffix,geliyor,7,gelmedik,0.5215,oluyor,0.9067,geliyor,gel | iyor
+curated_suffix,geliyor,8,gestalt,0.5043,yapıyor,0.9051,geliyor,gel | iyor
+curated_suffix,geliyor,9,geldi,0.4553,işler,0.9028,geliyor,gel | iyor
+curated_suffix,geliyor,10,gelir,0.3917,yüzdelikler,0.902,geliyor,gel | iyor
+curated_suffix,gelmiş,1,gelebilseydik,0.9932,geçmiş,0.9723,gelmiş,gel | miş
+curated_suffix,gelmiş,2,gelecek,0.9893,geniş,0.9613,gelmiş,gel | miş
+curated_suffix,gelmiş,3,geliyor,0.9893,demiş,0.9567,gelmiş,gel | miş
+curated_suffix,gelmiş,4,gelip,0.9892,etmiş,0.9525,gelmiş,gel | miş
+curated_suffix,gelmiş,5,gel,0.988,iş,0.9,gelmiş,gel | miş
+curated_suffix,gelmiş,6,geliyorduk,0.8737,bölge,0.8781,gelmiş,gel | miş
+curated_suffix,gelmiş,7,gestalt,0.5131,şeklinde,0.8781,gelmiş,gel | miş
+curated_suffix,gelmiş,8,gelmedik,0.4918,olmuş,0.8771,gelmiş,gel | miş
+curated_suffix,gelmiş,9,geldi,0.4352,şmede,0.8762,gelmiş,gel | miş
+curated_suffix,gelmiş,10,geçmiş,0.4205,işe,0.8745,gelmiş,gel | miş
+curated_suffix,gelecek,1,gelmiş,0.9893,edecek,0.9763,gelecek,gel | ecek
+curated_suffix,gelecek,2,gelebilseydik,0.9889,gerçek,0.9534,gelecek,gel | ecek
+curated_suffix,gelecek,3,gelip,0.987,yemek,0.9494,gelecek,gel | ecek
+curated_suffix,gelecek,4,geliyor,0.9851,gerek,0.9485,gelecek,gel | ecek
+curated_suffix,gelecek,5,gel,0.9806,demek,0.9395,gelecek,gel | ecek
+curated_suffix,gelecek,6,geliyorduk,0.8805,destek,0.9332,gelecek,gel | ecek
+curated_suffix,gelecek,7,gestalt,0.5088,gereken,0.932,gelecek,gel | ecek
+curated_suffix,gelecek,8,gelmedik,0.4988,etmek,0.9238,gelecek,gel | ecek
+curated_suffix,gelecek,9,geldi,0.4201,ederek,0.9234,gelecek,gel | ecek
+curated_suffix,gelecek,10,geçmiş,0.3931,keşke,0.9229,gelecek,gel | ecek
+curated_suffix,gelirim,1,gelir,0.9869,ederim,0.9433,gelir | im,gelir | im
+curated_suffix,gelirim,2,geliyorduk,0.5144,gideceğim,0.9356,gelir | im,gelir | im
+curated_suffix,gelirim,3,gelmedik,0.4778,benim,0.9283,gelir | im,gelir | im
+curated_suffix,gelirim,4,yapar,0.424,kardeşim,0.9263,gelir | im,gelir | im
+curated_suffix,gelirim,5,olur,0.4106,görüşmecilerin,0.9221,gelir | im,gelir | im
+curated_suffix,gelirim,6,demircioğlu,0.3987,dedim,0.9206,gelir | im,gelir | im
+curated_suffix,gelirim,7,çekirgenin,0.3909,gelir,0.918,gelir | im,gelir | im
+curated_suffix,gelirim,8,akarlar,0.3609,öğrencilerin,0.9133,gelir | im,gelir | im
+curated_suffix,gelirim,9,gel,0.3602,meşcerelerinin,0.9114,gelir | im,gelir | im
+curated_suffix,gelirim,10,gelip,0.3597,öğretim,0.907,gelir | im,gelir | im
+curated_suffix,gelmedik,1,geliyorduk,0.5423,güvenlik,0.9682,gelme | dik,gelme | dik
+curated_suffix,gelmedik,2,geliyor,0.5215,gelebilseydik,0.9596,gelme | dik,gelme | dik
+curated_suffix,gelmedik,3,gel,0.5136,elektrik,0.9397,gelme | dik,gelme | dik
+curated_suffix,gelmedik,4,gelip,0.5088,yönelik,0.9374,gelme | dik,gelme | dik
+curated_suffix,gelmedik,5,gelecek,0.4988,yerellik,0.9358,gelme | dik,gelme | dik
+curated_suffix,gelmedik,6,gelmiş,0.4918,şlik,0.925,gelme | dik,gelme | dik
+curated_suffix,gelmedik,7,gelir,0.4797,düşünmemiştik,0.9234,gelme | dik,gelme | dik
+curated_suffix,gelmedik,8,gelirim,0.4778,teknik,0.9227,gelme | dik,gelme | dik
+curated_suffix,gelmedik,9,gelebilseydik,0.4775,geliyorduk,0.9201,gelme | dik,gelme | dik
+curated_suffix,gelmedik,10,bilmiyorum,0.3993,ekonomik,0.9185,gelme | dik,gelme | dik
+curated_suffix,geliyorduk,1,gelip,0.8975,ekonomik,0.9374,geliyor | duk,geli | yordu | k
+curated_suffix,geliyorduk,2,geliyor,0.897,yerellik,0.9267,geliyor | duk,geli | yordu | k
+curated_suffix,geliyorduk,3,gel,0.8842,elektrik,0.9227,geliyor | duk,geli | yordu | k
+curated_suffix,geliyorduk,4,gelecek,0.8805,stajyerlik,0.9209,geliyor | duk,geli | yordu | k
+curated_suffix,geliyorduk,5,gelmiş,0.8737,gelmedik,0.9201,geliyor | duk,geli | yordu | k
+curated_suffix,geliyorduk,6,gelebilseydik,0.8694,anoksik,0.9201,geliyor | duk,geli | yordu | k
+curated_suffix,geliyorduk,7,gelmedik,0.5423,güvenlik,0.919,geliyor | duk,geli | yordu | k
+curated_suffix,geliyorduk,8,geldi,0.5363,diyerek,0.9148,geliyor | duk,geli | yordu | k
+curated_suffix,geliyorduk,9,gelir,0.5223,denk,0.9106,geliyor | duk,geli | yordu | k
+curated_suffix,geliyorduk,10,gelirim,0.5144,etnobotanik,0.9094,geliyor | duk,geli | yordu | k
+curated_suffix,gelebilseydik,1,gelmiş,0.9932,söyleyebilseydik,0.9757,gele | bil | sey | dik,gel | ebil | sey | dik
+curated_suffix,gelebilseydik,2,gelecek,0.9889,gelmedik,0.9596,gele | bil | sey | dik,gel | ebil | sey | dik
+curated_suffix,gelebilseydik,3,gelip,0.9869,yerellik,0.9452,gele | bil | sey | dik,gel | ebil | sey | dik
+curated_suffix,gelebilseydik,4,geliyor,0.9818,güvenlik,0.9346,gele | bil | sey | dik,gel | ebil | sey | dik
+curated_suffix,gelebilseydik,5,gel,0.9807,yönelik,0.9313,gele | bil | sey | dik,gel | ebil | sey | dik
+curated_suffix,gelebilseydik,6,geliyorduk,0.8694,belki,0.9307,gele | bil | sey | dik,gel | ebil | sey | dik
+curated_suffix,gelebilseydik,7,gestalt,0.5104,sözleşmesindeki,0.9303,gele | bil | sey | dik,gel | ebil | sey | dik
+curated_suffix,gelebilseydik,8,gelmedik,0.4775,elektrik,0.9256,gele | bil | sey | dik,gel | ebil | sey | dik
+curated_suffix,gelebilseydik,9,geçen,0.4261,yüzdelikler,0.922,gele | bil | sey | dik,gel | ebil | sey | dik
+curated_suffix,gelebilseydik,10,geçmiş,0.4249,kesinlikle,0.9193,gele | bil | sey | dik,gel | ebil | sey | dik
+curated_suffix,git,1,gitmedikçe,0.9734,ğit,0.927,git,git
+curated_suffix,git,2,gitmiştik,0.959,ait,0.9213,git,git
+curated_suffix,git,3,gitti,0.5913,edit,0.9155,git,git
+curated_suffix,git,4,gidiyor,0.549,tehdit,0.8769,git,git
+curated_suffix,git,5,giden,0.5396,basit,0.8693,git,git
+curated_suffix,git,6,gideceğim,0.5259,eğitim,0.8572,git,git
+curated_suffix,git,7,gidebilir,0.5254,mevcut,0.8526,git,git
+curated_suffix,git,8,bitig,0.4507,gitti,0.8524,git,git
+curated_suffix,git,9,hatta,0.3844,gestalt,0.8421,git,git
+curated_suffix,git,10,net,0.3833,kat,0.8418,git,git
+curated_suffix,gitti,1,gitmiştik,0.6175,etti,0.9485,gitt | i,gitti
+curated_suffix,gitti,2,git,0.5913,ettiği,0.9202,gitt | i,gitti
+curated_suffix,gitti,3,gitmedikçe,0.5507,belirtti,0.9162,gitt | i,gitti
+curated_suffix,gitti,4,geçti,0.5287,geçti,0.915,gitt | i,gitti
+curated_suffix,gitti,5,geldi,0.4935,kisti,0.9149,gitt | i,gitti
+curated_suffix,gitti,6,verdi,0.3851,gitmiştik,0.9027,gitt | i,gitti
+curated_suffix,gitti,7,etti,0.381,ettiğini,0.8959,gitt | i,gitti
+curated_suffix,gitti,8,gizli,0.3639,yönetimi,0.895,gitt | i,gitti
+curated_suffix,gitti,9,çıktı,0.3593,çeltiği,0.8774,gitt | i,gitti
+curated_suffix,gitti,10,gidip,0.3572,tespit,0.8701,gitt | i,gitti
+curated_suffix,gidiyor,1,gideceğim,0.9933,diyor,0.9608,gidiyor,gid | iyor
+curated_suffix,gidiyor,2,gidebilir,0.9889,ediyor,0.954,gidiyor,gid | iyor
+curated_suffix,gidiyor,3,gidip,0.6173,geliyor,0.9318,gidiyor,gid | iyor
+curated_suffix,gidiyor,4,gider,0.5859,gerekiyor,0.92,gidiyor,gid | iyor
+curated_suffix,gidiyor,5,gitmedikçe,0.5537,veriyor,0.9156,gidiyor,gid | iyor
+curated_suffix,gidiyor,6,git,0.549,değildir,0.895,gidiyor,gid | iyor
+curated_suffix,gidiyor,7,gitmiştik,0.5359,olabilir,0.8867,gidiyor,gid | iyor
+curated_suffix,gidiyor,8,giden,0.5304,geliyorduk,0.8867,gidiyor,gid | iyor
+curated_suffix,gidiyor,9,hadi,0.4512,hiçbir,0.8862,gidiyor,gid | iyor
+curated_suffix,gidiyor,10,ciddi,0.4207,gider,0.8819,gidiyor,gid | iyor
+curated_suffix,gitmiştik,1,gitmedikçe,0.9837,düşünmemiştik,0.9527,gitmişti | k,git | miş | tik
+curated_suffix,gitmiştik,2,git,0.959,likitlik,0.9318,gitmişti | k,git | miş | tik
+curated_suffix,gitmiştik,3,gitti,0.6175,teknik,0.9273,gitmişti | k,git | miş | tik
+curated_suffix,gitmiştik,4,giden,0.5546,gitti,0.9027,gitmişti | k,git | miş | tik
+curated_suffix,gitmiştik,5,gidiyor,0.5359,işk,0.9024,gitmişti | k,git | miş | tik
+curated_suffix,gitmiştik,6,gidebilir,0.5302,edilmiştir,0.892,gitmişti | k,git | miş | tik
+curated_suffix,gitmiştik,7,gideceğim,0.5089,etnobotanik,0.8901,gitmişti | k,git | miş | tik
+curated_suffix,gitmiştik,8,bitig,0.4173,güvenlik,0.8901,gitmişti | k,git | miş | tik
+curated_suffix,gitmiştik,9,hatta,0.3935,kitabımdaki,0.8889,gitmişti | k,git | miş | tik
+curated_suffix,gitmiştik,10,kat,0.3349,şlik,0.888,gitmişti | k,git | miş | tik
+curated_suffix,gidebilir,1,gideceğim,0.9905,olabilir,0.9384,gid | ebilir,gid | ebilir
+curated_suffix,gidebilir,2,gidiyor,0.9889,belirtildi,0.938,gid | ebilir,gid | ebilir
+curated_suffix,gidebilir,3,gider,0.5767,değişebilirliği,0.9339,gid | ebilir,gid | ebilir
+curated_suffix,gidebilir,4,gidip,0.5626,değildir,0.9315,gid | ebilir,gid | ebilir
+curated_suffix,gidebilir,5,gitmedikçe,0.5453,gelir,0.9212,gid | ebilir,gid | ebilir
+curated_suffix,gidebilir,6,gitmiştik,0.5302,edilmiştir,0.9193,gid | ebilir,gid | ebilir
+curated_suffix,gidebilir,7,giden,0.527,değiştiricilerde,0.9153,gid | ebilir,gid | ebilir
+curated_suffix,gidebilir,8,git,0.5254,ifadelerini,0.9089,gid | ebilir,gid | ebilir
+curated_suffix,gidebilir,9,hadi,0.434,gelebilseydik,0.906,gid | ebilir,gid | ebilir
+curated_suffix,gidebilir,10,giriģ,0.4007,belirli,0.9031,gid | ebilir,gid | ebilir
+curated_suffix,gideceğim,1,gidiyor,0.9933,gelirim,0.9356,gid | eceğim,gid | eceği | m
+curated_suffix,gideceğim,2,gidebilir,0.9905,eğitim,0.9311,gid | eceğim,gid | eceği | m
+curated_suffix,gideceğim,3,gidip,0.5895,dedim,0.9237,gid | eceğim,gid | eceği | m
+curated_suffix,gideceğim,4,gider,0.5833,evim,0.9172,gid | eceğim,gid | eceği | m
+curated_suffix,gideceğim,5,gitmedikçe,0.5301,kardeşim,0.916,gid | eceğim,gid | eceği | m
+curated_suffix,gideceğim,6,git,0.5259,değiştiricilerde,0.9082,gid | eceğim,gid | eceği | m
+curated_suffix,gideceğim,7,giden,0.5179,ederim,0.9066,gid | eceğim,gid | eceği | m
+curated_suffix,gideceğim,8,gitmiştik,0.5089,seçim,0.9042,gid | eceğim,gid | eceği | m
+curated_suffix,gideceğim,9,hadi,0.4637,benim,0.9038,gid | eceğim,gid | eceği | m
+curated_suffix,gideceğim,10,ciddi,0.4108,öğretim,0.9033,gid | eceğim,gid | eceği | m
+curated_suffix,gitmedikçe,1,gitmiştik,0.9837,türkiye,0.9382,git | me | dikçe,git | me | dik | çe
+curated_suffix,gitmedikçe,2,git,0.9734,diye,0.9293,git | me | dikçe,git | me | dik | çe
+curated_suffix,gitmedikçe,3,giden,0.5744,şikardiye,0.9273,git | me | dikçe,git | me | dik | çe
+curated_suffix,gitmedikçe,4,gidiyor,0.5537,türkiyede,0.9259,git | me | dikçe,git | me | dik | çe
+curated_suffix,gitmedikçe,5,gitti,0.5507,beytinde,0.9215,git | me | dikçe,git | me | dik | çe
+curated_suffix,gitmedikçe,6,gidebilir,0.5453,içine,0.921,git | me | dikçe,git | me | dik | çe
+curated_suffix,gitmedikçe,7,gideceğim,0.5301,şeklinde,0.9208,git | me | dikçe,git | me | dik | çe
+curated_suffix,gitmedikçe,8,bitig,0.425,mmenekşe,0.9189,git | me | dikçe,git | me | dik | çe
+curated_suffix,gitmedikçe,9,hatta,0.4035,ayçiçeğinde,0.9178,git | me | dikçe,git | me | dik | çe
+curated_suffix,gitmedikçe,10,zira,0.3567,keçe,0.9178,git | me | dikçe,git | me | dik | çe

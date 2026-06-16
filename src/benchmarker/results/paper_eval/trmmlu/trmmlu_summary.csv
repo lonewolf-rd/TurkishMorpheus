@@ -1,0 +1,8 @@
+tokenizer,vocab_size,total_tokens,unique_tokens,process_time_s,tr_pct,pure_pct,tr_pct_freq_weighted,pure_pct_freq_weighted,fertility_tokens_per_word,renyi_alpha,renyi_entropy_bits,shannon_entropy_bits,renyi_efficiency_observed,renyi_efficiency_vocab,validator
+bpe-64k,64000,299650,25182,1.0282,85.53,33.48,77.68,48.81,1.5119,2.5,7.6196,11.6665,0.5212,0.4772,kalbur
+byte_bpe-64k,64000,302670,24483,0.9897,85.98,34.01,77.48,49.11,1.5271,2.5,7.6328,11.6417,0.5235,0.4781,kalbur
+unigram-64k,64000,301606,23506,0.4008,88.08,32.4,78.86,49.98,1.5218,2.5,7.4036,11.3263,0.5099,0.4637,kalbur
+wordpiece-64k,64000,274865,27881,0.8704,64.98,22.85,67.4,40.09,1.3869,2.5,7.4785,11.8401,0.5064,0.4684,kalbur
+morfessor,,377932,7221,5.2186,69.77,50.96,85.11,77.8,1.9069,2.5,7.7854,10.2781,0.6074,,kalbur
+morpheus,50000,342794,11988,333.5713,71.41,55.23,91.77,83.52,1.7296,2.5,8.0611,10.6968,0.5949,0.5164,kalbur
+turkish-tokenizer,32768,391959,11468,0.5719,79.37,65.48,85.46,78.19,1.9777,2.5,6.715,9.6887,0.4979,0.4477,kalbur

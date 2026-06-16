@@ -1,0 +1,801 @@
+word,morfessor,morpheus,agree
+bir,bir,bir,True
+ve,ve,ve,True
+bu,bu,bu,True
+da,da,da,True
+de,de,de,True
+için,için,için,True
+çok,çok,çok,True
+ile,ile,ile,True
+daha,daha,daha,True
+olarak,olarak,olarak,True
+gibi,gibi,gibi,True
+ama,ama,ama,True
+ne,ne,ne,True
+kadar,kadar,kadar,True
+en,en,en,True
+var,var,var,True
+her,her,her,True
+olan,olan,olan,True
+yok,yok,yok,True
+ki,ki,ki,True
+diye,diye,diye,True
+bkz,bkz,bk | z,False
+değil,değil,değil,True
+sonra,sonra,sonra,True
+ya,ya,ya,True
+bile,bile,bile,True
+ise,ise,ise,True
+ben,ben,ben,True
+iyi,iyi,iyi,True
+göre,göre,göre,True
+olduğu,olduğu,olduğu,True
+son,son,son,True
+olduğunu,olduğunu,oldu | ğunu,False
+büyük,büyük,büyük,True
+mi,mi,mi,True
+iki,iki,iki,True
+şey,şey,şey,True
+ilk,ilk,ilk,True
+abd,abd,abd,True
+böyle,böyle,böyle,True
+zaman,zaman,zaman,True
+şu,şu,şu,True
+aynı,aynı,aynı,True
+ancak,ancak,ancak,True
+kendi,kendi,kendi,True
+şekilde,şekilde,şekil | de,False
+bunu,bunu,bunu,True
+yeni,yeni,yeni,True
+önce,önce,önce,True
+zaten,zaten,za | ten,False
+hiç,hiç,hiç,True
+sadece,sadece,sadece,True
+insan,insan,insan,True
+devam,devam,devam,True
+israil,israil,israil,True
+fazla,fazla,fazla,True
+gün,gün,gün,True
+tek,tek,tek,True
+tüm,tüm,tüm,True
+yer,yer,yer,True
+nasıl,nasıl,n | asıl,False
+neden,neden,neden,True
+hem,hem,hem,True
+veya,ve | ya,veya,False
+adam,adam,adam,True
+mı,mı,mı,True
+artık,artık,artık,True
+güzel,güzel,güzel,True
+yine,yine,yine,True
+olur,olur,olur,True
+iş,iş,iş,True
+benim,benim,benim,True
+oldu,oldu,oldu,True
+bi,bi,bi,True
+önemli,önemli,önemli,True
+olsun,olsun,olsun,True
+karşı,karşı,karşı,True
+tarafından,taraf | ından,taraf | ından,True
+içinde,içinde,için | de,False
+az,az,az,True
+başkanı,başkanı,başkan | ı,False
+arasında,ara | sında,arasında,False
+yani,yani,yani,True
+çünkü,çünkü,çünkü,True
+türk,türk,türk,True
+biri,biri,biri,True
+trump,trump,trump,True
+diğer,diğer,diğer,True
+başka,başka,başka,True
+olması,olması,olması,True
+kişi,kişi,kişi,True
+devlet,devlet,devlet,True
+bunun,bunu | n,bunun,False
+biz,biz,biz,True
+eden,eden,eden,True
+şimdi,şimdi,şimdi,True
+bin,bin,bin,True
+kadın,kadın,kadın,True
+yıl,yıl,yıl,True
+ilgili,ilgili,ilgili,True
+öyle,öyle,öyle,True
+falan,falan,falan,True
+sen,sen,sen,True
+yaptığı,yaptığı,yaptığı,True
+yapılan,yapıl | an,yapıl | an,True
+tam,tam,tam,True
+bana,bana,bana,True
+sahip,sahip,sahip,True
+olsa,olsa,ol | sa,False
+doğru,doğru,doğru,True
+türkiye,türkiye,türkiye,True
+bazı,bazı,bazı,True
+yüksek,yüksek,yüksek,True
+olmak,olmak,olmak,True
+ayrıca,ayrıca,ayrıca,True
+para,para,para,True
+yönelik,yönelik,yönelik,True
+uzun,uzun,uzun,True
+dedi,dedi,dedi,True
+olabilir,olabilir,olabilir,True
+farklı,farklı,farklı,True
+siz,siz,siz,True
+biraz,biraz,bir | az,False
+durum,durum,durum,True
+alan,alan,alan,True
+iran,iran,iran,True
+bizim,bizim,bizim,True
+sosyal,sosyal,sosyal,True
+tl,tl,tl,True
+ortaya,orta | ya,orta | ya,True
+hiçbir,hiçbir,hiçbir,True
+ülke,ülke,ülke,True
+kötü,kötü,kötü,True
+olacak,olacak,olacak,True
+kabul,kabul,kabul,True
+buna,buna,bu | na,False
+etti,etti,etti,True
+gelen,gelen,gelen,True
+insanlar,insanlar,insan | lar,False
+ilişkin,ilişki | n,ilişki | n,True
+olmayan,olmayan,olmayan,True
+an,an,an,True
+belki,belki,belki,True
+ifade,ifade,ifade,True
+hatta,hatta,hat | ta,False
+yerine,yer | ine,yer | ine,True
+savunma,savunma,savunma,True
+geri,geri,geri,True
+bence,bence,bence,True
+bugün,bugün,bugün,True
+dünya,dünya,dünya,True
+burada,burada,burada,True
+birlikte,birlikte,birlikte,True
+güvenlik,güven | lik,güven | lik,True
+gerçekten,gerçek | ten,gerçek | ten,True
+hava,hava,hava,True
+işte,işte,işte,True
+hala,hal | a,hala,False
+beni,ben | i,ben | i,True
+israilin,israil | in,israil | in,True
+savaş,savaş,savaş,True
+maç,maç,maç,True
+bunlar,bunlar,bun | lar,False
+deneme,deneme,deneme,True
+geçen,geçen,geç | en,False
+özellikle,özellikle,özellikle,True
+geldi,geldi,geldi,True
+onu,onu,onu,True
+ardından,ardın | dan,ard | ından,False
+oy,oy,oy,True
+herkes,herkes,herkes,True
+oluyor,oluyor,oluyor,True
+açıklamada,açıklama | da,açıklam | ada,False
+genel,genel,genel,True
+hep,hep,hep,True
+nedeniyle,neden | iyle,neden | iyle,True
+sene,sene,sene,True
+gereken,gereken,gerek | en,False
+avrupa,avrupa,avrupa,True
+askeri,asker | i,asker | i,True
+abdnin,abd | nin,abd | nin,True
+konusunda,konu | sunda,konusunda,False
+edilen,edilen,edilen,True
+gerek,gerek,gerek,True
+rağmen,rağmen,rağ | men,False
+yapan,yapan,yapan,True
+belli,belli,belli,True
+bütün,bütün,bütün,True
+vs,vs,vs,True
+bakanı,bakan | ı,bakan | ı,True
+ediyor,ediyor,ediyor,True
+ikinci,ikinci,ikinci,True
+kendini,kendi | ni,kendin | i,False
+özel,özel,özel,True
+mu,mu,mu,True
+eski,eski,eski,True
+the,the,the,True
+etmek,etmek,etmek,True
+eğer,eğer,eğer,True
+üzerine,üzerine,üzerine,True
+elde,elde,el | de,False
+üzere,üzer | e,üzere,False
+lazım,lazım,lazım,True
+ülkenin,ülke | nin,ülke | nin,True
+kez,kez,kez,True
+ay,ay,ay,True
+yakın,yakın,yakın,True
+vardı,vardı,vard | ı,False
+geliyor,geliyor,gel | iyor,False
+erkek,erkek,erkek,True
+açık,açık,açık,True
+yol,yol,yol,True
+ın,ın,ın,True
+vardır,var | dır,var | dır,True
+lan,lan,lan,True
+su,su,su,True
+altında,alt | ında,altında,False
+anda,anda,an | da,False
+rusya,rusya,rusya,True
+olup,olup,olup,True
+türkiyenin,türkiye | nin,türkiye | nin,True
+kimse,kimse,kimse,True
+sürekli,süre | kli,sürekli,False
+zor,zor,zor,True
+üzerinde,üzer | inde,üzerinde,False
+evet,evet,evet,True
+yoksa,yoksa,yok | sa,False
+takım,takım,takım,True
+yüzden,yüz | den,yüz | den,True
+fakat,fakat,fakat,True
+ülkede,ülke | de,ülke | de,True
+olmuş,olmuş,olmuş,True
+hafta,hafta,hafta,True
+varsa,var | sa,varsa,False
+kişinin,kişinin,kişi | nin,False
+dışişleri,dış | işleri,dış | iş | leri,False
+değildir,değil | dir,değildir,False
+orta,orta,orta,True
+hemen,hemen,hemen,True
+edit,edit,edit,True
+kim,kim,kim,True
+yeniden,yeni | den,yeni | den,True
+çocuk,çocuk,çocuk,True
+aslında,aslında,asl | ında,False
+tane,tane,tane,True
+pek,pek,pek,True
+onun,onun,onun,True
+uluslararası,uluslararası,uluslararası,True
+trumpın,trump | ın,trump | ın,True
+ev,ev,ev,True
+ciddi,ciddi,cidd | i,False
+tekrar,tekrar,tekrar,True
+yere,yer | e,yer | e,True
+olmaz,olmaz,olma | z,False
+yaklaşık,yaklaşık,yaklaşık,True
+ekonomik,ekonomi | k,ekonomi | k,True
+söz,söz,söz,True
+başlık,başlık,baş | lık,False
+barış,barış,barış,True
+insanların,insan | ların,insan | ların,True
+iranın,iran | ın,iran | ın,True
+allah,allah,allah,True
+size,siz | e,siz | e,True
+normal,normal,normal,True
+bak,bak,bak,True
+demek,demek,de | mek,False
+kamu,kamu,kamu,True
+bağlı,bağlı,bağlı,True
+ele,ele,ele,True
+bulunan,bulun | an,bulun | an,True
+milyon,milyon,milyon,True
+tabi,tabi,tabi,True
+hakkında,hakk | ında,hakk | ında,True
+yaptı,yaptı,yaptı,True
+gerçek,gerçek,gerçek,True
+yılında,yıl | ında,yıl | ında,True
+ır,ır,ır,True
+suriye,suriye,suriye,True
+eğitim,eğitim,eğitim,True
+gelir,gelir,gelir,True
+hedef,hedef,hedef,True
+ona,ona,ona,True
+arasındaki,ara | sında | ki,arasında | ki,False
+hayatını,hayat | ını,hayat | ını,True
+yüzde,yüz | de,yüz | de,True
+sizin,siz | in,siz | in,True
+herhangi,her | hangi,her | hangi,True
+gece,gece,gece,True
+dışında,dış | ında,dışında,False
+sana,sana,sana,True
+üç,üç,üç,True
+ukrayna,ukrayna,ukrayna,True
+diyor,diyor,diyor,True
+olay,olay,olay,True
+sorun,sorun,sorun,True
+bilgi,bilgi,bilgi,True
+türkiyede,türkiye | de,türkiye | de,True
+yerde,yerde,yer | de,False
+kullandı,kullan | dı,kullan | dı,True
+dün,dün,dün,True
+kısa,kısa,kısa,True
+bize,biz | e,biz | e,True
+süre,süre,süre,True
+cumhurbaşkanı,cumhur | başkanı,cumhurbaşkanı,False
+durumda,durumda,durum | da,False
+dikkat,dikkat,dikkat,True
+siyasi,siyasi,siyasi,True
+tespit,tespit,tespit,True
+dahil,dahil,dahil,True
+küçük,küçük,küçük,True
+in,in,in,True
+senin,se | nin,se | nin,True
+amk,amk,am | k,False
+yanlış,yanlış,yanlış,True
+nükleer,nükleer,nükleer,True
+veren,ver | en,veren,False
+diyen,diyen,diye | n,False
+ettiği,ettiği,ettiği,True
+seni,seni,seni,True
+el,el,el,True
+kontrol,kontrol,kontrol,True
+of,of,of,True
+zamanda,zaman | da,zaman | da,True
+tamamen,tamam | en,tamam | en,True
+öğretmen,öğretmen,öğretmen,True
+birçok,bir | çok,bir | çok,True
+gol,gol,gol,True
+fark,fark,fark,True
+te,te,te,True
+şeyler,şey | ler,şeyler,False
+zorunda,zorunda,zorunda,True
+donald,don | ald,don | ald,True
+uygun,uygun,uygu | n,False
+sağlık,sağlık,sağ | lık,False
+arada,arada,arada,True
+boyunca,boyu | nca,boyunca,False
+kendisi,kendi | si,kendi | si,True
+gazze,gazze,gazze,True
+söyledi,söyledi,söyle | di,False
+kaç,kaç,kaç,True
+al,al,al,True
+fidan,fi | dan,fi | dan,True
+yoktur,yok | tur,yok | tur,True
+dair,dair,dair,True
+yap,yap,yap,True
+edildi,edildi,edildi,True
+dünyanın,dünya | nın,dünya | nın,True
+net,net,net,True
+olmadığı,olma | dığı,olma | dığı,True
+süresi,süre | si,süre | si,True
+ait,ait,ait,True
+karar,karar,karar,True
+yana,yana,yana,True
+be,be,be,True
+dergisi,der | gisi,dergisi,False
+konusu,konusu,konusu,True
+şeyi,şeyi,şey | i,False
+ara,ara,ara,True
+ayrı,ayrı,ayrı,True
+yapmak,yap | mak,yap | mak,True
+konu,konu,konu,True
+hale,hal | e,hale,False
+çıkan,çık | an,çık | an,True
+bundan,bundan,bu | ndan,False
+medya,medya,medya,True
+güçlü,güçlü,güçlü,True
+üst,üst,üst,True
+onlar,onlar,on | lar,False
+ceza,ceza,ceza,True
+sanki,sanki,san | ki,False
+haber,haber,haber,True
+günü,gün | ü,günü,False
+verdiği,verdiği,ver | diği,False
+iddia,iddia,iddia,True
+mesela,mesela,mesela,True
+saat,saat,saat,True
+destek,destek,destek,True
+den,den,den,True
+kadınlar,kadın | lar,kadın | lar,True
+düşünüyorum,düşünüyorum,düşün | ü | yorum,False
+türlü,türlü,türlü,True
+birkaç,bir | kaç,birkaç,False
+kız,kız,kız,True
+çoğu,çoğu,çoğu,True
+ulan,ulan,ulan,True
+konuda,konu | da,konu | da,True
+başına,baş | ına,baş | ına,True
+hak,hak,hak,True
+saldırı,saldırı,saldırı,True
+bizi,biz | i,bizi,False
+cok,cok,cok,True
+mümkün,mümkün,mümkün,True
+asla,asla,asla,True
+icin,ici | n,ici | n,True
+sizi,siz | i,sizi,False
+hangi,hangi,hangi,True
+ana,ana,ana,True
+şekil,şekil,şekil,True
+temel,temel,temel,True
+ediyorum,ediyor | um,ediyor | um,True
+şöyle,şöyle,şöyle,True
+takip,takip,takip,True
+ortak,ortak,ortak,True
+gelecek,gelecek,gel | ecek,False
+seçim,seçim,seçim,True
+şeklinde,şekl | inde,şekl | inde,True
+kendine,kendi | ne,kendi | ne,True
+üzerinden,üzer | inden,üzerinde | n,False
+kolay,kolay,kolay,True
+insanın,insan | ın,insan | ın,True
+maçı,maç | ı,maç | ı,True
+öne,öne,öne,True
+çalışma,çalışma,çalışma,True
+bulundu,bulundu,bulundu,True
+ulusal,ulu | sal,ulusal,False
+çalışan,çalışan,çalışan,True
+adamın,adam | ın,adam | ın,True
+hakem,hakem,hakem,True
+açısından,açı | sından,açı | sından,True
+not,not,not,True
+boş,boş,boş,True
+umarım,umarım,umarım,True
+enerji,enerji,enerji,True
+durumu,durumu,durum | u,False
+ifadelerini,ifade | lerini,ifade | lerini,True
+millet,millet,millet,True
+kalan,kalan,kalan,True
+bazen,baz | en,bazen,False
+belirtti,belirt | ti,belirt | ti,True
+dolar,dolar,do | lar,False
+sonuç,sonuç,sonuç,True
+verdi,verdi,verdi,True
+sonucu,sonucu,sonucu,True
+yönetimi,yönetim | i,yönetim | i,True
+arkadaş,arkadaş,arkadaş,True
+sonrası,sonra | sı,sonra | sı,True
+yardım,yardım,yardım,True
+toplam,toplam,toplam,True
+eder,eder,eder,True
+mevcut,mevcut,mevcut,True
+bunların,bunlar | ın,bun | ların,False
+sonunda,son | unda,son | unda,True
+ağır,ağır,ağır,True
+and,and,and,True
+düşük,düşük,düşük,True
+yapıyor,yapıyor,yapıyor,True
+aşırı,aşırı,aşırı,True
+yanında,yan | ında,yan | ında,True
+dile,dile,dile,True
+sahibi,sahibi,sahibi,True
+terör,terör,terör,True
+sayısı,sayı | sı,sayısı,False
+sanırım,sanırım,sanırım,True
+açıklama,açıklama,açıklam | a,False
+işi,işi,işi,True
+iç,iç,iç,True
+gerekiyor,gerekiyor,gerek | iyor,False
+mutlu,mutlu,mutlu,True
+alt,alt,alt,True
+göz,göz,göz,True
+beyaz,beyaz,beyaz,True
+hepsi,hep | si,hep | si,True
+ında,ında,ında,True
+neyse,neyse,neyse,True
+hizmet,hizmet,hizmet,True
+yandan,yan | dan,yan | dan,True
+mart,mart,mart,True
+dolayı,dolayı,dolay | ı,False
+çıktı,çıktı,çıktı,True
+arkadaşlar,arkadaş | lar,arkadaş | lar,True
+tercih,tercih,tercih,True
+istanbul,istanbul,istanbul,True
+yüzünden,yüzü | nden,yüzünden,False
+hayat,hayat,hayat,True
+gerektiğini,gerektiği | ni,gerekti | ğini,False
+kaldı,kal | dı,kald | ı,False
+ortalama,ortalama,ortalama,True
+merak,merak,mer | ak,False
+alıp,al | ıp,al | ıp,True
+önceki,önce | ki,önce | ki,True
+spoiler,spoi | ler,s | poi | ler,False
+irana,iran | a,iran | a,True
+herkesin,herkes | in,herkes | in,True
+akp,akp,akp,True
+içerisinde,içeris | inde,içerisinde,False
+işin,iş | in,iş | in,True
+kart,kart,kart,True
+rahat,rahat,rahat,True
+kendisine,kendi | sine,kendi | sine,True
+adamlar,adam | lar,adam | lar,True
+muhtemelen,muhtemelen,muhtemelen,True
+niye,niye,n | iye,False
+toprak,toprak,toprak,True
+başladı,baş | ladı,başlad | ı,False
+deniz,deniz,deniz,True
+bunları,bunlar | ı,bun | ları,False
+ha,ha,ha,True
+gerekir,gerekir,gerek | ir,False
+ye,ye,ye,True
+oldukça,olduk | ça,oldu | kça,False
+model,model,model,True
+resmi,resmi,resmi,True
+fenerbahçe,fenerbahçe,fenerbahçe,True
+galatasaray,galatasaray,galatasaray,True
+rus,rus,rus,True
+zarar,zarar,zarar,True
+can,can,can,True
+başbakanı,başbakan | ı,başbakan | ı,True
+on,on,on,True
+gayet,gayet,ga | yet,False
+olmadığını,olma | dığını,olma | dığını,True
+sabah,sabah,sabah,True
+hadi,hadi,had | i,False
+kere,kere,kere,True
+dakika,dakika,dakika,True
+dönemde,dönem | de,dönem | de,True
+almak,al | mak,al | mak,True
+sıra,sıra,sıra,True
+orada,orada,ora | da,False
+benzer,benzer,benzer,True
+petrol,petrol,pet | rol,False
+verilen,ver | ilen,veril | en,False
+araç,araç,araç,True
+saçma,saçma,saçma,True
+dizi,dizi,dizi,True
+doğal,doğ | al,doğa | l,False
+hayır,hayır,hayır,True
+çin,çin,çin,True
+tabii,tabii,tabii,True
+henüz,henüz,henüz,True
+nedir,ne | dir,ne | dir,True
+et,et,et,True
+araba,araba,araba,True
+aldığı,aldığı,aldığı,True
+aç,aç,aç,True
+bakanlığı,bakanlığı,bakanlığı,True
+nedenle,neden | le,neden | le,True
+tür,tür,tür,True
+kendisini,kendi | sini,kendi | sini,True
+gidip,gid | ip,gidip,False
+halinde,hal | inde,hal | inde,True
+film,film,film,True
+olursa,olur | sa,olursa,False
+altına,alt | ına,alt | ına,True
+lira,lira,lira,True
+sarı,sarı,sarı,True
+aldı,aldı,aldı,True
+cevap,cevap,cevap,True
+işe,işe,işe,True
+ının,ının,ının,True
+ına,ına,ına,True
+batı,batı,batı,True
+hazır,hazır,hazır,True
+gelmiş,gelmiş,gel | miş,False
+sebep,sebep,sebep,True
+mücadele,mücadele,mücadele,True
+kesin,kesin,kesin,True
+insanları,insan | ları,insan | ları,True
+ders,ders,ders,True
+üniversitesi,üniversite | si,üniversitesi,False
+kırmızı,kırmızı,kırmızı,True
+araştırma,araştırma,araştırma,True
+beri,beri,beri,True
+ateşkes,ateşkes,ateş | kes,False
+puan,puan,puan,True
+toplum,toplum,toplum,True
+abi,abi,abi,True
+anne,anne,anne,True
+silah,silah,silah,True
+başkan,başkan,başkan,True
+başarılı,başarı | lı,başarı | lı,True
+der,der,der,True
+savaşın,savaşı | n,savaş | ın,False
+ederek,ederek,ederek,True
+tablo,tablo,tablo,True
+hareket,hareket,hareket,True
+araya,ara | ya,ara | ya,True
+oyun,oyun,oyun,True
+ab,ab,ab,True
+gerekli,gerekli,gerek | li,False
+yerel,yerel,yerel,True
+tanım,tanım,tanım,True
+doğu,doğu,doğu,True
+sivil,sivil,sivil,True
+sona,son | a,son | a,True
+aile,aile,aile,True
+uzak,uzak,uzak,True
+amacıyla,amac | ıyla,amac | ıyla,True
+parti,parti,parti,True
+yoğun,yoğun,yoğun,True
+tepki,tepki,tepki,True
+ankara,ankara,ankara,True
+kadının,kadın | ın,kadın | ın,True
+yemek,yemek,yemek,True
+beraber,beraber,beraber,True
+yıllık,yıl | lık,yıl | lık,True
+öğrencilerin,öğrenci | lerin,öğrenci | lerin,True
+halde,halde,hal | de,False
+kesinlikle,kesinlikle,kesin | likle,False
+güç,güç,güç,True
+yabancı,yabancı,yabanc | ı,False
+hızlı,hız | lı,hız | lı,True
+gelip,gel | ip,gel | ip,True
+süreli,süre | li,süre | li,True
+değer,değer,değer,True
+lideri,lider | i,lider | i,True
+gösteren,göster | en,göster | en,True
+izin,izin,izin,True
+maalesef,maalesef,maalesef,True
+futbol,futbol,futbol,True
+birisi,birisi,birisi,True
+erdoğan,erdoğan,erdoğan,True
+geniş,geniş,geniş,True
+acaba,acaba,aca | ba,False
+bölgede,bölge | de,bölge | de,True
+dahi,dahi,dahi,True
+haline,haline,haline,True
+çözüm,çözüm,çözüm,True
+polis,polis,polis,True
+yaşanan,yaşan | an,yaşanan,False
+neredeyse,neredeyse,neredeyse,True
+giden,giden,gi | den,False
+deprem,deprem,deprem,True
+dış,dış,dış,True
+bilmiyorum,bilmiyor | um,bilmiyor | um,True
+gazzede,gazze | de,gazze | de,True
+diyerek,di | yerek,diyerek,False
+sırasında,sıra | sında,sıra | sında,True
+tarihi,tarihi,tarih | i,False
+teknik,teknik,teknik,True
+sınıf,sınıf,sınıf,True
+bakın,bakın,bakın,True
+milli,milli,milli,True
+adım,adım,adım,True
+insanı,insan | ı,insan | ı,True
+edecek,edecek,edecek,True
+gs,gs,gs,True
+edip,edip,edip,True
+top,top,top,True
+başta,baş | ta,baş | ta,True
+etkisi,etkisi,etki | si,False
+üstüne,üstün | e,üstün | e,True
+çalışmada,çalışma | da,çalışma | da,True
+olumlu,olum | lu,olu | mlu,False
+kara,kara,kara,True
+ilan,ilan,ilan,True
+günlük,gün | lük,gün | lük,True
+olma,olma,olma,True
+ses,ses,ses,True
+demiş,demiş,demiş,True
+kat,kat,kat,True
+isteyen,iste | yen,isteyen,False
+asıl,asıl,asıl,True
+güney,güney,güney,True
+sebebi,sebebi,sebeb | i,False
+ettiğini,ettiğini,ettiğini,True
+olduğuna,olduğu | na,olduğu | na,True
+yıldır,yıldır,yıl | dır,False
+önünde,ön | ünde,ön | ünde,True
+yeterli,yeter | li,yeterli,False
+konuştu,konuş | tu,konuş | tu,True
+he,he,he,True
+sık,sık,sık,True
+halk,halk,halk,True
+nato,nato,nato,True
+tehdit,tehdit,tehdi | t,False
+serbest,serbest,serbest,True
+rusyanın,rusya | nın,rusya | nın,True
+çal,çal,çal,True
+yazık,yazık,yazı | k,False
+nin,nin,nin,True
+çeşitli,çeşitli,çeşitli,True
+tip,tip,tip,True
+dünyada,dünya | da,dünya | da,True
+yapmış,yapmış,yapmış,True
+resmen,resmen,res | men,False
+bakan,bakan,bakan,True
+bakalım,bakalım,bak | alım,False
+olmuştur,olmuş | tur,olmuş | tur,True
+küresel,küre | sel,küre | sel,True
+ık,ık,ık,True
+to,to,to,True
+kullanılan,kullanıl | an,kullanıl | an,True
+aday,aday,aday,True
+sonrasında,sonra | sında,sonra | sında,True
+ince,ince,ince,True
+sayı,sayı,sayı,True
+adamı,adamı,adam | ı,False
+açıkladı,açıkla | dı,açık | ladı,False
+filistin,filistin,filistin,True
+uygulama,uygulama,uygulama,True
+dedim,dedim,de | dim,False
+akşam,akşam,akşam,True
+suç,suç,suç,True
+dolayısıyla,dolayı | sıyla,dolay | ısı | yla,False
+dışı,dışı,dışı,True
+edilmesi,edilmesi,edilme | si,False
+istiyorum,istiyor | um,isti | yorum,False
+savaşı,savaşı,savaşı,True
+adına,ad | ına,ad | ına,True
+füze,füze,füze,True
+onların,on | ların,on | ların,True
+peki,peki,peki,True
+başında,baş | ında,baş | ında,True
+putin,putin,putin,True
+yalnız,yalnız,yalnız,True
+bm,bm,bm,True
+elektrik,e | lektrik,elektrik,False
+basit,basit,basit,True
+insani,insan | i,insan | i,True
+veriyor,ver | iyor,veriyor,False
+denk,den | k,den | k,True
+tamam,tamam,tamam,True
+ordusu,ordusu,ordusu,True
+bilimsel,bilim | sel,bilim | sel,True
+bildirildi,bildir | ildi,bildiril | di,False
+işaret,işaret,işaret,True
+sistemi,sistem | i,sistem | i,True
+ali,ali,ali,True
+ileri,i | leri,i | leri,True
+milyar,milyar,milyar,True
+yaş,yaş,yaş,True
+evde,ev | de,ev | de,True
+örnek,örnek,örnek,True
+etmeye,etmeye,etme | ye,False
+şampiyon,şampiyon,şampiyon,True
+talep,talep,talep,True
+yapar,yapar,yapar,True
+arası,ara | sı,arası,False
+mal,mal,mal,True
+ederim,ederim,eder | im,False
+hata,hata,hata,True
+içine,için | e,için | e,True
+etmiş,etmiş,etmiş,True
+belirtildi,belirt | ildi,belirtil | di,False
+öğretim,öğret | im,öğretim,False
+alınan,alın | an,alın | an,True
+beş,beş,beş,True
+çocuğu,çocuğu,çocuğu,True
+adı,adı,adı,True
+erken,erken,erken,True
+kardeşim,kardeşim,kardeş | im,False
+etme,etme,etme,True
+olumsuz,olum | suz,olumsuz,False
+edilmiştir,edilmiş | tir,edil | miştir,False
+kar,kar,kar,True
+problem,problem,problem,True
+nefret,nefret,nefret,True
+haklı,haklı,hak | lı,False
+meydana,meydana,meydana,True
+tahmin,tahmin,tahmin,True
+ingiltere,ingiltere,ingiltere,True
+madde,madde,madde,True
+yaşam,yaşam,yaşam,True
+öğrenci,öğrenci,öğrenci,True
+geçmiş,geçmiş,geç | miş,False
+sonu,sonu,son | u,False
+öte,öte,öte,True
+sistem,sistem,sistem,True
+yarın,yarın,yarın,True
+yıllar,yıllar,yıllar,True
+bok,bok,bok,True
+onları,onları,on | ları,False
+belirterek,belirt | erek,belirt | erek,True
+grup,grup,grup,True
+gitti,gitt | i,gitti,False
+önüne,önüne,önüne,True
+belirli,belir | li,belirli,False
+sigara,sigara,sigar | a,False
+sayesinde,saye | sinde,saye | sinde,True
+ark,ar | k,ark,False
+geçti,geçti,geçti,True
+sonraki,sonra | ki,sonra | ki,True
+keşke,keşke,keş | ke,False
+çıkar,çıkar,çıkar,True
+yerinde,yer | inde,yer | inde,True
+güvenli,güven | li,güvenli,False
+gücü,gücü,gücü,True
+gizli,gizli,gizli,True
+içi,içi,içi,True
+şehir,şehir,şehir,True
+yeri,yeri,yer | i,False
+telefon,telefon,telefon,True
+yan,yan,yan,True
+ölüm,ölüm,ölüm,True
+yazar,yazar,yazar,True
+dolu,dolu,dolu,True
+bildirdi,bildir | di,bildir | di,True
+yavaş,yavaş,yavaş,True
+zira,zira,zir | a,False
+saygı,saygı,saygı,True
+gider,gider,gider,True
+vb,vb,vb,True
+soru,soru,soru,True
+işler,iş | ler,işler,False
+kapsamında,kapsam | ında,kapsam | ında,True
+bölge,bölge,bölge,True
+sezon,sezon,sezon,True
+laf,laf,laf,True
+arap,arap,arap,True

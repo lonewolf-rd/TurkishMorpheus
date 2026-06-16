@@ -1,0 +1,4 @@
+encoder,dim,MAP,MRR,recall_at_1,recall_at_5,precision_at_R,purity_at_5
+morpheus,320,0.8542,1.0,1.0,1.0,0.8333,1.0
+berturk,768,0.4893,0.8507,0.7917,0.5,0.441,0.5
+bge-m3,1024,0.801,0.9792,0.9583,0.9,0.7812,0.9

@@ -1,0 +1,7 @@
+task,encoder,n,classes,probe_acc
+number,morpheus,854,2,0.5925
+number,berturk,854,2,0.9508
+number,bge-m3,854,2,0.9075
+case,morpheus,395,6,0.2152
+case,berturk,395,6,0.8886
+case,bge-m3,395,6,0.8127

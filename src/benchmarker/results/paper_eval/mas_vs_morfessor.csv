@@ -1,0 +1,5 @@
+stratum,n_words,morpheus_mas,bpe-64k_mas,byte_bpe-64k_mas,unigram-64k_mas,wordpiece-64k_mas,turkish-tokenizer_mas
+seen,800,67.5,0.5,1.0,3.0,2.0,39.0
+oov,400,68.98,54.57,54.7,59.85,37.45,45.43
+curated_oov,10,74.19,48.39,48.39,38.71,38.71,64.52
+nonce,5,55.56,50.0,50.0,72.22,44.44,61.11

@@ -234,3 +234,8 @@ __marimo__/
 /hf_space/
 /evaluations/paper_eval/
 /evaluations/
+/paper/results/
+/paper/
+/paper/results/lm_eval/full/
+/paper/results/lm_eval/inference/
+/paper/results/paper_eval/
