@@ -1,0 +1,4 @@
+encoder,dim,macro_f1,entity_micro_f1
+morpheus,320,0.479,0.4812
+berturk,768,0.7912,0.7968
+bge-m3,1024,0.7636,0.7679

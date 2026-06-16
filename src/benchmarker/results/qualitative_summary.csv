@@ -1,0 +1,8 @@
+tokenizer,root_pct,count_pct,len_pct,exact_pct
+morpheus,66.0,46.0,38.0,38.0
+morfessor,46.0,46.0,26.0,26.0
+bpe-64k,36.0,22.0,16.0,16.0
+unigram-64k,32.0,20.0,14.0,14.0
+wordpiece-64k,18.0,22.0,20.0,14.0
+byte_bpe-64k,32.0,24.0,12.0,12.0
+turkish-tokenizer,64.0,92.0,78.0,10.0

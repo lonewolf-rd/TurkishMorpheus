@@ -1,0 +1,8 @@
+model,n_words,lemma_prefix_rate,verb_lemma_prefix_rate,noun_lemma_prefix_rate,root_in_segments_rate,first_segment_match_rate,exact_suffix_count_rate,mean_suffix_count_diff,mean_abs_suffix_count_diff
+morfessor,856,0.7815,0.7258,0.8225,0.354,0.354,0.2605,-0.5958,1.0257
+morpheus,856,0.7617,0.672,0.8288,0.4813,0.4813,0.2465,-0.6893,1.0537
+turkish-tokenizer,856,0.7114,0.5699,0.8205,0.6332,0.6308,0.2734,-0.4965,1.0315
+bpe-64k,856,0.653,0.664,0.6409,0.4731,0.4731,0.1005,-1.5409,1.604
+byte_bpe-64k,856,0.6437,0.6613,0.6263,0.4603,0.4603,0.1075,-1.5175,1.5853
+unigram-64k,856,0.6063,0.4301,0.739,0.4322,0.4252,0.0888,-1.5783,1.6437
+wordpiece-64k,856,0.3329,0.2849,0.3653,0.2617,0.2617,0.1051,-1.5502,1.5993

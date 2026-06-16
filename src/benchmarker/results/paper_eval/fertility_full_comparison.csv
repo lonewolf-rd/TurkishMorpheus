@@ -1,0 +1,5 @@
+stratum,n_words,morfessor_fertility,morfessor_compression,morpheus_fertility,morpheus_compression,bpe-64k_fertility,bpe-64k_compression,byte_bpe-64k_fertility,byte_bpe-64k_compression,unigram-64k_fertility,unigram-64k_compression,wordpiece-64k_fertility,wordpiece-64k_compression,turkish-tokenizer_fertility,turkish-tokenizer_compression
+seen,800,1.25,4.239,1.3025,4.0681,1.0025,5.2855,1.0037,5.279,1.015,5.2204,1.005,5.2724,1.2325,4.2992
+oov,400,2.9425,2.5276,2.8075,2.6492,2.625,2.8333,2.6875,2.7674,2.82,2.6374,2.37,3.1382,2.675,2.7804
+curated_oov,10,4.1,4.2683,4.1,4.2683,2.8,6.25,2.9,6.0345,2.6,6.7308,2.6,6.7308,4.9,3.5714
+nonce,5,4.6,2.5652,3.8,3.1053,3.8,3.1053,3.8,3.1053,4.0,2.95,3.4,3.4706,4.8,2.4583

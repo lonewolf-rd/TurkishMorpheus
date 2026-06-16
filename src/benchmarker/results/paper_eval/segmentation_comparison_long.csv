@@ -1,0 +1,414 @@
+stratum,word,n_chars,tokenizer,segmentation,n_segments
+curated_seen,ev,2,morfessor,ev,1
+curated_seen,ev,2,morpheus,ev,1
+curated_seen,ev,2,bpe-64k,ev,1
+curated_seen,ev,2,byte_bpe-64k,ev,1
+curated_seen,ev,2,unigram-64k,ev,1
+curated_seen,ev,2,wordpiece-64k,ev,1
+curated_seen,ev,2,turkish-tokenizer,ev,1
+curated_seen,kitap,5,morfessor,kitap,1
+curated_seen,kitap,5,morpheus,kitap,1
+curated_seen,kitap,5,bpe-64k,kitap,1
+curated_seen,kitap,5,byte_bpe-64k,kitap,1
+curated_seen,kitap,5,unigram-64k,kitap,1
+curated_seen,kitap,5,wordpiece-64k,kitap,1
+curated_seen,kitap,5,turkish-tokenizer,kitap,1
+curated_seen,su,2,morfessor,su,1
+curated_seen,su,2,morpheus,su,1
+curated_seen,su,2,bpe-64k,su,1
+curated_seen,su,2,byte_bpe-64k,su,1
+curated_seen,su,2,unigram-64k,su,1
+curated_seen,su,2,wordpiece-64k,su,1
+curated_seen,su,2,turkish-tokenizer,su,1
+curated_seen,ay,2,morfessor,ay,1
+curated_seen,ay,2,morpheus,ay,1
+curated_seen,ay,2,bpe-64k,ay,1
+curated_seen,ay,2,byte_bpe-64k,ay,1
+curated_seen,ay,2,unigram-64k,ay,1
+curated_seen,ay,2,wordpiece-64k,ay,1
+curated_seen,ay,2,turkish-tokenizer,ay,1
+curated_seen,göz,3,morfessor,göz,1
+curated_seen,göz,3,morpheus,göz,1
+curated_seen,göz,3,bpe-64k,göz,1
+curated_seen,göz,3,byte_bpe-64k,göz,1
+curated_seen,göz,3,unigram-64k,göz,1
+curated_seen,göz,3,wordpiece-64k,goz,1
+curated_seen,göz,3,turkish-tokenizer,göz,1
+curated_seen,baş,3,morfessor,baş,1
+curated_seen,baş,3,morpheus,baş,1
+curated_seen,baş,3,bpe-64k,baş,1
+curated_seen,baş,3,byte_bpe-64k,baş,1
+curated_seen,baş,3,unigram-64k,baş,1
+curated_seen,baş,3,wordpiece-64k,bas,1
+curated_seen,baş,3,turkish-tokenizer,baş,1
+curated_seen,el,2,morfessor,el,1
+curated_seen,el,2,morpheus,el,1
+curated_seen,el,2,bpe-64k,el,1
+curated_seen,el,2,byte_bpe-64k,el,1
+curated_seen,el,2,unigram-64k,el,1
+curated_seen,el,2,wordpiece-64k,el,1
+curated_seen,el,2,turkish-tokenizer,el,1
+curated_seen,gün,3,morfessor,gün,1
+curated_seen,gün,3,morpheus,gün,1
+curated_seen,gün,3,bpe-64k,gün,1
+curated_seen,gün,3,byte_bpe-64k,gün,1
+curated_seen,gün,3,unigram-64k,gün,1
+curated_seen,gün,3,wordpiece-64k,gun,1
+curated_seen,gün,3,turkish-tokenizer,gün,1
+curated_seen,yıl,3,morfessor,yıl,1
+curated_seen,yıl,3,morpheus,yıl,1
+curated_seen,yıl,3,bpe-64k,yıl,1
+curated_seen,yıl,3,byte_bpe-64k,yıl,1
+curated_seen,yıl,3,unigram-64k,yıl,1
+curated_seen,yıl,3,wordpiece-64k,yıl,1
+curated_seen,yıl,3,turkish-tokenizer,yıl,1
+curated_seen,iş,2,morfessor,iş,1
+curated_seen,iş,2,morpheus,iş,1
+curated_seen,iş,2,bpe-64k,iş,1
+curated_seen,iş,2,byte_bpe-64k,iş,1
+curated_seen,iş,2,unigram-64k,iş,1
+curated_seen,iş,2,wordpiece-64k,is,1
+curated_seen,iş,2,turkish-tokenizer,iş,1
+curated_suffix,ev,2,morfessor,ev,1
+curated_suffix,ev,2,morpheus,ev,1
+curated_suffix,ev,2,bpe-64k,ev,1
+curated_suffix,ev,2,byte_bpe-64k,ev,1
+curated_suffix,ev,2,unigram-64k,ev,1
+curated_suffix,ev,2,wordpiece-64k,ev,1
+curated_suffix,ev,2,turkish-tokenizer,ev,1
+curated_suffix,evler,5,morfessor,ev | ler,2
+curated_suffix,evler,5,morpheus,ev | ler,2
+curated_suffix,evler,5,bpe-64k,evler,1
+curated_suffix,evler,5,byte_bpe-64k,evler,1
+curated_suffix,evler,5,unigram-64k,evler,1
+curated_suffix,evler,5,wordpiece-64k,evler,1
+curated_suffix,evler,5,turkish-tokenizer,ev | lar,2
+curated_suffix,evde,4,morfessor,ev | de,2
+curated_suffix,evde,4,morpheus,ev | de,2
+curated_suffix,evde,4,bpe-64k,evde,1
+curated_suffix,evde,4,byte_bpe-64k,evde,1
+curated_suffix,evde,4,unigram-64k,evde,1
+curated_suffix,evde,4,wordpiece-64k,evde,1
+curated_suffix,evde,4,turkish-tokenizer,ev | da,2
+curated_suffix,evden,5,morfessor,ev | den,2
+curated_suffix,evden,5,morpheus,ev | den,2
+curated_suffix,evden,5,bpe-64k,evden,1
+curated_suffix,evden,5,byte_bpe-64k,evden,1
+curated_suffix,evden,5,unigram-64k,evden,1
+curated_suffix,evden,5,wordpiece-64k,evden,1
+curated_suffix,evden,5,turkish-tokenizer,ev | dan,2
+curated_suffix,eve,3,morfessor,eve,1
+curated_suffix,eve,3,morpheus,eve,1
+curated_suffix,eve,3,bpe-64k,eve,1
+curated_suffix,eve,3,byte_bpe-64k,eve,1
+curated_suffix,eve,3,unigram-64k,eve,1
+curated_suffix,eve,3,wordpiece-64k,eve,1
+curated_suffix,eve,3,turkish-tokenizer,eve,1
+curated_suffix,evim,4,morfessor,evi | m,2
+curated_suffix,evim,4,morpheus,evi | m,2
+curated_suffix,evim,4,bpe-64k,evim,1
+curated_suffix,evim,4,byte_bpe-64k,evim,1
+curated_suffix,evim,4,unigram-64k,evim,1
+curated_suffix,evim,4,wordpiece-64k,evim,1
+curated_suffix,evim,4,turkish-tokenizer,ev | üm,2
+curated_suffix,evimiz,6,morfessor,ev | imiz,2
+curated_suffix,evimiz,6,morpheus,e | vimiz,2
+curated_suffix,evimiz,6,bpe-64k,evimiz,1
+curated_suffix,evimiz,6,byte_bpe-64k,evimiz,1
+curated_suffix,evimiz,6,unigram-64k,evimiz,1
+curated_suffix,evimiz,6,wordpiece-64k,evimiz,1
+curated_suffix,evimiz,6,turkish-tokenizer,ev | imiz,2
+curated_suffix,evimde,6,morfessor,evimde,1
+curated_suffix,evimde,6,morpheus,evi | m | de,3
+curated_suffix,evimde,6,bpe-64k,evimde,1
+curated_suffix,evimde,6,byte_bpe-64k,evimde,1
+curated_suffix,evimde,6,unigram-64k,evimde,1
+curated_suffix,evimde,6,wordpiece-64k,evimde,1
+curated_suffix,evimde,6,turkish-tokenizer,ev | imde,2
+curated_suffix,evlerimizde,11,morfessor,ev | ler | imizde,3
+curated_suffix,evlerimizde,11,morpheus,ev | leri | mizde,3
+curated_suffix,evlerimizde,11,bpe-64k,ev | lerimizde,2
+curated_suffix,evlerimizde,11,byte_bpe-64k,ev | lerimizde,2
+curated_suffix,evlerimizde,11,unigram-64k,evlerimiz | de,2
+curated_suffix,evlerimizde,11,wordpiece-64k,evleri | miz | de,3
+curated_suffix,evlerimizde,11,turkish-tokenizer,ev | lar | imiz | da,4
+curated_suffix,evlerimizdeki,13,morfessor,ev | leri | miz | deki,4
+curated_suffix,evlerimizdeki,13,morpheus,ev | ler | imiz | deki,4
+curated_suffix,evlerimizdeki,13,bpe-64k,ev | lerimiz | deki,3
+curated_suffix,evlerimizdeki,13,byte_bpe-64k,ev | lerimiz | deki,3
+curated_suffix,evlerimizdeki,13,unigram-64k,evlerimiz | deki,2
+curated_suffix,evlerimizdeki,13,wordpiece-64k,evleri | miz | deki,3
+curated_suffix,evlerimizdeki,13,turkish-tokenizer,ev | lar | imiz | deki,4
+curated_suffix,evlerimizdekiler,16,morfessor,ev | leri | miz | deki | ler,5
+curated_suffix,evlerimizdekiler,16,morpheus,ev | ler | imiz | deki | ler,5
+curated_suffix,evlerimizdekiler,16,bpe-64k,ev | lerimiz | dekiler,3
+curated_suffix,evlerimizdekiler,16,byte_bpe-64k,ev | lerimiz | dekiler,3
+curated_suffix,evlerimizdekiler,16,unigram-64k,evlerimiz | dekiler,2
+curated_suffix,evlerimizdekiler,16,wordpiece-64k,evleri | miz | dekiler,3
+curated_suffix,evlerimizdekiler,16,turkish-tokenizer,ev | lar | imiz | deki | lar,5
+curated_suffix,kitap,5,morfessor,kitap,1
+curated_suffix,kitap,5,morpheus,kitap,1
+curated_suffix,kitap,5,bpe-64k,kitap,1
+curated_suffix,kitap,5,byte_bpe-64k,kitap,1
+curated_suffix,kitap,5,unigram-64k,kitap,1
+curated_suffix,kitap,5,wordpiece-64k,kitap,1
+curated_suffix,kitap,5,turkish-tokenizer,kitap,1
+curated_suffix,kitaplar,8,morfessor,kitap | lar,2
+curated_suffix,kitaplar,8,morpheus,kitap | lar,2
+curated_suffix,kitaplar,8,bpe-64k,kitaplar,1
+curated_suffix,kitaplar,8,byte_bpe-64k,kitaplar,1
+curated_suffix,kitaplar,8,unigram-64k,kitaplar,1
+curated_suffix,kitaplar,8,wordpiece-64k,kitaplar,1
+curated_suffix,kitaplar,8,turkish-tokenizer,kitap | lar,2
+curated_suffix,kitapta,7,morfessor,kitap | ta,2
+curated_suffix,kitapta,7,morpheus,kitap | ta,2
+curated_suffix,kitapta,7,bpe-64k,kitapta,1
+curated_suffix,kitapta,7,byte_bpe-64k,kitapta,1
+curated_suffix,kitapta,7,unigram-64k,kitapta,1
+curated_suffix,kitapta,7,wordpiece-64k,kitapta,1
+curated_suffix,kitapta,7,turkish-tokenizer,kitap | da,2
+curated_suffix,kitabım,7,morfessor,kitab | ım,2
+curated_suffix,kitabım,7,morpheus,kitabı | m,2
+curated_suffix,kitabım,7,bpe-64k,kitab | ım,2
+curated_suffix,kitabım,7,byte_bpe-64k,kitab | ım,2
+curated_suffix,kitabım,7,unigram-64k,kitabı | m,2
+curated_suffix,kitabım,7,wordpiece-64k,kitabı | m,2
+curated_suffix,kitabım,7,turkish-tokenizer,kitap | üm,2
+curated_suffix,kitaplarımı,11,morfessor,kitap | lar | ımı,3
+curated_suffix,kitaplarımı,11,morpheus,kitap | lar | ımı,3
+curated_suffix,kitaplarımı,11,bpe-64k,kitap | larımı,2
+curated_suffix,kitaplarımı,11,byte_bpe-64k,kitap | larımı,2
+curated_suffix,kitaplarımı,11,unigram-64k,kitapları | mı,2
+curated_suffix,kitaplarımı,11,wordpiece-64k,kitapları | mı,2
+curated_suffix,kitaplarımı,11,turkish-tokenizer,kitap | lar | ımı,3
+curated_suffix,kitabımdaki,11,morfessor,kitab | ım | daki,3
+curated_suffix,kitabımdaki,11,morpheus,kitabım | daki,2
+curated_suffix,kitabımdaki,11,bpe-64k,kitab | ımdaki,2
+curated_suffix,kitabımdaki,11,byte_bpe-64k,kitab | ımdaki,2
+curated_suffix,kitabımdaki,11,unigram-64k,kitabı | m | daki,3
+curated_suffix,kitabımdaki,11,wordpiece-64k,kitabı | md | aki,3
+curated_suffix,kitabımdaki,11,turkish-tokenizer,kitap | ımda | ki,3
+curated_suffix,kitaplıkta,10,morfessor,kitap | lık | ta,3
+curated_suffix,kitaplıkta,10,morpheus,kitap | lıkta,2
+curated_suffix,kitaplıkta,10,bpe-64k,kitap | lıkta,2
+curated_suffix,kitaplıkta,10,byte_bpe-64k,kitap | lıkta,2
+curated_suffix,kitaplıkta,10,unigram-64k,kitap | lıkta,2
+curated_suffix,kitaplıkta,10,wordpiece-64k,kitap | lıkta,2
+curated_suffix,kitaplıkta,10,turkish-tokenizer,kitap | lık | da,3
+curated_suffix,gel,3,morfessor,gel,1
+curated_suffix,gel,3,morpheus,gel,1
+curated_suffix,gel,3,bpe-64k,gel,1
+curated_suffix,gel,3,byte_bpe-64k,gel,1
+curated_suffix,gel,3,unigram-64k,gel,1
+curated_suffix,gel,3,wordpiece-64k,gel,1
+curated_suffix,gel,3,turkish-tokenizer,gel,1
+curated_suffix,geldi,5,morfessor,geldi,1
+curated_suffix,geldi,5,morpheus,geldi,1
+curated_suffix,geldi,5,bpe-64k,geldi,1
+curated_suffix,geldi,5,byte_bpe-64k,geldi,1
+curated_suffix,geldi,5,unigram-64k,geldi,1
+curated_suffix,geldi,5,wordpiece-64k,geldi,1
+curated_suffix,geldi,5,turkish-tokenizer,geldi,1
+curated_suffix,geliyor,7,morfessor,geliyor,1
+curated_suffix,geliyor,7,morpheus,gel | iyor,2
+curated_suffix,geliyor,7,bpe-64k,geliyor,1
+curated_suffix,geliyor,7,byte_bpe-64k,geliyor,1
+curated_suffix,geliyor,7,unigram-64k,geliyor,1
+curated_suffix,geliyor,7,wordpiece-64k,geliyor,1
+curated_suffix,geliyor,7,turkish-tokenizer,geliyor,1
+curated_suffix,gelmiş,6,morfessor,gelmiş,1
+curated_suffix,gelmiş,6,morpheus,gel | miş,2
+curated_suffix,gelmiş,6,bpe-64k,gelmiş,1
+curated_suffix,gelmiş,6,byte_bpe-64k,gelmiş,1
+curated_suffix,gelmiş,6,unigram-64k,gelmiş,1
+curated_suffix,gelmiş,6,wordpiece-64k,gelmis,1
+curated_suffix,gelmiş,6,turkish-tokenizer,gel | müş,2
+curated_suffix,gelecek,7,morfessor,gelecek,1
+curated_suffix,gelecek,7,morpheus,gel | ecek,2
+curated_suffix,gelecek,7,bpe-64k,gelecek,1
+curated_suffix,gelecek,7,byte_bpe-64k,gelecek,1
+curated_suffix,gelecek,7,unigram-64k,gelecek,1
+curated_suffix,gelecek,7,wordpiece-64k,gelecek,1
+curated_suffix,gelecek,7,turkish-tokenizer,gelecek,1
+curated_suffix,gelirim,7,morfessor,gelir | im,2
+curated_suffix,gelirim,7,morpheus,gelir | im,2
+curated_suffix,gelirim,7,bpe-64k,gelirim,1
+curated_suffix,gelirim,7,byte_bpe-64k,gelirim,1
+curated_suffix,gelirim,7,unigram-64k,gelirim,1
+curated_suffix,gelirim,7,wordpiece-64k,gelirim,1
+curated_suffix,gelirim,7,turkish-tokenizer,gelir | üm,2
+curated_suffix,gelmedik,8,morfessor,gelme | dik,2
+curated_suffix,gelmedik,8,morpheus,gelme | dik,2
+curated_suffix,gelmedik,8,bpe-64k,gel | medik,2
+curated_suffix,gelmedik,8,byte_bpe-64k,gel | medik,2
+curated_suffix,gelmedik,8,unigram-64k,gelmedi | k,2
+curated_suffix,gelmedik,8,wordpiece-64k,gelmedi | k,2
+curated_suffix,gelmedik,8,turkish-tokenizer,gel | ma | dik,3
+curated_suffix,geliyorduk,10,morfessor,geliyor | duk,2
+curated_suffix,geliyorduk,10,morpheus,geli | yordu | k,3
+curated_suffix,geliyorduk,10,bpe-64k,geliyor | duk,2
+curated_suffix,geliyorduk,10,byte_bpe-64k,geliyor | duk,2
+curated_suffix,geliyorduk,10,unigram-64k,geliyordu | k,2
+curated_suffix,geliyorduk,10,wordpiece-64k,geliyordu | k,2
+curated_suffix,geliyorduk,10,turkish-tokenizer,geliyor | duk,2
+curated_suffix,gelebilseydik,13,morfessor,gele | bil | sey | dik,4
+curated_suffix,gelebilseydik,13,morpheus,gel | ebil | sey | dik,4
+curated_suffix,gelebilseydik,13,bpe-64k,gelebil | seydik,2
+curated_suffix,gelebilseydik,13,byte_bpe-64k,gelebil | seydik,2
+curated_suffix,gelebilseydik,13,unigram-64k,gele | bilseydik,2
+curated_suffix,gelebilseydik,13,wordpiece-64k,gelebil | seydik,2
+curated_suffix,gelebilseydik,13,turkish-tokenizer,gele | bil | sey | dik,4
+curated_suffix,git,3,morfessor,git,1
+curated_suffix,git,3,morpheus,git,1
+curated_suffix,git,3,bpe-64k,git,1
+curated_suffix,git,3,byte_bpe-64k,git,1
+curated_suffix,git,3,unigram-64k,git,1
+curated_suffix,git,3,wordpiece-64k,git,1
+curated_suffix,git,3,turkish-tokenizer,git,1
+curated_suffix,gitti,5,morfessor,gitt | i,2
+curated_suffix,gitti,5,morpheus,gitti,1
+curated_suffix,gitti,5,bpe-64k,gitti,1
+curated_suffix,gitti,5,byte_bpe-64k,gitti,1
+curated_suffix,gitti,5,unigram-64k,gitti,1
+curated_suffix,gitti,5,wordpiece-64k,gitti,1
+curated_suffix,gitti,5,turkish-tokenizer,git | dü,2
+curated_suffix,gidiyor,7,morfessor,gidiyor,1
+curated_suffix,gidiyor,7,morpheus,gid | iyor,2
+curated_suffix,gidiyor,7,bpe-64k,gidiyor,1
+curated_suffix,gidiyor,7,byte_bpe-64k,gidiyor,1
+curated_suffix,gidiyor,7,unigram-64k,gidiyor,1
+curated_suffix,gidiyor,7,wordpiece-64k,gidiyor,1
+curated_suffix,gidiyor,7,turkish-tokenizer,gi | dü | yor,3
+curated_suffix,gitmiştik,9,morfessor,gitmişti | k,2
+curated_suffix,gitmiştik,9,morpheus,git | miş | tik,3
+curated_suffix,gitmiştik,9,bpe-64k,gitmiştik,1
+curated_suffix,gitmiştik,9,byte_bpe-64k,gitmiştik,1
+curated_suffix,gitmiştik,9,unigram-64k,gitmiştik,1
+curated_suffix,gitmiştik,9,wordpiece-64k,gitmistik,1
+curated_suffix,gitmiştik,9,turkish-tokenizer,git | müş | tik,3
+curated_suffix,gidebilir,9,morfessor,gid | ebilir,2
+curated_suffix,gidebilir,9,morpheus,gid | ebilir,2
+curated_suffix,gidebilir,9,bpe-64k,gidebilir,1
+curated_suffix,gidebilir,9,byte_bpe-64k,gidebilir,1
+curated_suffix,gidebilir,9,unigram-64k,gidebilir,1
+curated_suffix,gidebilir,9,wordpiece-64k,gidebilir,1
+curated_suffix,gidebilir,9,turkish-tokenizer,gi | deb | ilir,3
+curated_suffix,gideceğim,9,morfessor,gid | eceğim,2
+curated_suffix,gideceğim,9,morpheus,gid | eceği | m,3
+curated_suffix,gideceğim,9,bpe-64k,gideceğim,1
+curated_suffix,gideceğim,9,byte_bpe-64k,gideceğim,1
+curated_suffix,gideceğim,9,unigram-64k,gideceğim,1
+curated_suffix,gideceğim,9,wordpiece-64k,gidecegim,1
+curated_suffix,gideceğim,9,turkish-tokenizer,git | acak | üm,3
+curated_suffix,gitmedikçe,10,morfessor,git | me | dikçe,3
+curated_suffix,gitmedikçe,10,morpheus,git | me | dik | çe,4
+curated_suffix,gitmedikçe,10,bpe-64k,gitme | dikçe,2
+curated_suffix,gitmedikçe,10,byte_bpe-64k,gitme | dikçe,2
+curated_suffix,gitmedikçe,10,unigram-64k,git | medikçe,2
+curated_suffix,gitmedikçe,10,wordpiece-64k,gitmedi | k | ce,3
+curated_suffix,gitmedikçe,10,turkish-tokenizer,git | ma | dik | ça,4
+curated_oov,muvaffakiyetsizleştiriciler,27,morfessor,mu | va | f | fak | iyet | siz | leştir | ici | ler,9
+curated_oov,muvaffakiyetsizleştiriciler,27,morpheus,mu | vaff | akiyet | siz | le | ştir | ici | ler,8
+curated_oov,muvaffakiyetsizleştiriciler,27,bpe-64k,mu | vaf | fak | iyet | siz | leştir | iciler,7
+curated_oov,muvaffakiyetsizleştiriciler,27,byte_bpe-64k,mu | vaf | fak | iyet | siz | leştir | iciler,7
+curated_oov,muvaffakiyetsizleştiriciler,27,unigram-64k,muvaffak | iyet | siz | leştirici | ler,5
+curated_oov,muvaffakiyetsizleştiriciler,27,wordpiece-64k,muvaffak | iyet | siz | lestirici | ler,5
+curated_oov,muvaffakiyetsizleştiriciler,27,turkish-tokenizer,muvaffakiyet | süz | laş | dür | ici | lar,6
+curated_oov,anlaşılamamaktadır,18,morfessor,anlaşıl | ama | makta | dır,4
+curated_oov,anlaşılamamaktadır,18,morpheus,anlaşıl | ama | maktadır,3
+curated_oov,anlaşılamamaktadır,18,bpe-64k,anlaşılama | maktadır,2
+curated_oov,anlaşılamamaktadır,18,byte_bpe-64k,anlaşı | lama | maktadır,3
+curated_oov,anlaşılamamaktadır,18,unigram-64k,anlaşılama | maktadır,2
+curated_oov,anlaşılamamaktadır,18,wordpiece-64k,anlasılama | maktadır,2
+curated_oov,anlaşılamamaktadır,18,turkish-tokenizer,anlaş | ı | lama | mak | da | dür,6
+curated_oov,görevlendirilemeyeceklerinden,29,morfessor,görev | lendiril | e | meyecek | lerinden,5
+curated_oov,görevlendirilemeyeceklerinden,29,morpheus,görev | lendiril | eme | yecek | lerinden,5
+curated_oov,görevlendirilemeyeceklerinden,29,bpe-64k,görevlendir | ilemeyecek | lerinden,3
+curated_oov,görevlendirilemeyeceklerinden,29,byte_bpe-64k,görevlendir | ilemeyecek | lerinden,3
+curated_oov,görevlendirilemeyeceklerinden,29,unigram-64k,görevlendirile | meyecek | lerinden,3
+curated_oov,görevlendirilemeyeceklerinden,29,wordpiece-64k,gorevlendir | ilemeyecek | lerinden,3
+curated_oov,görevlendirilemeyeceklerinden,29,turkish-tokenizer,görev | len | diri | leme | acak | lar | ün | dan,8
+curated_oov,üniversitelerindeki,19,morfessor,üniversite | ler | indeki,3
+curated_oov,üniversitelerindeki,19,morpheus,üniversite | lerindeki,2
+curated_oov,üniversitelerindeki,19,bpe-64k,üniversiteler | indeki,2
+curated_oov,üniversitelerindeki,19,byte_bpe-64k,üniversiteler | indeki,2
+curated_oov,üniversitelerindeki,19,unigram-64k,üniversitelerin | deki,2
+curated_oov,üniversitelerindeki,19,wordpiece-64k,universitelerinde | ki,2
+curated_oov,üniversitelerindeki,19,turkish-tokenizer,üniversite | lar | inde | ki,4
+curated_oov,çalışmalarımızdan,17,morfessor,çalışma | ları | mız | dan,4
+curated_oov,çalışmalarımızdan,17,morpheus,çalışma | ları | mız | dan,4
+curated_oov,çalışmalarımızdan,17,bpe-64k,çalışma | larımızdan,2
+curated_oov,çalışmalarımızdan,17,byte_bpe-64k,çalışma | larımızdan,2
+curated_oov,çalışmalarımızdan,17,unigram-64k,çalışma | larımızdan,2
+curated_oov,çalışmalarımızdan,17,wordpiece-64k,calısmalarımız | dan,2
+curated_oov,çalışmalarımızdan,17,turkish-tokenizer,çalışmalar | ımız | dan,3
+curated_oov,yapamayacağız,13,morfessor,yapamayacağı | z,2
+curated_oov,yapamayacağız,13,morpheus,yap | am | ayacağı | z,4
+curated_oov,yapamayacağız,13,bpe-64k,yapamaya | cağız,2
+curated_oov,yapamayacağız,13,byte_bpe-64k,yapamaya | cağız,2
+curated_oov,yapamayacağız,13,unigram-64k,yapamayacağı | z,2
+curated_oov,yapamayacağız,13,wordpiece-64k,yapamayacagı | z,2
+curated_oov,yapamayacağız,13,turkish-tokenizer,yap | amay | acak | üz,4
+curated_oov,söyleyebilseydik,16,morfessor,söyle | ye | bil | sey | dik,5
+curated_oov,söyleyebilseydik,16,morpheus,söyle | ye | bil | sey | dik,5
+curated_oov,söyleyebilseydik,16,bpe-64k,söyleyebil | seydik,2
+curated_oov,söyleyebilseydik,16,byte_bpe-64k,söyleyebil | seydik,2
+curated_oov,söyleyebilseydik,16,unigram-64k,söyleyebil | seydik,2
+curated_oov,söyleyebilseydik,16,wordpiece-64k,soyley | ebil | seydik,3
+curated_oov,söyleyebilseydik,16,turkish-tokenizer,söyle | ya | bil | sey | dik,5
+curated_oov,düşünmemiştik,13,morfessor,düşün | memiş | tik,3
+curated_oov,düşünmemiştik,13,morpheus,düşün | memiş | t | ik,4
+curated_oov,düşünmemiştik,13,bpe-64k,düşün | memiş | tik,3
+curated_oov,düşünmemiştik,13,byte_bpe-64k,düşün | memiş | tik,3
+curated_oov,düşünmemiştik,13,unigram-64k,düşünme | mişti | k,3
+curated_oov,düşünmemiştik,13,wordpiece-64k,dusunmem | istik,2
+curated_oov,düşünmemiştik,13,turkish-tokenizer,düşün | ma | müş | tik,4
+curated_oov,uçabilenlerden,14,morfessor,uça | bilen | lerden,3
+curated_oov,uçabilenlerden,14,morpheus,uç | abilen | lerden,3
+curated_oov,uçabilenlerden,14,bpe-64k,uç | abilen | lerden,3
+curated_oov,uçabilenlerden,14,byte_bpe-64k,uç | abilen | lerden,3
+curated_oov,uçabilenlerden,14,unigram-64k,uç | abilen | lerden,3
+curated_oov,uçabilenlerden,14,wordpiece-64k,uca | bilen | lerden,3
+curated_oov,uçabilenlerden,14,turkish-tokenizer,u | ça | bil | an | lar | dan,6
+curated_oov,kitapçısı,9,morfessor,kitap | çı | sı,3
+curated_oov,kitapçısı,9,morpheus,kitap | ç | ısı,3
+curated_oov,kitapçısı,9,bpe-64k,kitap | çısı,2
+curated_oov,kitapçısı,9,byte_bpe-64k,kitap | çısı,2
+curated_oov,kitapçısı,9,unigram-64k,kitap | çısı,2
+curated_oov,kitapçısı,9,wordpiece-64k,kitapcı | sı,2
+curated_oov,kitapçısı,9,turkish-tokenizer,kitap | cü | sü,3
+nonce,gloplaştırıcılık,16,morfessor,g | lo | p | laştır | ı | cılık,6
+nonce,gloplaştırıcılık,16,morpheus,gl | op | laştır | ı | cılık,5
+nonce,gloplaştırıcılık,16,bpe-64k,gl | op | laştır | ıcı | lık,5
+nonce,gloplaştırıcılık,16,byte_bpe-64k,gl | op | laştır | ıcı | lık,5
+nonce,gloplaştırıcılık,16,unigram-64k,glo | p | laştırıcı | lık,4
+nonce,gloplaştırıcılık,16,wordpiece-64k,glo | plast | ırı | cılık,4
+nonce,gloplaştırıcılık,16,turkish-tokenizer,gl | op | laş | dür | ıcı | lık,6
+nonce,miyantlamak,11,morfessor,mi | yan | t | lamak,4
+nonce,miyantlamak,11,morpheus,mi | yant | lamak,3
+nonce,miyantlamak,11,bpe-64k,miy | ant | lamak,3
+nonce,miyantlamak,11,byte_bpe-64k,miy | ant | lamak,3
+nonce,miyantlamak,11,unigram-64k,mi | yan | t | lamak,4
+nonce,miyantlamak,11,wordpiece-64k,miy | ant | lamak,3
+nonce,miyantlamak,11,turkish-tokenizer,mi | y | ant | la | mak,5
+nonce,trafanlamış,11,morfessor,tra | fan | lamış,3
+nonce,trafanlamış,11,morpheus,t | rafan | lamış,3
+nonce,trafanlamış,11,bpe-64k,traf | an | lamış,3
+nonce,trafanlamış,11,byte_bpe-64k,traf | an | lamış,3
+nonce,trafanlamış,11,unigram-64k,tra | fan | lamış,3
+nonce,trafanlamış,11,wordpiece-64k,traf | an | lamıs,3
+nonce,trafanlamış,11,turkish-tokenizer,tra | fan | la | müş,4
+nonce,kelfeyimsi,10,morfessor,kel | fey | im | si,4
+nonce,kelfeyimsi,10,morpheus,k | elf | eyim | si,4
+nonce,kelfeyimsi,10,bpe-64k,kel | f | eyim | si,4
+nonce,kelfeyimsi,10,byte_bpe-64k,kel | f | eyim | si,4
+nonce,kelfeyimsi,10,unigram-64k,kel | f | eyim | si,4
+nonce,kelfeyimsi,10,wordpiece-64k,kel | fe | yim | si,4
+nonce,kelfeyimsi,10,turkish-tokenizer,kel | fe | yü | msi,4
+nonce,şarpınsızca,11,morfessor,ş | ar | p | ın | sız | ca,6
+nonce,şarpınsızca,11,morpheus,şarp | ın | sız | ca,4
+nonce,şarpınsızca,11,bpe-64k,şar | p | ın | sızca,4
+nonce,şarpınsızca,11,byte_bpe-64k,şar | p | ın | sızca,4
+nonce,şarpınsızca,11,unigram-64k,şar | p | ın | sız | ca,5
+nonce,şarpınsızca,11,wordpiece-64k,sarp | ın | sızca,3
+nonce,şarpınsızca,11,turkish-tokenizer,ş | arp | ün | süz | ca,5

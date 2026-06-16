@@ -1,0 +1,51 @@
+word,stratum,gold,morpheus_seg,morpheus_root,morpheus_count,morpheus_len,morpheus_exact,morfessor_seg,morfessor_root,morfessor_count,morfessor_len,morfessor_exact,bpe-64k_seg,bpe-64k_root,bpe-64k_count,bpe-64k_len,bpe-64k_exact,byte_bpe-64k_seg,byte_bpe-64k_root,byte_bpe-64k_count,byte_bpe-64k_len,byte_bpe-64k_exact,unigram-64k_seg,unigram-64k_root,unigram-64k_count,unigram-64k_len,unigram-64k_exact,wordpiece-64k_seg,wordpiece-64k_root,wordpiece-64k_count,wordpiece-64k_len,wordpiece-64k_exact,turkish-tokenizer_seg,turkish-tokenizer_root,turkish-tokenizer_count,turkish-tokenizer_len,turkish-tokenizer_exact
+fonksiyonlar,rare_root,fonksiyon | lar,fonksiyon | lar,1,1,1,1,fonk | siyon | lar,0,0,0,0,fonksiyon | lar,1,1,1,1,fonksiyon | lar,1,1,1,1,fonksiyon | lar,1,1,1,1,fonksiyonlar,0,0,0,0,fonksiyon | lar,1,1,1,1
+moleküllerin,rare_root,molekül | ler | in,moleküller | in,0,0,0,0,mo | le | kül | lerin,0,0,0,0,molekül | lerin,1,0,0,0,molekül | lerin,1,0,0,0,molekül | lerin,1,0,0,0,molekul | lerin,0,0,0,0,molekül | lar | ün,1,1,1,0
+parametreler,rare_root,parametre | ler,parametre | ler,1,1,1,1,parametre | ler,1,1,1,1,parametreler,0,0,0,0,parametreler,0,0,0,0,parametreler,0,0,0,0,parametreler,0,0,0,0,parametre | lar,1,1,1,0
+enzimlerde,rare_root,enzim | ler | de,enzim | lerde,1,0,0,0,en | z | im | lerde,0,0,0,0,enzim | lerde,1,0,0,0,enzim | lerde,1,0,0,0,enzim | lerde,1,0,0,0,enzim | lerde,1,0,0,0,enzim | lar | da,1,1,1,0
+izotoplar,rare_root,izotop | lar,izotop | lar,1,1,1,1,iz | o | top | lar,0,0,0,0,iz | ot | op | lar,0,0,0,0,iz | ot | op | lar,0,0,0,0,izo | top | lar,0,0,0,0,izo | top | lar,0,0,0,0,izotop | lar,1,1,1,1
+katalizörler,rare_root,katalizör | ler,katalizör | ler,1,1,1,1,kat | alizör | ler,0,0,0,0,katal | iz | ör | ler,0,0,0,0,katal | iz | ör | ler,0,0,0,0,kata | li | z | ör | ler,0,0,0,0,katalizor | ler,0,1,1,0,katalizör | lar,1,1,1,0
+polimerler,rare_root,polimer | ler,polimer | ler,1,1,1,1,pol | ime | rler,0,0,0,0,pol | im | erler,0,0,0,0,pol | im | erler,0,0,0,0,poli | mer | ler,0,0,0,0,polimer | ler,1,1,1,1,polimer | lar,1,1,1,0
+vektörler,rare_root,vektör | ler,vektör | ler,1,1,1,1,ve | k | tör | ler,0,0,0,0,vektör | ler,1,1,1,1,vektör | ler,1,1,1,1,ve | ktör | ler,0,0,0,0,vektor | ler,0,1,1,0,vektör | lar,1,1,1,0
+matrisler,rare_root,matris | ler,matris | ler,1,1,1,1,mat | ris | ler,0,0,0,0,matr | isler,0,1,0,0,matr | isler,0,1,0,0,mat | ris | ler,0,0,0,0,matris | ler,1,1,1,1,matris | lar,1,1,1,0
+türevler,rare_root,türev | ler,türev | ler,1,1,1,1,tür | ev | ler,0,0,0,0,türev | ler,1,1,1,1,türev | ler,1,1,1,1,tür | ev | ler,0,0,0,0,turev | ler,0,1,1,0,türev | lar,1,1,1,0
+integraller,rare_root,integral | ler,integral | ler,1,1,1,1,integral | ler,1,1,1,1,integral | ler,1,1,1,1,integr | aller,0,1,0,0,integral | ler,1,1,1,1,integral | ler,1,1,1,1,integral | lar,1,1,1,0
+hipotezler,rare_root,hipotez | ler,hipotez | ler,1,1,1,1,hipotez | ler,1,1,1,1,hipotez | ler,1,1,1,1,hipotez | ler,1,1,1,1,hipotez | ler,1,1,1,1,hipotezler,0,0,0,0,hipotez | lar,1,1,1,0
+nöronların,rare_root,nöron | lar | ın,nöron | ların,1,0,0,0,n | ör | on | ların,0,0,0,0,nör | onların,0,0,0,0,nör | onların,0,0,0,0,nöro | n | ların,0,1,0,0,noron | ların,0,0,0,0,nöron | lar | ün,1,1,1,0
+proteinler,rare_root,protein | ler,protein | ler,1,1,1,1,protein | ler,1,1,1,1,prote | inler,0,1,0,0,prote | inler,0,1,0,0,protein | ler,1,1,1,1,proteinler,0,0,0,0,protein | lar,1,1,1,0
+bakterilerin,rare_root,bakteri | ler | in,bakteri | lerin,1,0,0,0,bak | teri | lerin,0,1,0,0,bakter | ilerin,0,0,0,0,bakter | ilerin,0,0,0,0,bakteriler | in,0,0,0,0,bakterilerin,0,0,0,0,bakteri | lar | ün,1,1,1,0
+virüsler,rare_root,virüs | ler,virüs | ler,1,1,1,1,virüs | ler,1,1,1,1,virüsler,0,0,0,0,virüsler,0,0,0,0,virüsler,0,0,0,0,virusler,0,0,0,0,virüs | lar,1,1,1,0
+algoritmalar,rare_root,algoritma | lar,algoritma | lar,1,1,1,1,algoritma | lar,1,1,1,1,algoritmalar,0,0,0,0,algoritmalar,0,0,0,0,algoritmalar,0,0,0,0,algoritmalar,0,0,0,0,algoritma | lar,1,1,1,1
+sentaksta,rare_root,sentaks | ta,sen | tak | sta,0,0,0,0,sen | taks | ta,0,0,0,0,sen | tak | sta,0,0,0,0,sen | tak | sta,0,0,0,0,sen | tak | sta,0,0,0,0,sent | aks | ta,0,0,0,0,sen | tak | sta,0,0,0,0
+gradyanlar,rare_root,gradyan | lar,gra | d | yan | lar,0,0,0,0,gra | d | yan | lar,0,0,0,0,g | rad | yanlar,0,0,0,0,g | rad | yanlar,0,0,0,0, | grad | yanlar,0,0,0,0,gra | dy | anlar,0,0,0,0,gr | ady | an | lar,0,0,0,0
+kromozomlar,rare_root,kromozom | lar,kromozom | lar,1,1,1,1,k | r | omo | z | om | lar,0,0,0,0,kromozom | lar,1,1,1,1,kromozom | lar,1,1,1,1,kromozom | lar,1,1,1,1,kromozom | lar,1,1,1,1,kromozom | lar,1,1,1,1
+demircilik,derivation,demir | ci | lik,demir | cilik,1,0,0,0,demir | ci | lik,1,1,1,1,demir | cilik,1,0,0,0,demir | cilik,1,0,0,0,demir | cilik,1,0,0,0,demirci | lik,0,0,0,0,demir | cü | lık,1,1,1,0
+balıkçılık,derivation,balık | çı | lık,balıkçı | lık,0,0,0,0,balık | çı | lık,1,1,1,1,balıkçılık,0,0,0,0,balıkçılık,0,0,0,0,balıkçılık,0,0,0,0,balıkcılık,0,0,0,0,balıkçıl | ık,0,0,0,0
+ormancılık,derivation,orman | cı | lık,orman | cılık,1,0,0,0,orman | cılık,1,0,0,0,orman | cılık,1,0,0,0,orman | cılık,1,0,0,0,orman | cılık,1,0,0,0,ormancılık,0,0,0,0,orman | cü | lık,1,1,1,0
+gözlemciler,derivation,gözlem | ci | ler,gözlem | ciler,1,0,0,0,gözlemci | ler,0,0,0,0,gözlem | ciler,1,0,0,0,gözlem | ciler,1,0,0,0,gözlemciler,0,0,0,0,gozlemci | ler,0,0,0,0,gözlem | cü | lar,1,1,1,0
+renksizlik,derivation,renk | siz | lik,renk | sizlik,1,0,0,0,renk | sizlik,1,0,0,0,renk | sizlik,1,0,0,0,renk | sizlik,1,0,0,0,renk | sizlik,1,0,0,0,renksiz | lik,0,0,0,0,renk | süz | lık,1,1,1,0
+susuzluk,derivation,su | suz | luk,susuzluk,0,0,0,0,su | suz | luk,1,1,1,1,susuzluk,0,0,0,0,susuzluk,0,0,0,0,susuzluk,0,0,0,0,susuzluk,0,0,0,0,susuz | lık,0,0,0,0
+bulutsuz,derivation,bulut | suz,bulut | suz,1,1,1,1,bulut | suz,1,1,1,1,bulut | suz,1,1,1,1,bulut | suz,1,1,1,1,bulut | suz,1,1,1,1,bulut | suz,1,1,1,1,bulut | süz,1,1,1,0
+yağmurlardan,derivation,yağmur | lar | dan,yağmur | lardan,1,0,0,0,yağmur | lardan,1,0,0,0,yağmur | lardan,1,0,0,0,yağmur | lardan,1,0,0,0,yağmur | lardan,1,0,0,0,yagmur | lardan,0,0,0,0,yağmur | lar | dan,1,1,1,1
+menziller,derivation,menzil | ler,menzil | ler,1,1,1,1,menzil | ler,1,1,1,1,menzil | ler,1,1,1,1,menz | iller,0,1,0,0,menzil | ler,1,1,1,1,menzil | ler,1,1,1,1,menzil | lar,1,1,1,0
+tuzsuzdu,derivation,tuz | suz | du,tuz | suz | du,1,1,1,1,tuz | suz | du,1,1,1,1,tuzsuz | du,0,0,0,0,tuzsuz | du,0,0,0,0,tuzsuz | du,0,0,0,0,tuzsuz | du,0,0,0,0,tuz | süz | dü,1,1,1,0
+yaprağın,softening,yaprağ | ın,yap | rağı | n,0,0,0,0,yap | rağı | n,0,0,0,0,yapra | ğın,0,1,0,0,yapra | ğın,0,1,0,0,yaprağı | n,0,1,0,0,yapragı | n,0,1,0,0,yaprak | ün,0,1,1,0
+bardağı,softening,bardağ | ı,bar | dağı,0,1,0,0,barda | ğı,0,1,0,0,bardağı,0,0,0,0,bardağı,0,0,0,0,bardağı,0,0,0,0,bardagı,0,0,0,0,bardak | ı,0,1,1,0
+çiçeğin,softening,çiçeğ | in,çi | çe | ğin,0,0,0,0,çiçe | ğin,0,1,0,0,çiçeğin,0,0,0,0,çiçeğin,0,0,0,0,çiçeği | n,0,1,0,0,cicegin,0,0,0,0,çiçek | ün,0,1,1,0
+köpeğim,softening,köpeğ | im,köpeğ | im,1,1,1,1,köpe | ğim,0,1,0,0,köpeğim,0,0,0,0,köpeğim,0,0,0,0,köpeğim,0,0,0,0,kopegim,0,0,0,0,köpek | üm,0,1,1,0
+ekmeği,softening,ekmeğ | i,ekmeği,0,0,0,0,ekmeğ | i,1,1,1,1,ekmeği,0,0,0,0,ekmeği,0,0,0,0,ekmeği,0,0,0,0,ekmegi,0,0,0,0,ekmek | i,0,1,1,0
+sokağa,softening,sokağ | a,sokağa,0,0,0,0,sok | ağa,0,1,0,0,sokağa,0,0,0,0,sokağa,0,0,0,0,sokağa,0,0,0,0,sokaga,0,0,0,0,sokak | a,0,1,1,0
+tarağı,softening,tarağ | ı,ta | rağı,0,1,0,0,ta | rağı,0,1,0,0,tarağı,0,0,0,0,tarağı,0,0,0,0,tarağı,0,0,0,0,taragı,0,0,0,0,tarak | ı,0,1,1,0
+aklın,vowel_drop,akl | ın,ak | lı | n,0,0,0,0,aklı | n,0,1,0,0,aklın,0,0,0,0,aklın,0,0,0,0,aklın,0,0,0,0,aklın,0,0,0,0,akıl | ün,0,1,0,0
+burnu,vowel_drop,burn | u,burnu,0,0,0,0,bur | nu,0,1,0,0,burnu,0,0,0,0,burnu,0,0,0,0,burnu,0,0,0,0,burnu,0,0,0,0,burun | u,0,1,0,0
+şehrin,vowel_drop,şehr | in,şehri | n,0,1,0,0,şehrin,0,0,0,0,şehrin,0,0,0,0,şehrin,0,0,0,0,şehrin,0,0,0,0,sehrin,0,0,0,0,şehir | ün,0,1,0,0
+ağzı,vowel_drop,ağz | ı,ağz | ı,1,1,1,1,ağzı,0,0,0,0,ağzı,0,0,0,0,ağzı,0,0,0,0,ağzı,0,0,0,0,agzı,0,0,0,0,ağız | ı,0,1,0,0
+boynu,vowel_drop,boyn | u,boynu,0,0,0,0,boy | nu,0,1,0,0,boynu,0,0,0,0,boy | nu,0,1,0,0,boynu,0,0,0,0,boyn | u,1,1,1,1,boyun | u,0,1,0,0
+karnı,vowel_drop,karn | ı,kar | nı,0,1,0,0,kar | nı,0,1,0,0,karnı,0,0,0,0,karnı,0,0,0,0,karnı,0,0,0,0,karnı,0,0,0,0,karın | ı,0,1,0,0
+saatlerde,loanword_exc,saat | ler | de,saatler | de,0,0,0,0,saat | lerde,1,0,0,0,saatlerde,0,0,0,0,saatlerde,0,0,0,0,saatlerde,0,0,0,0,saatlerde,0,0,0,0,saat | lar | da,1,1,1,0
+rollerde,loanword_exc,rol | ler | de,rol | lerde,1,0,0,0,rol | lerde,1,0,0,0,rollerde,0,0,0,0,rollerde,0,0,0,0,rollerde,0,0,0,0,rollerde,0,0,0,0,rol | lar | da,1,1,1,0
+gollerin,loanword_exc,gol | ler | in,gol | lerin,1,0,0,0,gol | lerin,1,0,0,0,gollerin,0,0,0,0,gollerin,0,0,0,0,gollerin,0,0,0,0,gollerin,0,0,0,0,gol | lar | ün,1,1,1,0
+hallerden,loanword_exc,hal | ler | den,hal | lerden,1,0,0,0,hal | lerden,1,0,0,0,hal | lerden,1,0,0,0,hal | lerden,1,0,0,0,hal | lerden,1,0,0,0,hallerde | n,0,0,0,0,hall | er | dan,0,1,0,0
+harflerle,loanword_exc,harf | ler | le,harf | lerle,1,0,0,0,harf | lerle,1,0,0,0,harflerle,0,0,0,0,harflerle,0,0,0,0,harflerle,0,0,0,0,harflerle,0,0,0,0,harf | lar | la,1,1,1,0
+usullerin,loanword_exc,usul | ler | in,usul | lerin,1,0,0,0,usul | lerin,1,0,0,0,usul | lerin,1,0,0,0,usul | lerin,1,0,0,0,usul | lerin,1,0,0,0,usul | lerin,1,0,0,0,usul | lar | ün,1,1,1,0
+kalplerin,loanword_exc,kalp | ler | in,kalp | lerin,1,0,0,0,kalp | lerin,1,0,0,0,kalp | lerin,1,0,0,0,kalp | lerin,1,0,0,0,kalp | lerin,1,0,0,0,kalpleri | n,0,0,0,0,kalp | lar | ün,1,1,1,0

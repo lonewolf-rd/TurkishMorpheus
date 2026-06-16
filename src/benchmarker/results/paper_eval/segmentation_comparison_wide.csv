@@ -1,0 +1,60 @@
+stratum,word,n_chars,morfessor,morfessor_n,morpheus,morpheus_n,bpe-64k,bpe-64k_n,byte_bpe-64k,byte_bpe-64k_n,unigram-64k,unigram-64k_n,wordpiece-64k,wordpiece-64k_n,turkish-tokenizer,turkish-tokenizer_n
+curated_seen,ev,2,ev,1,ev,1,ev,1,ev,1,ev,1,ev,1,ev,1
+curated_seen,kitap,5,kitap,1,kitap,1,kitap,1,kitap,1,kitap,1,kitap,1,kitap,1
+curated_seen,su,2,su,1,su,1,su,1,su,1,su,1,su,1,su,1
+curated_seen,ay,2,ay,1,ay,1,ay,1,ay,1,ay,1,ay,1,ay,1
+curated_seen,göz,3,göz,1,göz,1,göz,1,göz,1,göz,1,goz,1,göz,1
+curated_seen,baş,3,baş,1,baş,1,baş,1,baş,1,baş,1,bas,1,baş,1
+curated_seen,el,2,el,1,el,1,el,1,el,1,el,1,el,1,el,1
+curated_seen,gün,3,gün,1,gün,1,gün,1,gün,1,gün,1,gun,1,gün,1
+curated_seen,yıl,3,yıl,1,yıl,1,yıl,1,yıl,1,yıl,1,yıl,1,yıl,1
+curated_seen,iş,2,iş,1,iş,1,iş,1,iş,1,iş,1,is,1,iş,1
+curated_suffix,ev,2,ev,1,ev,1,ev,1,ev,1,ev,1,ev,1,ev,1
+curated_suffix,evler,5,ev | ler,2,ev | ler,2,evler,1,evler,1,evler,1,evler,1,ev | lar,2
+curated_suffix,evde,4,ev | de,2,ev | de,2,evde,1,evde,1,evde,1,evde,1,ev | da,2
+curated_suffix,evden,5,ev | den,2,ev | den,2,evden,1,evden,1,evden,1,evden,1,ev | dan,2
+curated_suffix,eve,3,eve,1,eve,1,eve,1,eve,1,eve,1,eve,1,eve,1
+curated_suffix,evim,4,evi | m,2,evi | m,2,evim,1,evim,1,evim,1,evim,1,ev | üm,2
+curated_suffix,evimiz,6,ev | imiz,2,e | vimiz,2,evimiz,1,evimiz,1,evimiz,1,evimiz,1,ev | imiz,2
+curated_suffix,evimde,6,evimde,1,evi | m | de,3,evimde,1,evimde,1,evimde,1,evimde,1,ev | imde,2
+curated_suffix,evlerimizde,11,ev | ler | imizde,3,ev | leri | mizde,3,ev | lerimizde,2,ev | lerimizde,2,evlerimiz | de,2,evleri | miz | de,3,ev | lar | imiz | da,4
+curated_suffix,evlerimizdeki,13,ev | leri | miz | deki,4,ev | ler | imiz | deki,4,ev | lerimiz | deki,3,ev | lerimiz | deki,3,evlerimiz | deki,2,evleri | miz | deki,3,ev | lar | imiz | deki,4
+curated_suffix,evlerimizdekiler,16,ev | leri | miz | deki | ler,5,ev | ler | imiz | deki | ler,5,ev | lerimiz | dekiler,3,ev | lerimiz | dekiler,3,evlerimiz | dekiler,2,evleri | miz | dekiler,3,ev | lar | imiz | deki | lar,5
+curated_suffix,kitap,5,kitap,1,kitap,1,kitap,1,kitap,1,kitap,1,kitap,1,kitap,1
+curated_suffix,kitaplar,8,kitap | lar,2,kitap | lar,2,kitaplar,1,kitaplar,1,kitaplar,1,kitaplar,1,kitap | lar,2
+curated_suffix,kitapta,7,kitap | ta,2,kitap | ta,2,kitapta,1,kitapta,1,kitapta,1,kitapta,1,kitap | da,2
+curated_suffix,kitabım,7,kitab | ım,2,kitabı | m,2,kitab | ım,2,kitab | ım,2,kitabı | m,2,kitabı | m,2,kitap | üm,2
+curated_suffix,kitaplarımı,11,kitap | lar | ımı,3,kitap | lar | ımı,3,kitap | larımı,2,kitap | larımı,2,kitapları | mı,2,kitapları | mı,2,kitap | lar | ımı,3
+curated_suffix,kitabımdaki,11,kitab | ım | daki,3,kitabım | daki,2,kitab | ımdaki,2,kitab | ımdaki,2,kitabı | m | daki,3,kitabı | md | aki,3,kitap | ımda | ki,3
+curated_suffix,kitaplıkta,10,kitap | lık | ta,3,kitap | lıkta,2,kitap | lıkta,2,kitap | lıkta,2,kitap | lıkta,2,kitap | lıkta,2,kitap | lık | da,3
+curated_suffix,gel,3,gel,1,gel,1,gel,1,gel,1,gel,1,gel,1,gel,1
+curated_suffix,geldi,5,geldi,1,geldi,1,geldi,1,geldi,1,geldi,1,geldi,1,geldi,1
+curated_suffix,geliyor,7,geliyor,1,gel | iyor,2,geliyor,1,geliyor,1,geliyor,1,geliyor,1,geliyor,1
+curated_suffix,gelmiş,6,gelmiş,1,gel | miş,2,gelmiş,1,gelmiş,1,gelmiş,1,gelmis,1,gel | müş,2
+curated_suffix,gelecek,7,gelecek,1,gel | ecek,2,gelecek,1,gelecek,1,gelecek,1,gelecek,1,gelecek,1
+curated_suffix,gelirim,7,gelir | im,2,gelir | im,2,gelirim,1,gelirim,1,gelirim,1,gelirim,1,gelir | üm,2
+curated_suffix,gelmedik,8,gelme | dik,2,gelme | dik,2,gel | medik,2,gel | medik,2,gelmedi | k,2,gelmedi | k,2,gel | ma | dik,3
+curated_suffix,geliyorduk,10,geliyor | duk,2,geli | yordu | k,3,geliyor | duk,2,geliyor | duk,2,geliyordu | k,2,geliyordu | k,2,geliyor | duk,2
+curated_suffix,gelebilseydik,13,gele | bil | sey | dik,4,gel | ebil | sey | dik,4,gelebil | seydik,2,gelebil | seydik,2,gele | bilseydik,2,gelebil | seydik,2,gele | bil | sey | dik,4
+curated_suffix,git,3,git,1,git,1,git,1,git,1,git,1,git,1,git,1
+curated_suffix,gitti,5,gitt | i,2,gitti,1,gitti,1,gitti,1,gitti,1,gitti,1,git | dü,2
+curated_suffix,gidiyor,7,gidiyor,1,gid | iyor,2,gidiyor,1,gidiyor,1,gidiyor,1,gidiyor,1,gi | dü | yor,3
+curated_suffix,gitmiştik,9,gitmişti | k,2,git | miş | tik,3,gitmiştik,1,gitmiştik,1,gitmiştik,1,gitmistik,1,git | müş | tik,3
+curated_suffix,gidebilir,9,gid | ebilir,2,gid | ebilir,2,gidebilir,1,gidebilir,1,gidebilir,1,gidebilir,1,gi | deb | ilir,3
+curated_suffix,gideceğim,9,gid | eceğim,2,gid | eceği | m,3,gideceğim,1,gideceğim,1,gideceğim,1,gidecegim,1,git | acak | üm,3
+curated_suffix,gitmedikçe,10,git | me | dikçe,3,git | me | dik | çe,4,gitme | dikçe,2,gitme | dikçe,2,git | medikçe,2,gitmedi | k | ce,3,git | ma | dik | ça,4
+curated_oov,muvaffakiyetsizleştiriciler,27,mu | va | f | fak | iyet | siz | leştir | ici | ler,9,mu | vaff | akiyet | siz | le | ştir | ici | ler,8,mu | vaf | fak | iyet | siz | leştir | iciler,7,mu | vaf | fak | iyet | siz | leştir | iciler,7,muvaffak | iyet | siz | leştirici | ler,5,muvaffak | iyet | siz | lestirici | ler,5,muvaffakiyet | süz | laş | dür | ici | lar,6
+curated_oov,anlaşılamamaktadır,18,anlaşıl | ama | makta | dır,4,anlaşıl | ama | maktadır,3,anlaşılama | maktadır,2,anlaşı | lama | maktadır,3,anlaşılama | maktadır,2,anlasılama | maktadır,2,anlaş | ı | lama | mak | da | dür,6
+curated_oov,görevlendirilemeyeceklerinden,29,görev | lendiril | e | meyecek | lerinden,5,görev | lendiril | eme | yecek | lerinden,5,görevlendir | ilemeyecek | lerinden,3,görevlendir | ilemeyecek | lerinden,3,görevlendirile | meyecek | lerinden,3,gorevlendir | ilemeyecek | lerinden,3,görev | len | diri | leme | acak | lar | ün | dan,8
+curated_oov,üniversitelerindeki,19,üniversite | ler | indeki,3,üniversite | lerindeki,2,üniversiteler | indeki,2,üniversiteler | indeki,2,üniversitelerin | deki,2,universitelerinde | ki,2,üniversite | lar | inde | ki,4
+curated_oov,çalışmalarımızdan,17,çalışma | ları | mız | dan,4,çalışma | ları | mız | dan,4,çalışma | larımızdan,2,çalışma | larımızdan,2,çalışma | larımızdan,2,calısmalarımız | dan,2,çalışmalar | ımız | dan,3
+curated_oov,yapamayacağız,13,yapamayacağı | z,2,yap | am | ayacağı | z,4,yapamaya | cağız,2,yapamaya | cağız,2,yapamayacağı | z,2,yapamayacagı | z,2,yap | amay | acak | üz,4
+curated_oov,söyleyebilseydik,16,söyle | ye | bil | sey | dik,5,söyle | ye | bil | sey | dik,5,söyleyebil | seydik,2,söyleyebil | seydik,2,söyleyebil | seydik,2,soyley | ebil | seydik,3,söyle | ya | bil | sey | dik,5
+curated_oov,düşünmemiştik,13,düşün | memiş | tik,3,düşün | memiş | t | ik,4,düşün | memiş | tik,3,düşün | memiş | tik,3,düşünme | mişti | k,3,dusunmem | istik,2,düşün | ma | müş | tik,4
+curated_oov,uçabilenlerden,14,uça | bilen | lerden,3,uç | abilen | lerden,3,uç | abilen | lerden,3,uç | abilen | lerden,3,uç | abilen | lerden,3,uca | bilen | lerden,3,u | ça | bil | an | lar | dan,6
+curated_oov,kitapçısı,9,kitap | çı | sı,3,kitap | ç | ısı,3,kitap | çısı,2,kitap | çısı,2,kitap | çısı,2,kitapcı | sı,2,kitap | cü | sü,3
+nonce,gloplaştırıcılık,16,g | lo | p | laştır | ı | cılık,6,gl | op | laştır | ı | cılık,5,gl | op | laştır | ıcı | lık,5,gl | op | laştır | ıcı | lık,5,glo | p | laştırıcı | lık,4,glo | plast | ırı | cılık,4,gl | op | laş | dür | ıcı | lık,6
+nonce,miyantlamak,11,mi | yan | t | lamak,4,mi | yant | lamak,3,miy | ant | lamak,3,miy | ant | lamak,3,mi | yan | t | lamak,4,miy | ant | lamak,3,mi | y | ant | la | mak,5
+nonce,trafanlamış,11,tra | fan | lamış,3,t | rafan | lamış,3,traf | an | lamış,3,traf | an | lamış,3,tra | fan | lamış,3,traf | an | lamıs,3,tra | fan | la | müş,4
+nonce,kelfeyimsi,10,kel | fey | im | si,4,k | elf | eyim | si,4,kel | f | eyim | si,4,kel | f | eyim | si,4,kel | f | eyim | si,4,kel | fe | yim | si,4,kel | fe | yü | msi,4
+nonce,şarpınsızca,11,ş | ar | p | ın | sız | ca,6,şarp | ın | sız | ca,4,şar | p | ın | sızca,4,şar | p | ın | sızca,4,şar | p | ın | sız | ca,5,sarp | ın | sızca,3,ş | arp | ün | süz | ca,5
