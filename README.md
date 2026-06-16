@@ -1,8 +1,8 @@
-# Morpheus: A Morphology-Aware Tokenizer for Turkish
+# Morpheus: A Morphology-Aware Neural Tokenizer and Word Embedder for Turkish
 
 [![arXiv](https://img.shields.io/badge/arXiv-soon-b31b1b.svg)]() [![HuggingFace](https://img.shields.io/badge/🤗-Open_in_Spaces-yellow.svg)](https://huggingface.co/lonewolflab/Morpheus-TR-50K) [![License](https://img.shields.io/badge/License-MIT-blue.svg)]()
 
-**Morpheus** is a neural morpheme-aware tokenizer for **Turkish**, an agglutinative language whose semantic content is densely packed into productive suffix chains. It combines unsupervised morphological supervision (Morfessor) with self-supervised objectives (skip-gram negative sampling, root-family contrastive, masked language modeling) to learn segmentations that are simultaneously **morphologically aligned** and **language-modeling-friendly**.
+**Morpheus** is a neural morpheme-aware tokenizer **and word embedder** for **Turkish**, an agglutinative language whose semantic content is densely packed into productive suffix chains. It combines unsupervised morphological supervision (Morfessor) with self-supervised objectives (skip-gram negative sampling, root-family contrastive, masked language modeling) to learn segmentations that are simultaneously **morphologically aligned** and **language-modeling-friendly**. Because it is neural, the same forward pass that tokenizes also yields a structured word embedding — so Morpheus is a tokenizer and an embedding model at once.
 
 ```
 evlerimizdekiler  →  ev | leri | miz | deki | ler
@@ -16,7 +16,7 @@ Where classical BPE/WordPiece fragment morphologically rich Turkish words into s
 
 ## Headline Results
 
-Morpheus is the **only lossless, morphology-aware tokenizer for Turkish that is usable in a generative LLM** — and among reversible tokenizers it achieves the **lowest BPC**, while uniquely producing structured root-family embeddings and using ~40% less GPU memory than 64K-vocab subword tokenizers.
+Morpheus is the **only lossless, morphology-aware tokenizer for Turkish that is usable in a generative LLM** — and among reversible tokenizers it achieves the **lowest BPC**, while uniquely producing structured root-family embeddings and using **~19% less GPU memory** than 64K-vocab subword tokenizers. As an embedder, its frozen vectors **lead on lexical retrieval (root-family MAP 0.85) and same-root verification (ROC-AUC 1.00)**, surpassing the multilingual retriever BGE-M3 and BERTurk.
 
 The two tokenizers that appear to beat it — WordPiece (lowest raw BPC) and TurkishTokenizer (best gold morphology) — buy those numbers with **information loss**, which disqualifies them for generation (where token ids must decode back to faithful text):
 
@@ -35,7 +35,7 @@ The two tokenizers that appear to beat it — WordPiece (lowest raw BPC) and Tur
 | Gold morpheme F1 (MorphScore, UD gold) | **0.61** | 0.32 (BPE) |
 | Surface string fidelity (qualitative `exact%`) | **38%** | 12–16% (subwords) |
 | Structured root-family embeddings | **✓** | ✗ |
-| Peak GPU memory (B=32 generation) | **~2,270 MB** | 3,723 MB (64K subword) |
+| Peak GPU memory (B=32 generation) | **~3,020 MB** | 3,723 MB (64K subword) |
 
 **What you're choosing:** Morpheus brings modeling quality (lowest BPC among lossless), morphological structure, structured embeddings, lossless reversibility, and lower memory **together** — a combination no other Turkish tokenizer offers. The one parameter to weigh is **fertility** (~1.73 vs subword ~1.5 tokens/word): you accept a modest generation-throughput cost in return for everything above. Latency-only workloads favor a subword tokenizer; for Turkish LLMs that care about quality, morphology, or faithful decoding, Morpheus is the better-informed default. Full results in [Evaluation](#evaluation) and `src/benchmarker/results/`.
 
@@ -309,7 +309,7 @@ TurkishTokenizer places boundaries best (78%) but its tokens match the surface o
 | | Morpheus | TurkishTokenizer | 64K subword |
 |---|---|---|---|
 | Fertility (TR-MMLU, tok/word) | 1.73 | 1.98 | ~1.5 |
-| Peak GPU mem (B=32 generation) | ~2,270 MB | ~2,151 MB | 3,723 MB |
+| Peak GPU mem (B=32 generation) | ~3,020 MB | ~2,151 MB | 3,723 MB |
 | %Pure (Kalbur, unique tokens) | 55.2 | 65.5 | 22–34 |
 | %Pure (frequency-weighted) | **83.5** | 78.2 | 40–50 |
 
@@ -317,41 +317,21 @@ TurkishTokenizer places boundaries best (78%) but its tokens match the surface o
 
 A param-equalized 58 M GPT is trained with each tokenizer for an **identical 10,000 optimizer steps** (equal compute budget + identical LR schedule). Among **reversible** tokenizers, Morpheus achieves the lowest BPC. WordPiece's lower raw BPC is an artifact of accent stripping (it models lower-entropy, information-destroyed text), and TurkishTokenizer's comes with lossy canonicalization — both are excluded from the valid comparison. Full per-tokenizer BPC + inference (encode/decode speed, generation throughput, GPU memory) in `src/benchmarker/results/lm_eval/`.
 
+### Word embeddings — Morpheus vs BERTurk vs BGE-M3
+
+Because Morpheus is neural, the same forward pass that tokenizes also yields a word embedding. We evaluate these **frozen** vectors against BERTurk (768-d) and the multilingual retriever BGE-M3 (1024-d). The picture splits cleanly by task character: Morpheus dominates **lexical / root-level** tasks, while the heavier contextual encoders lead on **context- and inflection-dependent** tasks.
+
+| Task | Morpheus (320) | BERTurk (768) | BGE-M3 (1024) |
+|---|---|---|---|
+| Root-family retrieval (MAP ↑) | **0.85** | 0.49 | 0.80 |
+| Same-root verification (ROC-AUC ↑) | **1.00** | 0.70 | 0.98 |
+| Number probing (acc ↑) | 0.59 | **0.95** | 0.91 |
+| Case probing (acc ↑) | 0.22 | **0.89** | 0.81 |
+| WikiANN-tr NER (macro-F1 ↑) | 0.48 | **0.79** | 0.76 |
+
+This is a **deliberate, architectural trade-off**: the root-identity contrastive objective pulls a root's inflections together — sharpening root geometry (hence the retrieval/dedup wins) while collapsing the inflectional contrasts a probe reads — and the static per-word vector lacks the sentence context NER needs. Morpheus is therefore **complementary** to contextual encoders: ideal for the **lexical index** of a multi-vector RAG system (cheap, morphology-aware, strong at root matching), paired with a dense semantic encoder for context. Full results in `src/benchmarker/results/paper_eval/embeddings/`.
+
 ---
-
-## Project Structure
-
-```
-.
-├── data/
-│   ├── corpus_collector_tr/corpus.txt    # local Turkish corpus (vendored)
-│   └── sigmorphon_tr/tur.gold            # SIGMORPHON 2022 Turkish gold (test set)
-│
-├── src/
-│   ├── common/                            # shared infrastructure
-│   │   ├── configs/                       # single source of truth: main.yaml + logging.yaml
-│   │   ├── config_manager.py              # per-configs-dir singleton
-│   │   ├── logger.py
-│   │   ├── text_utils.py                  # Turkish-aware lower/upper
-│   │   └── providers/                     # config_provider, logger_provider
-│   │
-│   ├── model_development/                 # everything that PRODUCES
-│   │   ├── data/                          # preprocessor, analyzer
-│   │   ├── model/                         # Morpheus + CharEncoder + BoundaryDetector + SegmentEncoder + MLM head
-│   │   ├── training/                      # trainer, dataset, loss, callbacks
-│   │   ├── tokenization/                  # classical baselines + MorpheusTokenizer + diagnose
-│   │   └── artifacts/                     # produced: datasets, tokenizers, checkpoints
-│   │
-│   ├── benchmarker/                       # everything that CONSUMES + COMPARES
-│   │   ├── metrics/                       # classical + intrinsic + extrinsic
-│   │   ├── benchmarks/                    # classical (orchestrator) + paper + sigmorphon + lm_eval
-│   │   ├── visualization/
-│   │   └── results/                       # paper_eval/ and lm_eval/ outputs
-│   │
-│   └── run_pipeline.py                    # 6-stage orchestrator
-│
-└── README.md
-```
 
 ---
 
@@ -393,11 +373,11 @@ Morpheus is designed for applications where **morphological structure**, **inter
 - **Linguistic research / corpus annotation**: morpheme-level analysis at scale without manual annotation.
 - **Pretraining smaller Turkish language models** (≤1B parameters): the lower BPC and structured embeddings give favorable scaling.
 - **Educational tools**: visualize Turkish morphology in real-time (e.g. learner apps).
-- **Memory-constrained inference**: 39% lower GPU memory than 64K-vocab classical tokenizers — relevant for consumer-GPU and edge deployment.
+- **Memory-constrained inference**: ~19% lower GPU memory than 64K-vocab classical tokenizers — relevant for consumer-GPU and edge deployment.
 
 ### When NOT to use Morpheus
 
-- **Real-time generation latency-critical applications**: classical subword tokenizers achieve ~1.7× higher end-to-end character generation throughput (lower fertility = fewer forward passes per character).
+- **Real-time generation latency-critical applications**: classical subword tokenizers achieve ~1.6× higher end-to-end character generation throughput (lower fertility = fewer forward passes per character).
 - **Multilingual models**: Morpheus is Turkish-specific by design (uses Turkish character vocabulary + Morfessor supervision on Turkish). Use multilingual SentencePiece for cross-lingual tasks.
 - **General-purpose LLM pretraining at frontier scale**: for trillion-token pretraining the inductive-bias advantage of morphology likely saturates and standard BPE remains the practical choice.
 
@@ -411,8 +391,8 @@ The architectural components (Morpheus model, Poisson-binomial soft segmentation
 
 ### Planned releases
 - arXiv preprint (this paper)
-- Hugging Face model card + tokenizer release (`morpheus-tr-50k`)
-- Hugging Face Spaces demo (interactive segmentation)
+- Hugging Face model card + tokenizer release (`lonewolflab/Morpheus-TR-50K`)
+- Hugging Face Spaces demo (interactive segmentation + embedding explorer)
 - TACL / Cambridge NLP journal submission
 
 ### Trade-offs to weigh (not blockers)
@@ -430,7 +410,7 @@ Morpheus is usable for Turkish LLMs today. The points below are the engineering 
 
 ```bibtex
 @misc{sakar2026morpheus,
-  title  = {Morpheus: A Morphology-Aware Tokenizer for Turkish},
+  title  = {Morpheus: A Morphology-Aware Neural Tokenizer and Word Embedder for Turkish},
   author = {Şakar, Tolga},
   year   = {2026},
   note   = {Preprint forthcoming on arXiv}
