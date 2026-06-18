@@ -1,6 +1,6 @@
 # Morpheus: A Morphology-Aware Neural Tokenizer and Word Embedder for Turkish
 
-[![arXiv](https://img.shields.io/badge/arXiv-soon-b31b1b.svg)]() [![HuggingFace](https://img.shields.io/badge/🤗-Open_in_Spaces-yellow.svg)](https://huggingface.co/lonewolflab/Morpheus-TR-50K) [![License](https://img.shields.io/badge/License-MIT-blue.svg)]()
+[![arXiv](https://img.shields.io/badge/arXiv-Morpheus-b31b1b.svg)](https://arxiv.org/abs/2606.18717) [![HuggingFace](https://img.shields.io/badge/🤗-Open_in_Spaces-yellow.svg)](https://huggingface.co/lonewolflab/Morpheus-TR-50K) [![License](https://img.shields.io/badge/License-MIT-blue.svg)]()
 
 **Morpheus** is a neural morpheme-aware tokenizer **and word embedder** for **Turkish**, an agglutinative language whose semantic content is densely packed into productive suffix chains. It combines unsupervised morphological supervision (Morfessor) with self-supervised objectives (skip-gram negative sampling, root-family contrastive, masked language modeling) to learn segmentations that are simultaneously **morphologically aligned** and **language-modeling-friendly**. Because it is neural, the same forward pass that tokenizes also yields a structured word embedding — so Morpheus is a tokenizer and an embedding model at once.
 
@@ -413,7 +413,7 @@ Morpheus is usable for Turkish LLMs today. The points below are the engineering 
   title  = {Morpheus: A Morphology-Aware Neural Tokenizer and Word Embedder for Turkish},
   author = {Şakar, Tolga},
   year   = {2026},
-  note   = {Preprint forthcoming on arXiv}
+  note   = {arxiv.org/abs/2606.18717}
 }
 ```
 
