@@ -14,6 +14,10 @@ from src.common.providers.logger_provider import global_logger
 
 
 WORD_BOUNDARY = "▁"
+NEWLINE_TOKEN = "<NL>"
+EXTRA_TOKENS: Tuple[str, ...] = tuple("$|°€₺£…“”‘’«»–—•×→")
+_PRETOKEN_RE = re.compile(r"\n|[^\S\n]+|\w+|[^\w\s]", flags=re.UNICODE)
+_WORD_RE = re.compile(r"\w+", flags=re.UNICODE)
 
 
 SPECIAL_TOKENS = {
@@ -70,13 +74,6 @@ PRIORITY_SUFFIXES: Tuple[str, ...] = (
 )
 
 
-def _clean_word(word: str) -> Optional[str]:
-    w = re.sub(r"[^\w]", "", word, flags=re.UNICODE)
-    if len(w) < 1 or len(w) > 30:
-        return None
-    return w
-
-
 class MorpheusTokenizer:
     def __init__(
             self,
@@ -92,6 +89,7 @@ class MorpheusTokenizer:
         self.model = morpheus_model
         self.vocab: Dict[str, int] = vocab or dict(SPECIAL_TOKENS)
         self.id_to_token: Dict[int, str] = {v: k for k, v in self.vocab.items()}
+        self._ensure_tokens((WORD_BOUNDARY, NEWLINE_TOKEN) + EXTRA_TOKENS)
         self.max_word_len = max_word_len
         self.preserve_case = preserve_case
         self.batch_size = batch_size
@@ -116,6 +114,46 @@ class MorpheusTokenizer:
     @property
     def vocab_size(self) -> int:
         return len(self.vocab)
+
+    def _ensure_tokens(self, tokens) -> None:
+        next_id = max(self.vocab.values(), default=-1) + 1
+        for token in tokens:
+            if token not in self.vocab:
+                self.vocab[token] = next_id
+                self.id_to_token[next_id] = token
+                next_id += 1
+
+    @staticmethod
+    def _pretokenize(text: str) -> List[Tuple[str, str, bool]]:
+        units: List[Tuple[str, str, bool]] = []
+        space_before = True
+        for match in _PRETOKEN_RE.finditer(text):
+            piece = match.group()
+            if piece == "\n":
+                units.append(("nl", piece, False))
+                space_before = True
+            elif piece.isspace():
+                space_before = True
+            elif _WORD_RE.fullmatch(piece):
+                units.append(("word", piece, space_before))
+                space_before = False
+            else:
+                units.append(("sym", piece, space_before))
+                space_before = False
+        return units
+
+    def _token_to_ids(self, token: str) -> List[int]:
+        if token in self.vocab:
+            return [self.vocab[token]]
+        out: List[int] = []
+        if token.startswith(WORD_BOUNDARY):
+            out.append(self.vocab[WORD_BOUNDARY])
+            token = token[len(WORD_BOUNDARY):]
+            if token in self.vocab:
+                out.append(self.vocab[token])
+                return out
+        out.extend(self.vocab.get(ch, self.unk_id) for ch in token)
+        return out
 
     @torch.no_grad()
     def _morpheus_segment_batch(
@@ -231,32 +269,34 @@ class MorpheusTokenizer:
 
     def _segment_to_ids(self, segment: str, is_word_start: bool) -> List[int]:
         token = (WORD_BOUNDARY + segment) if is_word_start else segment
-        if token in self.vocab:
-            return [self.vocab[token]]
-
-        char_tokens = list(token)
-        out: List[int] = []
-        for ch in char_tokens:
-            out.append(self.vocab.get(ch, self.unk_id))
-        return out
+        return self._token_to_ids(token)
 
     def tokenize(self, text: str) -> List[str]:
-        words = text.split()
-        cleaned_words: List[str] = []
-        for w in words:
-            cw = _clean_word(w)
-            if cw:
-                cleaned_words.append(cw)
+        limit = max(1, self.max_word_len - 2)
+        units = []
+        chunks_flat: List[str] = []
+        for kind, piece, space_before in self._pretokenize(text):
+            if kind == "word":
+                chunks = [piece[i: i + limit] for i in range(0, len(piece), limit)]
+                chunks_flat.extend(chunks)
+                units.append((kind, chunks, space_before))
+            else:
+                units.append((kind, piece, space_before))
 
-        all_segments = self.segment_words_batched(cleaned_words)
+        segmented = iter(self.segment_words_batched(chunks_flat))
 
         tokens: List[str] = []
-        for segs in all_segments:
-            if not segs:
-                continue
-            tokens.append(WORD_BOUNDARY + segs[0])
-            for seg in segs[1:]:
-                tokens.append(seg)
+        for kind, payload, space_before in units:
+            if kind == "nl":
+                tokens.append(NEWLINE_TOKEN)
+            elif kind == "sym":
+                tokens.append((WORD_BOUNDARY + payload) if space_before else payload)
+            else:
+                first = True
+                for chunk in payload:
+                    for seg in (next(segmented) or [chunk]):
+                        tokens.append((WORD_BOUNDARY + seg) if (first and space_before) else seg)
+                        first = False
         return tokens
 
     def encode_as_pieces(self, text: str) -> List[str]:
@@ -272,11 +312,7 @@ class MorpheusTokenizer:
         if add_special_tokens:
             ids.append(self.bos_id)
         for tok in tokens:
-            if tok in self.vocab:
-                ids.append(self.vocab[tok])
-            else:
-                for ch in tok:
-                    ids.append(self.vocab.get(ch, self.unk_id))
+            ids.extend(self._token_to_ids(tok))
         if add_special_tokens:
             ids.append(self.eos_id)
         return ids
@@ -302,9 +338,9 @@ class MorpheusTokenizer:
             if skip_special_tokens and i in specials:
                 continue
             tok = self.id_to_token.get(i, "")
-            pieces.append(tok)
-        text = "".join(pieces).replace(WORD_BOUNDARY, " ").strip()
-        return text
+            pieces.append("\n" if tok == NEWLINE_TOKEN else tok)
+        text = "".join(pieces).replace(WORD_BOUNDARY, " ").replace("\n ", "\n")
+        return text[1:] if text.startswith(" ") else text
 
     def save(self, path: Union[str, Path]) -> None:
         path = Path(path)
