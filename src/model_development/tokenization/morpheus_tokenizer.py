@@ -392,6 +392,61 @@ class MorpheusTokenizer:
         global_logger.info(f"[MorpheusTokenizer] Loaded tokenizer from {path} (vocab={len(vocab)})")
         return tok
 
+    @classmethod
+    def from_pretrained(
+            cls,
+            repo_or_path: Union[str, Path] = "lonewolflab/Morpheus-TR-50K",
+            device: Optional[Union[str, torch.device]] = None,
+            checkpoint: str = "turkish_morpheus_a100_v3_best.pt",
+            vocab_dir: str = "morpheus_50k",
+            revision: Optional[str] = None,
+    ) -> "MorpheusTokenizer":
+        path = Path(repo_or_path)
+        if not path.exists():
+            from huggingface_hub import snapshot_download
+            path = Path(snapshot_download(
+                repo_id=str(repo_or_path),
+                revision=revision,
+                allow_patterns=[f"{vocab_dir}/*", checkpoint],
+            ))
+
+        if device is None:
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = torch.device(device)
+
+        ckpt = cls._load_checkpoint(path / checkpoint, device)
+        cfg = ckpt["config"]
+
+        def get(key, default=None):
+            return cfg.get(key, default) if isinstance(cfg, dict) else getattr(cfg, key, default)
+
+        model = Morpheus(
+            char_dim=get("char_dim"),
+            char_embed_dim=get("char_embed_dim"),
+            case_embed_dim=get("case_embed_dim"),
+            n_layers_encoder=get("n_layers_encoder"),
+            n_layers_detector=get("n_layers_detector"),
+            num_heads=get("num_heads"),
+            max_word_len=get("max_word_len"),
+            max_segs=get("max_segs"),
+            dropout=get("dropout"),
+            threshold=get("threshold"),
+            pos_weight=get("pos_weight"),
+            count_loss_w=get("count_loss_w", 0.3),
+        )
+        model.load_state_dict(ckpt["model_state"])
+        model.to(device).eval()
+        return cls.load(path / vocab_dir, morpheus_model=model, device=device)
+
+    @staticmethod
+    def _load_checkpoint(file: Path, device: torch.device) -> Dict:
+        from src.model_development.training.trainer import TrainingConfig
+
+        main = sys.modules["__main__"]
+        if not hasattr(main, "TrainingConfig"):
+            setattr(main, "TrainingConfig", TrainingConfig)
+        return torch.load(file, map_location=device, weights_only=False)
+
     def vocab_stats(self) -> Dict:
         char_tokens = [t for t in self.vocab if len(t) == 1 and t != WORD_BOUNDARY]
         word_start_tokens = [t for t in self.vocab if t.startswith(WORD_BOUNDARY)]
@@ -430,16 +485,21 @@ def build_morpheus_vocab(
     morpheus_model.eval()
 
     global_logger.info(f"[build_morpheus_vocab] Counting words in {corpus_path}")
+    limit = 30
     word_counter: Counter = Counter()
+    boundary_counter: Counter = Counter()
     with open(corpus_path, "r", encoding="utf-8") as f:
         for line in f:
-            for w in line.strip().split():
-                cw = _clean_word(w)
-                if cw is None:
+            for kind, piece, space_before in MorpheusTokenizer._pretokenize(line):
+                if kind != "word":
                     continue
                 if not preserve_case:
-                    cw = turkish_lower(cw)
-                word_counter[cw] += 1
+                    piece = turkish_lower(piece)
+                for k, start in enumerate(range(0, len(piece), limit)):
+                    chunk = piece[start: start + limit]
+                    word_counter[chunk] += 1
+                    if k == 0 and space_before:
+                        boundary_counter[chunk] += 1
 
     unique_words = [w for w, c in word_counter.items() if c >= min_freq]
     unique_words.sort(key=lambda w: -word_counter[w])
@@ -468,9 +528,15 @@ def build_morpheus_vocab(
         batch_segs = bootstrap_tok._morpheus_segment_batch(batch)
         for w, segs in zip(batch, batch_segs):
             freq = word_counter[w]
+            with_boundary = boundary_counter[w]
             for j, seg in enumerate(segs):
-                token = (WORD_BOUNDARY + seg) if j == 0 else seg
-                seg_counter[token] += freq
+                if j == 0:
+                    if with_boundary:
+                        seg_counter[WORD_BOUNDARY + seg] += with_boundary
+                    if freq - with_boundary:
+                        seg_counter[seg] += freq - with_boundary
+                else:
+                    seg_counter[seg] += freq
 
         if (i // batch_size + 1) % (log_every // batch_size + 1) == 0:
             elapsed = time.time() - t0
