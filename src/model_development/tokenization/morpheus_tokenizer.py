@@ -13,11 +13,29 @@ from src.common.text_utils import turkish_lower
 from src.common.providers.logger_provider import global_logger
 
 
+TOKENIZER_VERSION = 2
+
 WORD_BOUNDARY = "▁"
 NEWLINE_TOKEN = "<NL>"
+TAB_TOKEN = "<TAB>"
+CR_TOKEN = "<CR>"
+WHITESPACE_TOKENS: Dict[str, str] = {"\n": NEWLINE_TOKEN, "\t": TAB_TOKEN, "\r": CR_TOKEN}
+_WHITESPACE_CHARS: Dict[str, str] = {v: k for k, v in WHITESPACE_TOKENS.items()}
 EXTRA_TOKENS: Tuple[str, ...] = tuple("$|°€₺£…“”‘’«»–—•×→")
-_PRETOKEN_RE = re.compile(r"\n|[^\S\n]+|\w+|[^\w\s]", flags=re.UNICODE)
+BYTE_TOKENS: Tuple[str, ...] = tuple(f"<0x{b:02X}>" for b in range(256))
+RESERVED_TOKENS: Tuple[str, ...] = (
+    (WORD_BOUNDARY, NEWLINE_TOKEN) + EXTRA_TOKENS + (TAB_TOKEN, CR_TOKEN) + BYTE_TOKENS
+)
+_PRETOKEN_RE = re.compile(r" +|\s|\w+|[^\w\s]", flags=re.UNICODE)
 _WORD_RE = re.compile(r"\w+", flags=re.UNICODE)
+
+
+def _split_long(word: str, limit: int) -> List[str]:
+    return [word[i: i + limit] for i in range(0, len(word), limit)]
+
+
+def _byte_tokens(text: str) -> List[str]:
+    return [BYTE_TOKENS[b] for b in text.encode("utf-8")]
 
 
 SPECIAL_TOKENS = {
@@ -87,9 +105,10 @@ class MorpheusTokenizer:
     ):
         self.helper = CharEncoderHelper()
         self.model = morpheus_model
-        self.vocab: Dict[str, int] = vocab or dict(SPECIAL_TOKENS)
+        self.vocab: Dict[str, int] = dict(vocab) if vocab else dict(SPECIAL_TOKENS)
         self.id_to_token: Dict[int, str] = {v: k for k, v in self.vocab.items()}
-        self._ensure_tokens((WORD_BOUNDARY, NEWLINE_TOKEN) + EXTRA_TOKENS)
+        self._ensure_tokens(RESERVED_TOKENS)
+        self._byte_values: Dict[int, int] = {self.vocab[t]: b for b, t in enumerate(BYTE_TOKENS)}
         self.max_word_len = max_word_len
         self.preserve_case = preserve_case
         self.batch_size = batch_size
@@ -123,23 +142,36 @@ class MorpheusTokenizer:
                 self.id_to_token[next_id] = token
                 next_id += 1
 
+    @property
+    def chunk_limit(self) -> int:
+        return max(1, self.max_word_len - 2)
+
     @staticmethod
     def _pretokenize(text: str) -> List[Tuple[str, str, bool]]:
         units: List[Tuple[str, str, bool]] = []
-        space_before = True
+        pending = 0
+        virtual = True
+
+        def flush_spaces() -> None:
+            if pending:
+                n = pending + virtual
+                units.extend(("space", " ", False) for _ in range(n))
+
         for match in _PRETOKEN_RE.finditer(text):
             piece = match.group()
-            if piece == "\n":
-                units.append(("nl", piece, False))
-                space_before = True
+            if piece[0] == " ":
+                pending += len(piece)
             elif piece.isspace():
-                space_before = True
-            elif _WORD_RE.fullmatch(piece):
-                units.append(("word", piece, space_before))
-                space_before = False
+                flush_spaces()
+                units.append(("ws", piece, False))
+                pending, virtual = 0, piece == "\n"
             else:
-                units.append(("sym", piece, space_before))
-                space_before = False
+                n = pending + virtual
+                units.extend(("space", " ", False) for _ in range(n - 1))
+                kind = "word" if _WORD_RE.fullmatch(piece) else "sym"
+                units.append((kind, piece, n > 0))
+                pending, virtual = 0, False
+        flush_spaces()
         return units
 
     def _token_to_ids(self, token: str) -> List[int]:
@@ -152,7 +184,11 @@ class MorpheusTokenizer:
             if token in self.vocab:
                 out.append(self.vocab[token])
                 return out
-        out.extend(self.vocab.get(ch, self.unk_id) for ch in token)
+        for ch in token:
+            if ch in self.vocab:
+                out.append(self.vocab[ch])
+            else:
+                out.extend(self.vocab[b] for b in _byte_tokens(ch))
         return out
 
     @torch.no_grad()
@@ -228,14 +264,34 @@ class MorpheusTokenizer:
 
         return segments
 
+    @staticmethod
+    def _realign(word: str, segs: List[str]) -> Optional[List[str]]:
+        # The cache is keyed case-insensitively when preserve_case=False, so a hit
+        # may hold another casing of the word; cut the actual word at the same
+        # offsets so the output keeps the input's surface form.
+        if "".join(segs) == word:
+            return segs
+        if sum(len(s) for s in segs) != len(word):
+            return None
+        out, pos = [], 0
+        for s in segs:
+            out.append(word[pos: pos + len(s)])
+            pos += len(s)
+        return out
+
+    def _cache_get(self, word: str) -> Optional[List[str]]:
+        key = word if self.preserve_case else turkish_lower(word)
+        cached = self._segment_cache.get(key)
+        return None if cached is None else self._realign(word, cached)
+
     def segment_word(self, word: str) -> List[str]:
         if not word:
             return []
-        key = word if self.preserve_case else turkish_lower(word)
-        if key in self._segment_cache:
-            return self._segment_cache[key]
+        cached = self._cache_get(word)
+        if cached is not None:
+            return cached
         segs = self._morpheus_segment_batch([word])[0]
-        self._segment_cache[key] = segs
+        self._segment_cache[word if self.preserve_case else turkish_lower(word)] = segs
         return segs
 
     def segment_words_batched(self, words: List[str]) -> List[List[str]]:
@@ -247,8 +303,7 @@ class MorpheusTokenizer:
             if not w:
                 results[i] = []
                 continue
-            key = w if self.preserve_case else turkish_lower(w)
-            cached = self._segment_cache.get(key)
+            cached = self._cache_get(w)
             if cached is not None:
                 results[i] = cached
             else:
@@ -272,12 +327,11 @@ class MorpheusTokenizer:
         return self._token_to_ids(token)
 
     def tokenize(self, text: str) -> List[str]:
-        limit = max(1, self.max_word_len - 2)
         units = []
         chunks_flat: List[str] = []
         for kind, piece, space_before in self._pretokenize(text):
             if kind == "word":
-                chunks = [piece[i: i + limit] for i in range(0, len(piece), limit)]
+                chunks = _split_long(piece, self.chunk_limit)
                 chunks_flat.extend(chunks)
                 units.append((kind, chunks, space_before))
             else:
@@ -287,10 +341,20 @@ class MorpheusTokenizer:
 
         tokens: List[str] = []
         for kind, payload, space_before in units:
-            if kind == "nl":
-                tokens.append(NEWLINE_TOKEN)
+            if kind == "space":
+                tokens.append(WORD_BOUNDARY)
+            elif kind == "ws":
+                tokens.append(WHITESPACE_TOKENS.get(payload, payload))
             elif kind == "sym":
-                tokens.append((WORD_BOUNDARY + payload) if space_before else payload)
+                if space_before:
+                    tokens.append(WORD_BOUNDARY)
+                if payload == WORD_BOUNDARY:
+                    # A literal ▁ in the text would decode as a space; send its bytes.
+                    tokens.extend(_byte_tokens(payload))
+                elif space_before:
+                    tokens[-1] += payload
+                else:
+                    tokens.append(payload)
             else:
                 first = True
                 for chunk in payload:
@@ -334,12 +398,21 @@ class MorpheusTokenizer:
         if skip_unk:
             specials.add(self.unk_id)
         pieces: List[str] = []
+        pending_bytes = bytearray()
         for i in ids:
             if skip_special_tokens and i in specials:
                 continue
+            if i in self._byte_values:
+                pending_bytes.append(self._byte_values[i])
+                continue
+            if pending_bytes:
+                pieces.append(pending_bytes.decode("utf-8", errors="replace"))
+                pending_bytes.clear()
             tok = self.id_to_token.get(i, "")
-            pieces.append("\n" if tok == NEWLINE_TOKEN else tok)
-        text = "".join(pieces).replace(WORD_BOUNDARY, " ").replace("\n ", "\n")
+            pieces.append(_WHITESPACE_CHARS.get(tok) or tok.replace(WORD_BOUNDARY, " "))
+        if pending_bytes:
+            pieces.append(pending_bytes.decode("utf-8", errors="replace"))
+        text = "".join(pieces).replace("\n ", "\n")
         return text[1:] if text.startswith(" ") else text
 
     def save(self, path: Union[str, Path]) -> None:
@@ -350,6 +423,7 @@ class MorpheusTokenizer:
             json.dump(self.vocab, f, ensure_ascii=False, indent=2)
 
         config = {
+            "tokenizer_version": TOKENIZER_VERSION,
             "vocab_size": len(self.vocab),
             "max_word_len": self.max_word_len,
             "preserve_case": self.preserve_case,
@@ -389,7 +463,17 @@ class MorpheusTokenizer:
             legacy_boundary_shift=config.get("legacy_boundary_shift", False),
             device=device,
         )
-        global_logger.info(f"[MorpheusTokenizer] Loaded tokenizer from {path} (vocab={len(vocab)})")
+        version = config.get("tokenizer_version", 1)
+        if version < TOKENIZER_VERSION:
+            global_logger.warning(
+                f"[MorpheusTokenizer] {path} was built by tokenizer v{version} (current v{TOKENIZER_VERSION}). "
+                f"Encoding is lossless, but the vocab lacks punctuation and glued word-start "
+                f"tokens, so fertility is higher than a vocab rebuilt with build_morpheus_vocab."
+            )
+        global_logger.info(
+            f"[MorpheusTokenizer] Loaded tokenizer from {path} "
+            f"(vocab={len(vocab)} on disk, {len(tok.vocab)} with reserved tokens)"
+        )
         return tok
 
     @classmethod
@@ -448,17 +532,21 @@ class MorpheusTokenizer:
         return torch.load(file, map_location=device, weights_only=False)
 
     def vocab_stats(self) -> Dict:
-        char_tokens = [t for t in self.vocab if len(t) == 1 and t != WORD_BOUNDARY]
-        word_start_tokens = [t for t in self.vocab if t.startswith(WORD_BOUNDARY)]
+        byte_tokens = set(BYTE_TOKENS)
+        control = set(SPECIAL_TOKENS) | set(WHITESPACE_TOKENS.values()) | {WORD_BOUNDARY}
+        char_tokens = [t for t in self.vocab if len(t) == 1 and t not in control]
+        word_start_tokens = [t for t in self.vocab if t.startswith(WORD_BOUNDARY) and t != WORD_BOUNDARY]
         morpheme_tokens = [
             t for t in self.vocab
             if not t.startswith(WORD_BOUNDARY)
             and len(t) > 1
-            and t not in SPECIAL_TOKENS
+            and t not in control
+            and t not in byte_tokens
         ]
         return {
             "vocab_size": len(self.vocab),
             "specials": len(SPECIAL_TOKENS),
+            "byte_fallback": len(byte_tokens & self.vocab.keys()),
             "single_chars": len(char_tokens),
             "word_starts": len(word_start_tokens),
             "morphemes": len(morpheme_tokens),
@@ -478,6 +566,7 @@ def build_morpheus_vocab(
         legacy_boundary_shift: bool = False,
         inject_priority_suffixes: bool = True,
         log_every: int = 5000,
+        max_word_len: int = 32,
 ) -> Dict[str, int]:
     if device is None:
         device = next(morpheus_model.parameters()).device
@@ -485,18 +574,22 @@ def build_morpheus_vocab(
     morpheus_model.eval()
 
     global_logger.info(f"[build_morpheus_vocab] Counting words in {corpus_path}")
-    limit = 30
+    limit = max(1, max_word_len - 2)
     word_counter: Counter = Counter()
     boundary_counter: Counter = Counter()
+    sym_counter: Counter = Counter()
     with open(corpus_path, "r", encoding="utf-8") as f:
         for line in f:
-            for kind, piece, space_before in MorpheusTokenizer._pretokenize(line):
+            for kind, piece, space_before in MorpheusTokenizer._pretokenize(line.rstrip("\n")):
+                if kind == "sym":
+                    if piece != WORD_BOUNDARY:
+                        sym_counter[(WORD_BOUNDARY + piece) if space_before else piece] += 1
+                    continue
                 if kind != "word":
                     continue
                 if not preserve_case:
                     piece = turkish_lower(piece)
-                for k, start in enumerate(range(0, len(piece), limit)):
-                    chunk = piece[start: start + limit]
+                for k, chunk in enumerate(_split_long(piece, limit)):
                     word_counter[chunk] += 1
                     if k == 0 and space_before:
                         boundary_counter[chunk] += 1
@@ -514,13 +607,14 @@ def build_morpheus_vocab(
     bootstrap_tok = MorpheusTokenizer(
         morpheus_model=morpheus_model,
         vocab=dict(SPECIAL_TOKENS),
+        max_word_len=max_word_len,
         preserve_case=preserve_case,
         device=device,
         batch_size=batch_size,
         legacy_boundary_shift=legacy_boundary_shift,
     )
 
-    seg_counter: Counter = Counter()
+    seg_counter: Counter = Counter(sym_counter)
     t0 = time.time()
 
     for i in range(0, len(unique_words), batch_size):
@@ -550,6 +644,11 @@ def build_morpheus_vocab(
 
     vocab: Dict[str, int] = dict(SPECIAL_TOKENS)
     next_id = len(vocab)
+
+    for token in RESERVED_TOKENS:
+        if token not in vocab:
+            vocab[token] = next_id
+            next_id += 1
 
     if char_fallback:
         for ch in bootstrap_tok.helper._TURKISH_CHARS:
@@ -609,6 +708,7 @@ def export_corpus_tokenized(
     n_words = 0
     n_tokens = 0
     n_unk = 0
+    n_byte = 0
     n_chars = 0
     t0 = time.time()
 
@@ -621,21 +721,12 @@ def export_corpus_tokenized(
             line = line.strip()
             if not line:
                 continue
-            tokens = tokenizer.tokenize(line)
+            id_list = tokenizer.encode(line, add_special_tokens=False)
             n_lines += 1
             n_words += len(line.split())
             n_chars += len(line)
-
-            id_list: List[int] = []
-            for tok in tokens:
-                if tok in tokenizer.vocab:
-                    id_list.append(tokenizer.vocab[tok])
-                else:
-                    for ch in tok:
-                        cid = tokenizer.vocab.get(ch, tokenizer.unk_id)
-                        if cid == tokenizer.unk_id:
-                            n_unk += 1
-                        id_list.append(cid)
+            n_unk += sum(1 for i in id_list if i == tokenizer.unk_id)
+            n_byte += sum(1 for i in id_list if i in tokenizer._byte_values)
             n_tokens += len(id_list)
             fout.write(" ".join(str(i) for i in id_list) + "\n")
 
@@ -655,6 +746,8 @@ def export_corpus_tokenized(
         "fertility": round(n_tokens / max(n_words, 1), 4),
         "compression": round(n_chars / max(n_tokens, 1), 4),
         "unk_rate": round(n_unk / max(n_tokens, 1) * 100, 4),
+        "byte_fallback_count": n_byte,
+        "byte_fallback_rate": round(n_byte / max(n_tokens, 1) * 100, 4),
     }
     global_logger.info(f"[export_corpus_tokenized] Done. Stats: {stats}")
     return stats

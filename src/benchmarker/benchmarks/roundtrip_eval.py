@@ -15,6 +15,23 @@ from src.benchmarker.benchmarks.morphscore_eval import load_morphscore_turkish
 
 Codec = Tuple[Callable[[str], List[int]], Callable[[List[int]], str]]
 
+STRESS_SENTENCES: List[str] = [
+    "Evlerimizdekiler, kitapçısı muvaffakiyetsizleştiriciler.",
+    "Ankara'da hava 3,5 °C; fiyat 12.000 ₺ (KDV dahil).",
+    "“Yarın gelirim” dedi — ama gelmedi…",
+    "ABD, AB ve TBMM'nin 2024'teki kararları %12 arttı.",
+    "Detaylar için https://example.com/a?b=c&d=e adresine bakın.",
+    "def topla(a, b):\n    return a + b\n",
+    "if x:\n\ty = 1\n\n  z = 2",
+    "Satır bir\r\nsatır iki\r\n",
+    "  baştaki ve sondaki boşluklar  ",
+    "iki  boşluk   üç boşluk",
+    "Word WWW xyz QUIZ âlim îman kâr",
+    "emoji 🙂 ve ± işareti, i̇ birleşik nokta",
+    "no-break\u00a0space ve\u2009ince boşluk",
+    "Çekoslovakyalılaştıramadıklarımızdanmışsınızcasına söyledi.",
+]
+
 
 def make_classical_codec(wrapper) -> Codec:
     model = wrapper.model
@@ -89,6 +106,8 @@ def evaluate(
         words: List[str],
         codecs: Dict[str, Codec],
         output_dir: Path,
+        label: str = "words",
+        strip: bool = True,
 ) -> List[Dict]:
     output_dir.mkdir(parents=True, exist_ok=True)
     rows: List[Dict] = []
@@ -109,7 +128,8 @@ def evaluate(
                 outs.append("")
                 continue
             try:
-                outs.append(decode_fn(ids).strip())
+                out = decode_fn(ids)
+                outs.append(out.strip() if strip else out)
             except Exception:
                 outs.append("")
         decode_elapsed = time.perf_counter() - t0
@@ -132,7 +152,8 @@ def evaluate(
             "decode_words_per_sec": round(n_total / decode_elapsed, 1) if decode_elapsed > 0 else 0.0,
         })
 
-        fail_path = output_dir / f"roundtrip_fail_{name}.csv"
+        prefix = "roundtrip" if label == "words" else f"roundtrip_{label}"
+        fail_path = output_dir / f"{prefix}_fail_{name}.csv"
         with open(fail_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow(["wordform", "reconstructed"])
@@ -143,7 +164,8 @@ def evaluate(
         )
 
     rows.sort(key=lambda r: -r["roundtrip_acc"])
-    summary_path = output_dir / "roundtrip_summary.csv"
+    prefix = "roundtrip" if label == "words" else f"roundtrip_{label}"
+    summary_path = output_dir / f"{prefix}_summary.csv"
     with open(summary_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
         writer.writeheader()
@@ -151,7 +173,7 @@ def evaluate(
 
     print()
     print("=" * 70)
-    print("ROUNDTRIP RECONSTRUCTION  (decode(encode(w)) == w, inflected wordforms)")
+    print(f"ROUNDTRIP RECONSTRUCTION  (decode(encode(x)) == x, {label}, strip={strip})")
     print("=" * 70)
     print(f"  {'tokenizer':<20s} {'n_words':>8s} {'acc':>8s} {'fail%':>7s} {'decode w/s':>11s}")
     for r in rows:
@@ -164,29 +186,64 @@ def evaluate(
     return rows
 
 
-def run(classical_vocab: int = 64000) -> List[Dict]:
+def load_corpus_lines(corpus_path: Path, max_lines: int) -> List[str]:
+    lines: List[str] = []
+    with open(corpus_path, "r", encoding="utf-8", newline="") as f:
+        for line in f:
+            line = line.rstrip("\r\n")
+            if line:
+                lines.append(line)
+            if len(lines) >= max_lines:
+                break
+    return lines
+
+
+def run(
+        classical_vocab: int = 64000,
+        mode: str = "all",
+        max_sentences: int = 5000,
+) -> List[Dict]:
     base = Path(__file__).resolve().parents[3]
     artifacts = base / "src" / "model_development" / "artifacts"
     data_path = base / "data" / "morphscore" / "turkish_data.csv"
+    corpus_path = artifacts / "datasets" / "splits" / "test.txt"
     output_dir = base / "src" / "benchmarker" / "results" / "paper_eval" / "roundtrip"
-
-    df = load_morphscore_turkish(data_path)
-    words = df["wordform"].astype(str).tolist()
-    global_logger.info(f"[roundtrip_eval] {len(words):,} inflected wordforms")
 
     codecs = build_codecs(artifacts, classical_vocab)
     if not codecs:
         global_logger.error("[roundtrip_eval] No tokenizers available.")
         return []
 
-    return evaluate(words, codecs, output_dir)
+    rows: List[Dict] = []
+    if mode in ("words", "all"):
+        df = load_morphscore_turkish(data_path)
+        words = df["wordform"].astype(str).tolist()
+        global_logger.info(f"[roundtrip_eval] {len(words):,} inflected wordforms")
+        rows += evaluate(words, codecs, output_dir, label="words", strip=True)
+
+    if mode in ("sentences", "all"):
+        if corpus_path.exists():
+            sentences = load_corpus_lines(corpus_path, max_sentences)
+            global_logger.info(f"[roundtrip_eval] {len(sentences):,} raw corpus lines from {corpus_path}")
+            rows += evaluate(sentences, codecs, output_dir, label="sentences", strip=False)
+        else:
+            global_logger.warning(f"[roundtrip_eval] {corpus_path} missing — skipping corpus sentences")
+        rows += evaluate(STRESS_SENTENCES, codecs, output_dir, label="stress", strip=False)
+
+    return rows
 
 
 def main():
     parser = argparse.ArgumentParser(prog="src.benchmarker.benchmarks.roundtrip_eval")
     parser.add_argument("--classical-vocab", type=int, default=64000)
+    parser.add_argument("--mode", choices=["words", "sentences", "all"], default="all")
+    parser.add_argument("--max-sentences", type=int, default=5000)
     args = parser.parse_args()
-    rows = run(classical_vocab=args.classical_vocab)
+    rows = run(
+        classical_vocab=args.classical_vocab,
+        mode=args.mode,
+        max_sentences=args.max_sentences,
+    )
     if not rows:
         sys.exit(1)
 
