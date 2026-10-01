@@ -78,10 +78,11 @@ def _setup_style() -> None:
 
 
 def _hbar(ax, names: Sequence[str], values: Sequence[float], fmt: str,
-          lossy: Optional[set] = None) -> None:
+          lossy: Optional[set] = None, errors: Optional[Sequence[float]] = None) -> None:
     y = np.arange(len(names))
     colors = [_color(n) for n in names]
-    bars = ax.barh(y, values, color=colors, edgecolor="#333333", linewidth=0.7)
+    bars = ax.barh(y, values, color=colors, edgecolor="#333333", linewidth=0.7,
+                   xerr=errors, error_kw=dict(ecolor="#222222", capsize=3, linewidth=0.9))
     if lossy:
         for b, n in zip(bars, names):
             if _canon(n) in lossy:
@@ -121,29 +122,86 @@ def _sorted_names(names: Sequence[str], values: Sequence[float], ascending: bool
 
 
 def plot_bpc(lm_summary: Path, out: Path, lossy: Optional[set]) -> None:
-    df = pd.read_csv(lm_summary)
-    col = "best_bpc" if "best_bpc" in df.columns else "final_bpc"
-    names, vals = _sorted_names(df["tokenizer"].tolist(), df[col].tolist(), ascending=True)
+    seeds = lm_summary.parent.parent / f"{lm_summary.parent.name}_seeds_summary.csv"
+    errors = None
+    if seeds.exists() and (pd.read_csv(seeds)["n_seeds"] > 1).any():
+        sdf = pd.read_csv(seeds).sort_values("bpc_mean")
+        names, vals, errors = sdf["tokenizer"].tolist(), sdf["bpc_mean"].tolist(), sdf["bpc_std"].tolist()
+        label = f"BPC, mean ± std over {int(sdf['n_seeds'].max())} seeds"
+    else:
+        df = pd.read_csv(lm_summary)
+        col = "best_bpc" if "best_bpc" in df.columns else "final_bpc"
+        names, vals = _sorted_names(df["tokenizer"].tolist(), df[col].tolist(), ascending=True)
+        label = "BPC"
     fig, ax = plt.subplots(figsize=(7.2, 0.55 * len(names) + 1.6))
-    _hbar(ax, names, vals, "{:.4f}", lossy=lossy)
+    _hbar(ax, names, vals, "{:.4f}", lossy=lossy, errors=errors)
     ax.set_title("Bits per character (BPC) — lower is better")
-    sub = "hatched = lossy reconstruction (information-destroying)" if lossy else ""
-    ax.set_xlabel("BPC" + (f"     {sub}" if sub else ""))
+    sub = "hatched = not exactly reversible on raw text" if lossy else ""
+    ax.set_xlabel(label + (f"     {sub}" if sub else ""))
     fig.savefig(out)
     plt.close(fig)
     global_logger.info(f"[eval_report] {out.name}")
 
 
 def plot_roundtrip(summary: Path, out: Path) -> None:
-    df = pd.read_csv(summary)
-    df["acc_pct"] = df["roundtrip_acc"] * 100
-    names, vals = _sorted_names(df["tokenizer"].tolist(), df["acc_pct"].tolist(), ascending=False)
-    fig, ax = plt.subplots(figsize=(7.2, 0.55 * len(names) + 1.6))
-    _hbar(ax, names, vals, "{:.1f}%")
-    ax.axvline(100, color="#1F3A5F", linestyle=":", linewidth=1.0)
-    ax.set_title("Roundtrip reconstruction accuracy — decode(encode(w)) == w")
-    ax.set_xlabel("% of inflected wordforms reconstructed exactly")
-    ax.set_xlim(0, 108)
+    levels = [(summary, "Inflected words"),
+              (summary.with_name("roundtrip_sentences_summary.csv"), "Raw corpus lines"),
+              (summary.with_name("roundtrip_stress_summary.csv"), "Stress set")]
+    levels = [(p, lbl) for p, lbl in levels if p.exists()]
+    if len(levels) == 1:
+        df = pd.read_csv(summary)
+        df["acc_pct"] = df["roundtrip_acc"] * 100
+        names, vals = _sorted_names(df["tokenizer"].tolist(), df["acc_pct"].tolist(), ascending=False)
+        fig, ax = plt.subplots(figsize=(7.2, 0.55 * len(names) + 1.6))
+        _hbar(ax, names, vals, "{:.1f}%")
+        ax.axvline(100, color="#1F3A5F", linestyle=":", linewidth=1.0)
+        ax.set_title("Roundtrip reconstruction accuracy — decode(encode(w)) == w")
+        ax.set_xlabel("% of inflected wordforms reconstructed exactly")
+        ax.set_xlim(0, 108)
+    else:
+        accs = {lbl: dict(zip(pd.read_csv(p)["tokenizer"], pd.read_csv(p)["roundtrip_acc"] * 100))
+                for p, lbl in levels}
+        names = sorted(accs[levels[0][1]], key=_order_index)
+        series = {n: [accs[lbl].get(n, 0.0) for _, lbl in levels] for n in names}
+        fig, ax = plt.subplots(figsize=(9.5, 5.0))
+        _grouped_bars(ax, names, series, [lbl for _, lbl in levels])
+        ax.set_ylim(0, 108)
+        ax.axhline(100, color="#1F3A5F", linestyle=":", linewidth=1.0)
+        ax.set_ylabel("% reconstructed exactly")
+        ax.set_title("Roundtrip reconstruction — decode(encode(x)) == x")
+    fig.savefig(out)
+    plt.close(fig)
+    global_logger.info(f"[eval_report] {out.name}")
+
+
+def plot_lm_training(full_dir: Path, out: Path, lossy: Optional[set]) -> None:
+    logs = sorted(full_dir.glob("*_train_log.csv"), key=lambda p: _order_index(p.name))
+    if not logs:
+        return
+    styles = ["-", "--", "-.", ":"]
+    fig, (ax_loss, ax_bpc) = plt.subplots(1, 2, figsize=(12.5, 4.6))
+    for i, path in enumerate(logs):
+        name = path.name.replace("_train_log.csv", "")
+        df = pd.read_csv(path)
+        focal = _canon(name) == "Morpheus"
+        kw = dict(color="#1F3A5F" if focal else _color(name) if _canon(name) == "TurkishTokenizer" else "#777777",
+                  linewidth=2.4 if focal else 1.3,
+                  linestyle="-" if focal else styles[i % len(styles)],
+                  marker="o" if focal else None, markersize=3.5,
+                  label=_canon(name) + (" †" if lossy and _canon(name) in lossy else ""))
+        ax_loss.plot(df["step"], df["train_loss"], **kw)
+        ax_bpc.plot(df["step"], df["val_bpc"], **kw)
+    ax_loss.set_title("LM training loss")
+    ax_loss.set_xlabel("optimizer step")
+    ax_loss.set_ylabel("cross-entropy (nats / token)")
+    ax_bpc.set_title("Validation BPC — lower is better")
+    ax_bpc.set_xlabel("optimizer step")
+    ax_bpc.set_ylabel("bits per character")
+    for ax in (ax_loss, ax_bpc):
+        ax.grid(True)
+    ax_bpc.legend(loc="upper right", ncol=2)
+    if lossy:
+        fig.text(0.99, -0.02, "† not exactly reversible on raw text", ha="right", fontsize=8, color="#555555")
     fig.savefig(out)
     plt.close(fig)
     global_logger.info(f"[eval_report] {out.name}")
@@ -355,15 +413,29 @@ def run(base: Optional[Path] = None) -> Path:
 
     lossy: set = set()
     rt = paper / "roundtrip" / "roundtrip_summary.csv"
-    if rt.exists():
-        rdf = pd.read_csv(rt)
+    # Prefer raw-text reconstruction (case, punctuation, whitespace) over the
+    # lowercase single-word set when deciding which tokenizers are lossy.
+    rt_text = paper / "roundtrip" / "roundtrip_sentences_summary.csv"
+    rt_for_lossy = rt_text if rt_text.exists() else rt
+    if rt_for_lossy.exists():
+        rdf = pd.read_csv(rt_for_lossy)
         for _, r in rdf.iterrows():
             if r["roundtrip_acc"] < 0.999:
                 lossy.add(_canon(r["tokenizer"]))
+        if rt_for_lossy == rt_text:
+            # The Morfessor adapters lowercase their input, so it cannot reproduce raw text.
+            lossy.add("Morfessor")
 
     jobs = [
         (results / "lm_eval" / "full" / "summary.csv",
          lambda p, o: plot_bpc(p, o, lossy), "fig_bpc.png"),
+        (results / "lm_eval" / "full",
+         lambda p, o: plot_lm_training(p, o, lossy), "fig_lm_training.png"),
+        # Train-to-convergence runs (--mode long), plotted only when present.
+        (results / "lm_eval" / "long" / "summary.csv",
+         lambda p, o: plot_bpc(p, o, lossy), "fig_bpc_long.png"),
+        (results / "lm_eval" / "long",
+         lambda p, o: plot_lm_training(p, o, lossy), "fig_lm_training_long.png"),
         (rt, plot_roundtrip, "fig_roundtrip.png"),
         (paper / "morphscore" / "morphscore_summary.csv", plot_morphscore, "fig_morphscore.png"),
         (paper / "sigmorphon" / "sigmorphon_summary.csv", plot_sigmorphon, "fig_sigmorphon.png"),

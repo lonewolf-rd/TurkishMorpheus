@@ -7,9 +7,10 @@ import time
 import json
 import argparse
 import csv
+import hashlib
 from pathlib import Path
 from dataclasses import dataclass
-from typing import List, Dict, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 from collections import Counter
 
 import torch
@@ -18,15 +19,35 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 
 from src.common.providers.logger_provider import global_logger
-from src.common.text_utils import turkish_lower
+
+
+WORD_BOUNDARY = "▁"
+
+
+def _fingerprint(*parts) -> str:
+    """Short content hash of tokenizer files/settings, used to key token-stream caches."""
+    h = hashlib.md5()
+    for p in parts:
+        if isinstance(p, Path) and p.is_file():
+            h.update(p.read_bytes())
+        else:
+            h.update(str(p).encode("utf-8"))
+    return h.hexdigest()[:8]
 
 
 class TokenizerAdapter:
     name: str = "base"
     vocab_size: int = 0
+    # Changes whenever the tokenizer changes, so stale token caches are never reused.
+    fingerprint: str = ""
+    # Files needed to deploy the tokenizer (for the artifact-size metric).
+    artifact_paths: Tuple[Path, ...] = ()
 
     def encode(self, text: str) -> List[int]:
         raise NotImplementedError
+
+    def prepare(self, lines: Iterable[str]) -> None:
+        """Optional one-pass warm-up over the lines about to be encoded."""
 
 
 class SentencePieceAdapter(TokenizerAdapter):
@@ -36,22 +57,28 @@ class SentencePieceAdapter(TokenizerAdapter):
         self.sp = spm.SentencePieceProcessor()
         self.sp.load(model_path)
         self.vocab_size = self.sp.get_piece_size()
+        self.fingerprint = _fingerprint(Path(model_path))
+        self.artifact_paths = (Path(model_path),)
         global_logger.info(f"[{name}] Loaded SentencePiece (vocab={self.vocab_size:,})")
 
     def encode(self, text: str) -> List[int]:
         return self.sp.encode(text, out_type=int)
 
 
-class WordPieceAdapter(TokenizerAdapter):
+class HFTokenizerAdapter(TokenizerAdapter):
+    """Any HuggingFace `tokenizers` JSON model (WordPiece, byte-level BPE)."""
+
     def __init__(self, name: str, model_path: str):
         from tokenizers import Tokenizer
         self.name = name
         self.tok = Tokenizer.from_file(model_path)
         self.vocab_size = self.tok.get_vocab_size()
+        self.fingerprint = _fingerprint(Path(model_path))
+        self.artifact_paths = (Path(model_path),)
         vocab = self.tok.get_vocab()
-        specials = ["[CLS]", "[SEP]", "[PAD]", "[MASK]", "[UNK]"]
+        specials = ["[CLS]", "[SEP]", "[PAD]", "[MASK]", "[UNK]", "<pad>", "<unk>", "<s>", "</s>"]
         self.special_ids = {vocab[s] for s in specials if s in vocab}
-        global_logger.info(f"[{name}] Loaded WordPiece (vocab={self.vocab_size:,})")
+        global_logger.info(f"[{name}] Loaded HF tokenizer (vocab={self.vocab_size:,})")
 
     def encode(self, text: str) -> List[int]:
         ids = self.tok.encode(text).ids
@@ -78,14 +105,30 @@ class MorfessorAdapter(TokenizerAdapter):
             self._build_vocab(train_corpus_path, target_vocab)
             if cache_path:
                 self._save_vocab(cache_path)
+        self.fingerprint = _fingerprint(Path(model_path), "\n".join(self.itos))
+        self.artifact_paths = (Path(model_path),) + ((cache_path,) if cache_path else ())
 
     def _segment(self, word: str) -> List[str]:
         cached = self._seg_cache.get(word)
         if cached is not None:
             return cached
         segs, _ = self.wrapper.segment(word)
+        # The Morfessor model only knows lowercase; cut the original word at the
+        # same offsets so the LM still sees the real casing.
+        if sum(len(s) for s in segs) == len(word):
+            cased, pos = [], 0
+            for s in segs:
+                cased.append(word[pos: pos + len(s)])
+                pos += len(s)
+            segs = cased
         self._seg_cache[word] = segs
         return segs
+
+    def _word_pieces(self, word: str) -> List[str]:
+        # Mark the first segment of each word, as SentencePiece and Morpheus do,
+        # so the token stream keeps word boundaries.
+        segs = self._segment(word)
+        return [WORD_BOUNDARY + segs[0]] + segs[1:] if segs else []
 
     def _build_vocab(self, corpus_path: str, target_vocab: int):
         global_logger.info(f"[{self.name}] Building int vocab from {corpus_path} (target={target_vocab:,})")
@@ -95,8 +138,7 @@ class MorfessorAdapter(TokenizerAdapter):
             for line in f:
                 n_lines += 1
                 for word in line.strip().split():
-                    w = turkish_lower(word)
-                    counter.update(self._segment(w))
+                    counter.update(self._word_pieces(word))
                 if n_lines % 50_000 == 0:
                     global_logger.info(f"[{self.name}] vocab build: scanned {n_lines:,} lines, segments={len(counter):,}")
 
@@ -138,8 +180,7 @@ class MorfessorAdapter(TokenizerAdapter):
     def encode(self, text: str) -> List[int]:
         ids: List[int] = []
         for word in text.split():
-            w = turkish_lower(word)
-            for s in self._segment(w):
+            for s in self._word_pieces(word):
                 tid = self.stoi.get(s)
                 if tid is not None:
                     ids.append(tid)
@@ -193,10 +234,31 @@ class MorpheusAdapter(TokenizerAdapter):
             device=device,
         )
         self.vocab_size = self.tokenizer.vocab_size
+        self.warm_batch_size = 2048
+        tdir = Path(tokenizer_dir)
+        self.fingerprint = _fingerprint(tdir / "vocab.json", tdir / "tokenizer_config.json",
+                                        Path(checkpoint_path).name)
+        # Deployment needs only the inference checkpoint, not the training one
+        # (which also stores optimizer state, SGNS embeddings and the MLM head).
+        from src.model_development.tokenization.morpheus_tokenizer import INFERENCE_CHECKPOINT
+        inference_ckpt = Path(checkpoint_path).with_name(INFERENCE_CHECKPOINT)
+        deploy_ckpt = inference_ckpt if inference_ckpt.exists() else Path(checkpoint_path)
+        self.artifact_paths = tuple(p for p in tdir.rglob("*") if p.is_file()) + (deploy_ckpt,)
+        if not inference_ckpt.exists():
+            global_logger.warning(
+                f"[{name}] {INFERENCE_CHECKPOINT} not found; artifact size uses the full training "
+                f"checkpoint. Run `python -m src.model_development.tokenization.export_checkpoint` first."
+            )
         global_logger.info(f"[{name}] Loaded MorpheusTokenizer (vocab={self.vocab_size:,})")
 
     def encode(self, text: str) -> List[int]:
         return self.tokenizer.encode(text, add_special_tokens=False)
+
+    def prepare(self, lines: Iterable[str]) -> None:
+        # Segment all distinct words in large GPU batches up front; line-by-line
+        # encoding would otherwise make one small model call per line.
+        n = self.tokenizer.warm_cache(lines, batch_size=self.warm_batch_size)
+        global_logger.info(f"[{self.name}] warm-up segmented {n:,} new distinct words")
 
 
 class TurkishTokenizerLMAdapter(TokenizerAdapter):
@@ -204,9 +266,31 @@ class TurkishTokenizerLMAdapter(TokenizerAdapter):
         self.wrapper = wrapper
         self.name = wrapper.name
         self.vocab_size = wrapper.vocab_size
+        try:
+            from importlib.metadata import version
+            self.fingerprint = _fingerprint(version("turkish-tokenizer"))
+        except Exception:
+            self.fingerprint = _fingerprint(self.vocab_size)
 
     def encode(self, text: str) -> List[int]:
         return self.wrapper.encode_ids(text)
+
+
+def _iter_corpus_lines(corpus_path: Path, max_lines: Optional[int] = None, skip_lines: int = 0):
+    """Stripped non-empty lines [skip_lines, skip_lines + max_lines) of a corpus file."""
+    n_seen = n_out = 0
+    with open(corpus_path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            n_seen += 1
+            if n_seen <= skip_lines:
+                continue
+            yield line
+            n_out += 1
+            if max_lines is not None and n_out >= max_lines:
+                return
 
 
 def encode_corpus_to_tensor(
@@ -214,25 +298,23 @@ def encode_corpus_to_tensor(
         corpus_path: Path,
         cache_path: Optional[Path] = None,
         max_lines: Optional[int] = None,
+        skip_lines: int = 0,
 ) -> torch.Tensor:
+    """Encode non-empty lines [skip_lines, skip_lines + max_lines) into one token stream."""
     if cache_path and cache_path.exists():
         global_logger.info(f"[{adapter.name}] Loading token stream from cache: {cache_path}")
         return torch.load(cache_path)
 
-    global_logger.info(f"[{adapter.name}] Encoding {corpus_path} (max_lines={max_lines})...")
+    global_logger.info(
+        f"[{adapter.name}] Encoding {corpus_path} (skip_lines={skip_lines:,}, max_lines={max_lines})...")
     t0 = time.time()
+    adapter.prepare(_iter_corpus_lines(corpus_path, max_lines, skip_lines))
     all_ids: List[int] = []
     n_lines = 0
-    with open(corpus_path, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            n_lines += 1
-            all_ids.extend(adapter.encode(line))
-            if max_lines is not None and n_lines >= max_lines:
-                break
-            if n_lines % 25_000 == 0:
+    for line in _iter_corpus_lines(corpus_path, max_lines, skip_lines):
+        n_lines += 1
+        all_ids.extend(adapter.encode(line))
+        if n_lines % 25_000 == 0:
                 elapsed = time.time() - t0
                 global_logger.info(
                     f"[{adapter.name}] encoded {n_lines:,} lines, "
@@ -254,19 +336,13 @@ def encode_corpus_to_tensor(
     return tensor
 
 
-def count_corpus_chars(corpus_path: Path, max_lines: Optional[int] = None) -> int:
-    n = 0
-    n_lines = 0
+def count_corpus_chars(corpus_path: Path, max_lines: Optional[int] = None, skip_lines: int = 0) -> int:
+    return sum(len(line) for line in _iter_corpus_lines(corpus_path, max_lines, skip_lines))
+
+
+def count_nonempty_lines(corpus_path: Path) -> int:
     with open(corpus_path, "r", encoding="utf-8") as f:
-        for line in f:
-            stripped = line.strip()
-            if not stripped:
-                continue
-            n += len(stripped)
-            n_lines += 1
-            if max_lines is not None and n_lines >= max_lines:
-                break
-    return n
+        return sum(1 for line in f if line.strip())
 
 
 class GPTBlock(nn.Module):
@@ -422,6 +498,11 @@ class LMTrainConfig:
     log_every_n_steps: int
     equalize_params: bool = True
     max_steps: Optional[int] = None
+    # Stop after this many validation evals without an improvement of at least
+    # early_stop_min_delta BPC, and report the best-validation weights. None keeps
+    # the fixed-budget protocol (final weights after max_steps).
+    early_stop_patience: Optional[int] = None
+    early_stop_min_delta: float = 0.001
 
 
 def _estimate_params(vocab_size: int, dim: int, n_layer: int, seq_len: int) -> int:
@@ -464,10 +545,23 @@ FULL_CONFIG = LMTrainConfig(
     eval_every_n_steps=1000, log_every_n_steps=100,
 )
 
+# Optional diagnostic, not the main protocol (FULL's equal 10K steps): same model,
+# up to 4x the steps, stopping 3 evals after the best validation BPC.
+LONG_CONFIG = LMTrainConfig(
+    dim=512, n_layer=8, n_head=8, seq_len=512,
+    batch_size=32, n_epochs=4.0, max_steps=40000,
+    learning_rate=3e-4, warmup_steps=500, grad_clip=1.0,
+    weight_decay=0.01, dropout=0.1,
+    eval_every_n_steps=1000, log_every_n_steps=100,
+    early_stop_patience=3, early_stop_min_delta=0.001,
+)
+
 
 def train_one_tokenizer(
         adapter: TokenizerAdapter,
         train_tokens: torch.Tensor,
+        val_tokens: torch.Tensor,
+        val_char_count: int,
         test_tokens: torch.Tensor,
         test_char_count: int,
         cfg: LMTrainConfig,
@@ -475,6 +569,8 @@ def train_one_tokenizer(
         device: torch.device,
         target_params: Optional[int] = None,
 ) -> Dict:
+    """Train one LM. Intermediate evals and early stopping use the validation split
+    (held-out training lines); the test split is scored once, on the selected weights."""
     name = adapter.name
     output_dir.mkdir(parents=True, exist_ok=True)
     log_path = output_dir / f"{name}_train_log.csv"
@@ -498,8 +594,8 @@ def train_one_tokenizer(
     global_logger.info(
         f"\n{'=' * 78}\n"
         f"[{name}] LM training start "
-        f"(vocab={adapter.vocab_size:,}, dim={effective_dim}, "
-        f"train_tokens={len(train_tokens):,}, test_tokens={len(test_tokens):,})\n"
+        f"(vocab={adapter.vocab_size:,}, dim={effective_dim}, train_tokens={len(train_tokens):,}, "
+        f"val_tokens={len(val_tokens):,}, test_tokens={len(test_tokens):,})\n"
         f"{'=' * 78}"
     )
 
@@ -516,11 +612,12 @@ def train_one_tokenizer(
         global_logger.error(f"[{name}] Empty dataset (train tokens < seq_len). Skipping.")
         return {
             "tokenizer": name, "vocab_size": adapter.vocab_size,
-            "n_train_tokens": len(train_tokens), "n_test_tokens": len(test_tokens),
-            "n_test_chars": test_char_count, "n_params": n_params,
+            "n_train_tokens": len(train_tokens), "n_val_tokens": len(val_tokens),
+            "n_test_tokens": len(test_tokens), "n_test_chars": test_char_count, "n_params": n_params,
             "final_bpc": float("nan"), "best_bpc": float("nan"),
             "final_token_ppl": float("nan"), "final_token_nll_nats": float("nan"),
-            "wall_time_s": 0.0,
+            "val_bpc": float("nan"), "selected_step": 0, "steps_trained": 0,
+            "stopped_early": False, "wall_time_s": 0.0,
         }
 
     loader = DataLoader(
@@ -535,8 +632,9 @@ def train_one_tokenizer(
         total_steps = max(1, int(micro_steps_per_epoch * cfg.n_epochs))
     warmup = min(cfg.warmup_steps, max(1, total_steps // 5))
     global_logger.info(
-        f"[{name}] {micro_steps_per_epoch:,} steps/epoch, "
-        f"total_steps={total_steps:,}, warmup={warmup:,}"
+        f"[{name}] {micro_steps_per_epoch:,} steps/epoch, total_steps={total_steps:,} "
+        f"(~{total_steps / max(micro_steps_per_epoch, 1):.1f} epochs), warmup={warmup:,}, "
+        f"early_stop_patience={cfg.early_stop_patience}"
     )
 
     optimizer = torch.optim.AdamW(
@@ -552,15 +650,23 @@ def train_one_tokenizer(
 
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lr_lambda)
 
+    def val_eval() -> Tuple[float, float, float]:
+        return compute_bpc(model, val_tokens, val_char_count, cfg.seq_len, device)
+
+    def snapshot() -> Dict[str, torch.Tensor]:
+        return {k: v.detach().to("cpu", copy=True) for k, v in model.state_dict().items()}
+
     rows: List[Dict] = []
     t_start = time.time()
     step = 0
-    best_bpc = float("inf")
-    last_bpc = float("nan")
-    last_ppl = float("nan")
-    last_nll = float("nan")
+    best_val = float("inf")
+    best_step = 0
+    best_state: Optional[Dict[str, torch.Tensor]] = None
+    bad_evals = 0
+    stopped_early = False
+    loss = torch.tensor(float("nan"))
 
-    while step < total_steps:
+    while step < total_steps and not stopped_early:
         for x, y in loader:
             if step >= total_steps:
                 break
@@ -574,6 +680,7 @@ def train_one_tokenizer(
             grad_norm = nn.utils.clip_grad_norm_(model.parameters(), cfg.grad_clip)
             optimizer.step()
             scheduler.step()
+            step += 1
 
             if step % cfg.log_every_n_steps == 0:
                 global_logger.info(
@@ -582,31 +689,54 @@ def train_one_tokenizer(
                     f"lr={scheduler.get_last_lr()[0]:.2e}"
                 )
 
-            if step > 0 and step % cfg.eval_every_n_steps == 0:
-                bpc, ppl, nll = compute_bpc(
-                    model, test_tokens, test_char_count,
-                    cfg.seq_len, device,
-                )
-                last_bpc, last_ppl, last_nll = bpc, ppl, nll
-                global_logger.info(
-                    f"[{name}][eval @ step {step:,}] "
-                    f"BPC={bpc:.4f}  token_ppl={ppl:.2f}  nll={nll:.4f}"
-                )
+            if step % cfg.eval_every_n_steps == 0:
+                bpc, ppl, nll = val_eval()
                 rows.append({
                     "step": step, "train_loss": loss.item(),
                     "val_bpc": bpc, "val_token_ppl": ppl, "val_token_nll": nll,
                     "lr": scheduler.get_last_lr()[0],
                 })
-                if bpc < best_bpc:
-                    best_bpc = bpc
+                if bpc < best_val - cfg.early_stop_min_delta:
+                    bad_evals = 0
+                else:
+                    bad_evals += 1
+                if bpc < best_val:
+                    best_val, best_step = bpc, step
+                    if cfg.early_stop_patience:
+                        best_state = snapshot()
+                global_logger.info(
+                    f"[{name}][eval @ step {step:,}] val_BPC={bpc:.4f}  token_ppl={ppl:.2f}  "
+                    f"best={best_val:.4f}@{best_step:,}  no-improve={bad_evals}"
+                )
+                if cfg.early_stop_patience and bad_evals >= cfg.early_stop_patience:
+                    stopped_early = True
+                    global_logger.info(
+                        f"[{name}] early stop at step {step:,}: no val improvement >= "
+                        f"{cfg.early_stop_min_delta} for {bad_evals} evals (best @ {best_step:,})"
+                    )
+                    break
 
-            step += 1
+    if not rows or rows[-1]["step"] != step:
+        bpc, ppl, nll = val_eval()
+        rows.append({
+            "step": step, "train_loss": loss.item(),
+            "val_bpc": bpc, "val_token_ppl": ppl, "val_token_nll": nll,
+            "lr": scheduler.get_last_lr()[0],
+        })
+        if bpc < best_val:
+            best_val, best_step, best_state = bpc, step, None
 
-    final_bpc, final_ppl, final_nll = compute_bpc(
+    # Fixed-budget protocol scores the final weights; early stopping scores the
+    # best-validation weights. Either way the test split is used exactly once.
+    if cfg.early_stop_patience and best_state is not None and best_step != step:
+        model.load_state_dict(best_state)
+        selected_step = best_step
+    else:
+        selected_step = step
+    selected_val = next(r["val_bpc"] for r in rows if r["step"] == selected_step)
+    test_bpc, test_ppl, test_nll = compute_bpc(
         model, test_tokens, test_char_count, cfg.seq_len, device,
     )
-    if final_bpc < best_bpc:
-        best_bpc = final_bpc
 
     elapsed = time.time() - t_start
 
@@ -622,34 +752,42 @@ def train_one_tokenizer(
             "dropout": cfg.dropout,
         },
         "train_config": cfg.__dict__,
-        "final_bpc": final_bpc,
-        "best_bpc": best_bpc,
+        "final_bpc": test_bpc,
+        "best_bpc": test_bpc,
+        "val_bpc": selected_val,
+        "selected_step": selected_step,
+        "steps_trained": step,
         "n_params": n_params,
         "elapsed_s": elapsed,
     }, ckpt_path)
 
-    if rows:
-        with open(log_path, "w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-            writer.writeheader()
-            writer.writerows(rows)
+    with open(log_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(rows)
 
     global_logger.info(
-        f"\n[{name}] DONE  final_BPC={final_bpc:.4f}  best_BPC={best_bpc:.4f}  "
-        f"token_ppl={final_ppl:.2f}  wall={elapsed / 60:.1f}min"
+        f"\n[{name}] DONE  test_BPC={test_bpc:.4f}  val_BPC={selected_val:.4f} "
+        f"(weights @ step {selected_step:,} of {step:,})  token_ppl={test_ppl:.2f}  "
+        f"wall={elapsed / 60:.1f}min"
     )
 
     return {
         "tokenizer": name,
         "vocab_size": adapter.vocab_size,
         "n_train_tokens": len(train_tokens),
+        "n_val_tokens": len(val_tokens),
         "n_test_tokens": len(test_tokens),
         "n_test_chars": test_char_count,
         "n_params": n_params,
-        "final_bpc": final_bpc,
-        "best_bpc": best_bpc,
-        "final_token_ppl": final_ppl,
-        "final_token_nll_nats": final_nll,
+        "final_bpc": test_bpc,
+        "best_bpc": test_bpc,
+        "final_token_ppl": test_ppl,
+        "final_token_nll_nats": test_nll,
+        "val_bpc": selected_val,
+        "selected_step": selected_step,
+        "steps_trained": step,
+        "stopped_early": stopped_early,
         "wall_time_s": elapsed,
     }
 
@@ -787,40 +925,9 @@ def benchmark_generation(
 
 
 def get_tokenizer_artifact_size_mb(adapter: TokenizerAdapter, artifacts_dir: Path) -> float:
-    name = adapter.name
-    classical = artifacts_dir / "tokenizers" / "classical"
-    morpheus_50k = artifacts_dir / "tokenizers" / "morpheus_50k"
-
-    candidates: List[Path] = []
-    if "morpheus" in name:
-        if morpheus_50k.exists():
-            candidates.extend(morpheus_50k.rglob("*"))
-        ckpt_dir = artifacts_dir / "checkpoints"
-        if ckpt_dir.exists():
-            for f in ckpt_dir.glob("*v3_final*.pt"):
-                candidates.append(f)
-                break
-            else:
-                for f in ckpt_dir.glob("*_final.pt"):
-                    candidates.append(f)
-                    break
-                else:
-                    for f in ckpt_dir.glob("*_best.pt"):
-                        candidates.append(f)
-                        break
-    elif "morfessor" in name:
-        f = classical / "morfessor_model.bin"
-        if f.exists():
-            candidates.append(f)
-    elif "bpe" in name or "unigram" in name or "wordpiece" in name or "byte" in name:
-        prefix = name.split("-")[0].replace("-", "_")
-        if name.startswith("byte-bpe"):
-            prefix = "byte_bpe"
-        for ext in [".model", ".vocab", ".json"]:
-            for f in classical.glob(f"{prefix}_*{ext}"):
-                candidates.append(f)
-
-    total_bytes = sum(f.stat().st_size for f in candidates if f.is_file())
+    # Each adapter lists exactly the files it loaded, so other vocab sizes or
+    # stale formats lying in the same directory are not counted.
+    total_bytes = sum(p.stat().st_size for p in adapter.artifact_paths if p.is_file())
     return total_bytes / (1024 * 1024)
 
 
@@ -844,9 +951,9 @@ def build_all_adapters(
 
     for prefix, kind, ext in [
         ("bpe", "spm", "*.model"),
-        ("byte_bpe", "spm", "*.model"),
+        ("byte_bpe", "hf", "*.json"),
         ("unigram", "spm", "*.model"),
-        ("wordpiece", "wp", "*.json"),
+        ("wordpiece", "hf", "*.json"),
     ]:
         cands = sorted(classical.glob(f"{prefix}_{ext}"))
         cands = [c for c in cands if _vocab_size_from_name(c) > 0]
@@ -862,7 +969,7 @@ def build_all_adapters(
         if kind == "spm":
             adapters.append(SentencePieceAdapter(name, str(chosen)))
         else:
-            adapters.append(WordPieceAdapter(name, str(chosen)))
+            adapters.append(HFTokenizerAdapter(name, str(chosen)))
 
     morf_path = classical / "morfessor_model.bin"
     if morf_path.exists():
@@ -871,7 +978,7 @@ def build_all_adapters(
             str(morf_path),
             str(train_corpus_path),
             target_vocab=50_000,
-            cache_path=cache_dir / "morfessor_50k_vocab.json",
+            cache_path=cache_dir / f"morfessor_50k_vocab_cased_{_fingerprint(morf_path)}.json",
         ))
     else:
         global_logger.warning(f"[lm_eval] morfessor_model.bin not found at {morf_path}")
@@ -1054,10 +1161,45 @@ def run_inference_bench(
     return rows
 
 
+def _set_seed(seed: int) -> None:
+    import random
+    random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+
+def aggregate_seed_runs(lm_root: Path, mode_dir: str) -> Optional[Path]:
+    """Mean/std of BPC per tokenizer over <mode_dir> (seed 0) and <mode_dir>_seed<N> runs."""
+    runs = [lm_root / mode_dir] + sorted(lm_root.glob(f"{mode_dir}_seed*"))
+    per_tok: Dict[str, List[float]] = {}
+    for run in runs:
+        summary = run / "summary.csv"
+        if not summary.exists():
+            continue
+        with open(summary, "r", encoding="utf-8") as f:
+            for r in csv.DictReader(f):
+                per_tok.setdefault(r["tokenizer"], []).append(float(r["final_bpc"]))
+    if not per_tok:
+        return None
+    out = lm_root / f"{mode_dir}_seeds_summary.csv"
+    with open(out, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["tokenizer", "n_seeds", "bpc_mean", "bpc_std", "bpc_min", "bpc_max"])
+        for tok, vals in sorted(per_tok.items(), key=lambda kv: sum(kv[1]) / len(kv[1])):
+            mean = sum(vals) / len(vals)
+            std = (sum((v - mean) ** 2 for v in vals) / (len(vals) - 1)) ** 0.5 if len(vals) > 1 else 0.0
+            writer.writerow([tok, len(vals), round(mean, 4), round(std, 4), round(min(vals), 4), round(max(vals), 4)])
+    global_logger.info(f"[lm_eval] Seed aggregate -> {out}")
+    return out
+
+
 def main():
     parser = argparse.ArgumentParser(prog="src.benchmarker.benchmarks.lm_eval")
-    parser.add_argument("--mode", choices=["pilot", "full", "inference"], default="pilot")
-    parser.add_argument("--trained-mode", choices=["pilot", "full"], default="full",
+    parser.add_argument("--mode", choices=["pilot", "full", "long", "inference"], default="pilot",
+                        help="full = equal 10K-step budget; long = up to 40K steps with early "
+                             "stopping on the validation split")
+    parser.add_argument("--trained-mode", choices=["pilot", "full", "long"], default="full",
                         help="Which trained-model directory to load from for inference mode")
     parser.add_argument("--encode-chars", type=int, default=200_000)
     parser.add_argument(
@@ -1074,6 +1216,15 @@ def main():
     parser.add_argument(
         "--test-cap-lines", type=int, default=100_000,
         help="Encode at most this many lines of the test split for BPC.",
+    )
+    parser.add_argument(
+        "--val-lines", type=int, default=20_000,
+        help="Validation split for intermediate evals and early stopping: the training-file "
+             "lines right after the --train-cap-lines used for training (never trained on).",
+    )
+    parser.add_argument(
+        "--early-stop-patience", type=int, default=None,
+        help="Override the mode's early-stopping patience in evals (0 disables).",
     )
     parser.add_argument(
         "--classical-vocab", type=int, default=None,
@@ -1093,6 +1244,12 @@ def main():
         "--skip-encoded", action="store_true",
         help="Skip tokenizers whose checkpoint already exists in output dir",
     )
+    parser.add_argument(
+        "--seed", type=int, default=0,
+        help="Seed for LM init and data order (same for every tokenizer). Seed 0 writes to "
+             "the plain mode directory; other seeds to <mode>_seed<N>. After a full run, all "
+             "seeds found are aggregated into <mode>_seeds_summary.csv.",
+    )
     args = parser.parse_args()
 
     BASE = Path(__file__).resolve().parents[3]
@@ -1101,7 +1258,9 @@ def main():
     test_corpus = artifacts / "datasets" / "splits" / "test.txt"
 
     dir_suffix = f"_cv{args.classical_vocab // 1000}k" if args.classical_vocab else ""
-    output_dir = BASE / "src" / "benchmarker" / "results" / "lm_eval" / (args.mode + dir_suffix)
+    seed_suffix = f"_seed{args.seed}" if args.seed and args.mode != "inference" else ""
+    lm_root = BASE / "src" / "benchmarker" / "results" / "lm_eval"
+    output_dir = lm_root / (args.mode + dir_suffix + seed_suffix)
     output_dir.mkdir(parents=True, exist_ok=True)
     cache_dir = artifacts / "lm_eval_cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
@@ -1113,12 +1272,12 @@ def main():
         global_logger.info("[lm_eval] TF32 enabled for matmul + cuDNN")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    if args.mode == "inference":
-        cfg = FULL_CONFIG if args.trained_mode == "full" else PILOT_CONFIG
-    else:
-        cfg = PILOT_CONFIG if args.mode == "pilot" else FULL_CONFIG
+    configs = {"pilot": PILOT_CONFIG, "full": FULL_CONFIG, "long": LONG_CONFIG}
+    cfg = configs[args.trained_mode if args.mode == "inference" else args.mode]
     if args.max_steps:
         cfg.max_steps = args.max_steps
+    if args.early_stop_patience is not None:
+        cfg.early_stop_patience = args.early_stop_patience or None
     global_logger.info(f"[lm_eval] mode={args.mode}  device={device}")
     global_logger.info(f"[lm_eval] config={cfg}")
 
@@ -1130,10 +1289,20 @@ def main():
         )
         sys.exit(1)
 
-    train_char_count = count_corpus_chars(train_corpus, max_lines=args.train_cap_lines)
+    # Train on the first train_cap lines; validate on the next val_lines (disjoint).
+    n_train_lines = count_nonempty_lines(train_corpus)
+    train_cap = min(args.train_cap_lines, max(1, n_train_lines - args.val_lines))
+    if train_cap < args.train_cap_lines:
+        global_logger.warning(
+            f"[lm_eval] train.txt has {n_train_lines:,} lines; training on {train_cap:,} "
+            f"to keep {args.val_lines:,} held-out lines for validation"
+        )
+    train_char_count = count_corpus_chars(train_corpus, max_lines=train_cap)
+    val_char_count = count_corpus_chars(train_corpus, max_lines=args.val_lines, skip_lines=train_cap)
     test_char_count = count_corpus_chars(test_corpus, max_lines=args.test_cap_lines)
     global_logger.info(
-        f"[lm_eval] train_chars={train_char_count:,} (cap={args.train_cap_lines:,} lines)  "
+        f"[lm_eval] train_chars={train_char_count:,} ({train_cap:,} lines)  "
+        f"val_chars={val_char_count:,} ({args.val_lines:,} lines)  "
         f"test_chars={test_char_count:,} (cap={args.test_cap_lines:,} lines)"
     )
 
@@ -1191,17 +1360,21 @@ def main():
             continue
 
         try:
-            cap_tag = f"_t{args.train_cap_lines // 1000}k"
-            train_cache = None if args.no_cache else cache_dir / f"{adapter.name}_train_tokens{cap_tag}.pt"
-            test_cache = None if args.no_cache else cache_dir / f"{adapter.name}_test_tokens{cap_tag}.pt"
+            fp = f"_{adapter.fingerprint}" if adapter.fingerprint else ""
+            train_cache = None if args.no_cache else cache_dir / f"{adapter.name}_train_tokens_t{train_cap // 1000}k{fp}.pt"
+            val_cache = None if args.no_cache else (
+                cache_dir / f"{adapter.name}_val_tokens_s{train_cap // 1000}k_n{args.val_lines // 1000}k{fp}.pt")
+            test_cache = None if args.no_cache else cache_dir / f"{adapter.name}_test_tokens_n{args.test_cap_lines // 1000}k{fp}.pt"
 
             train_tokens = encode_corpus_to_tensor(
-                adapter, train_corpus, train_cache, max_lines=args.train_cap_lines)
+                adapter, train_corpus, train_cache, max_lines=train_cap)
+            val_tokens = encode_corpus_to_tensor(
+                adapter, train_corpus, val_cache, max_lines=args.val_lines, skip_lines=train_cap)
             test_tokens = encode_corpus_to_tensor(
                 adapter, test_corpus, test_cache, max_lines=args.test_cap_lines)
 
             if len(train_tokens) and len(test_tokens):
-                observed_vocab = int(max(train_tokens.max().item(), test_tokens.max().item())) + 1
+                observed_vocab = int(max(t.max().item() for t in (train_tokens, val_tokens, test_tokens) if len(t))) + 1
                 if observed_vocab > adapter.vocab_size:
                     global_logger.warning(
                         f"[{adapter.name}] observed max token id implies vocab "
@@ -1209,11 +1382,13 @@ def main():
                     )
                     adapter.vocab_size = observed_vocab
 
+            _set_seed(args.seed)
             row = train_one_tokenizer(
-                adapter, train_tokens, test_tokens, test_char_count,
+                adapter, train_tokens, val_tokens, val_char_count, test_tokens, test_char_count,
                 cfg, output_dir, device,
                 target_params=target_params,
             )
+            row["seed"] = args.seed
             summary_rows.append(row)
 
             if torch.cuda.is_available():
@@ -1225,10 +1400,18 @@ def main():
 
     if summary_rows:
         summary_path = output_dir / "summary.csv"
+        # Keep rows of tokenizers not re-run this time (e.g. with --tokenizers).
+        ran = {r["tokenizer"] for r in summary_rows}
+        previous = []
+        if summary_path.exists():
+            with open(summary_path, "r", encoding="utf-8") as f:
+                previous = [r for r in csv.DictReader(f) if r["tokenizer"] not in ran]
+        fieldnames = list(summary_rows[0].keys())
         with open(summary_path, "w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=list(summary_rows[0].keys()))
+            writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
             writer.writeheader()
-            writer.writerows(summary_rows)
+            writer.writerows(previous + summary_rows)
+        aggregate_seed_runs(lm_root, args.mode + dir_suffix)
 
         global_logger.info("\n" + "=" * 78)
         global_logger.info("LM EVAL FINAL SUMMARY  (sorted by best BPC — lower is better)")

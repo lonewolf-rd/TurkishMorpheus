@@ -84,16 +84,8 @@ class ClassicalPieceAdapter(PieceAdapter):
 
     def pieces(self, lines: List[str]) -> List[str]:
         out: List[str] = []
-        if self.wrapper.kind in ("bpe", "byte_bpe", "unigram"):
-            for line in lines:
-                out.extend(self.wrapper.model.encode_as_pieces(line))
-        else:
-            specials = {"[CLS]", "[SEP]", "[PAD]", "[MASK]", "[UNK]"}
-            for line in lines:
-                out.extend(
-                    t for t in self.wrapper.model.encode(line).tokens
-                    if t not in specials
-                )
+        for line in lines:
+            out.extend(self.wrapper.pieces(line))
         return out
 
 

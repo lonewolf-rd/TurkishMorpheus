@@ -2,7 +2,7 @@ import pandas as pd
 from typing import List
 from pathlib import Path
 from src.common.providers.logger_provider import global_logger
-from src.common.text_utils import turkish_lower
+from src.common.text_utils import byte_level_to_text, turkish_lower
 from src.model_development.tokenization.classical import TokenizerTrainer
 from src.benchmarker.metrics.classical import MetricEvaluator
 from src.benchmarker.visualization.plots import ResultVisualizer
@@ -30,8 +30,7 @@ class TokenizerBenchmarker:
         self.evaluator = MetricEvaluator(morfessor_model=morfessor_model)
 
         sp_tasks = [("BPE", self.trainer.train_bpe),
-            ("Unigram", self.trainer.train_unigram),
-            ("ByteBPE", self.trainer.train_byte_bpe)]
+            ("Unigram", self.trainer.train_unigram)]
 
         for prefix, train_fn in sp_tasks:
             global_logger.info(f"[Benchmarker] Processing {prefix} models...")
@@ -47,6 +46,19 @@ class TokenizerBenchmarker:
                     test_sents=self.test_sentences
                 )
                 self.all_results.append(res)
+
+        global_logger.info("[Benchmarker] Processing ByteBPE models...")
+        bb_models = self.trainer.train_byte_bpe(vocab_sizes=vocab_sizes)
+        for i, model in enumerate(bb_models):
+            vs = vocab_sizes[i]
+            res = self.evaluator.compute_metrics(
+                name=f"ByteBPE-{vs // 1000}K",
+                tokenizer_obj=model,
+                encode_fn=lambda x, m=model: [byte_level_to_text(t) for t in m.encode(turkish_lower(x)).tokens],
+                vocab=set(byte_level_to_text(t) for t in model.get_vocab()),
+                test_sents=self.test_sentences
+            )
+            self.all_results.append(res)
 
         global_logger.info("[Benchmarker] Processing WordPiece models...")
         wp_models = self.trainer.train_wordpiece(vocab_sizes=vocab_sizes)

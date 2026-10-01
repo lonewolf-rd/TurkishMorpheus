@@ -35,7 +35,7 @@ STRESS_SENTENCES: List[str] = [
 
 def make_classical_codec(wrapper) -> Codec:
     model = wrapper.model
-    if wrapper.kind in ("bpe", "byte_bpe", "unigram"):
+    if wrapper.is_spm:
         return (lambda w: model.encode(w, out_type=int),
                 lambda ids: model.decode(ids))
     return (lambda w: model.encode(w).ids,

@@ -1,7 +1,7 @@
 from tokenizers import (Tokenizer,models,trainers,pre_tokenizers,normalizers,decoders)
 from src.common.providers.config_provider import config_provider
 from src.common.providers.logger_provider import global_logger
-from src.common.text_utils import turkish_lower
+from src.common.text_utils import byte_level_to_text, turkish_lower
 from collections import Counter
 from pathlib import Path
 from typing import Union, Tuple, List
@@ -174,7 +174,7 @@ class TokenizerTrainer:
                     character_coverage=config_provider.cfg.bpe_configs.coverage,
                     byte_fallback=True,
                     split_digits=True,
-                    normalization_rule_name="nmt_nfkc_cf",
+                    normalization_rule_name="nmt_nfkc",
                     input_sentence_size=config_provider.cfg.bpe_configs.input_sentence_size,
                     shuffle_input_sentence=True,
                     num_threads=config_provider.cfg.bpe_configs.num_threads,
@@ -221,7 +221,7 @@ class TokenizerTrainer:
                     character_coverage=0.9999,
                     byte_fallback=True,
                     split_digits=True,
-                    normalization_rule_name="nmt_nfkc_cf",
+                    normalization_rule_name="nmt_nfkc",
                     input_sentence_size=5_000_000,
                     shuffle_input_sentence=True,
                     num_threads=6,
@@ -259,11 +259,9 @@ class TokenizerTrainer:
                 global_logger.info(f"[TokenizerTrainer](train_wordpiece) Training WordPiece-{vs // 1000}K...")
 
                 tokenizer = Tokenizer(models.WordPiece(unk_token="[UNK]"))
-                tokenizer.normalizer = normalizers.Sequence([
-                    normalizers.NFD(),
-                    normalizers.Lowercase(),
-                    normalizers.StripAccents(),
-                ])
+                # Cased, accent-preserving (BERTurk-cased style); lowercasing and
+                # accent stripping would erase Turkish ç/ğ/ı/ö/ş/ü and capitals.
+                tokenizer.normalizer = normalizers.NFC()
                 tokenizer.pre_tokenizer = pre_tokenizers.Whitespace()
                 tokenizer.decoder = decoders.WordPiece(prefix="##")
 
@@ -297,47 +295,45 @@ class TokenizerTrainer:
     def train_byte_bpe(
             self,
             vocab_sizes: List[int] = None,
-    ) -> List[spm.SentencePieceProcessor]:
+    ) -> List[Tokenizer]:
+        """GPT-2 / LLaMA-3 style byte-level BPE: no normalizer, ByteLevel pre-tokenizer
+        and decoder, so decode(encode(x)) == x for any text."""
         if vocab_sizes is None:
             vocab_sizes = list(config_provider.cfg.training.vocab_size) or [50000, 64000]
             if not vocab_sizes:
                 vocab_sizes = [50000, 64000]
-        trained_processors = []
+        trained_tokenizers = []
         try:
             global_logger.info(
                 f"[TokenizerTrainer](train_byte_bpe) Starting Byte-level BPE training for sizes: {vocab_sizes}")
 
             for vs in vocab_sizes:
-                model_prefix = self._DEFAULT_OUTPUT_PATH / f"byte_bpe_{vs}"
-                model_prefix.parent.mkdir(parents=True, exist_ok=True)
                 global_logger.info(f"[TokenizerTrainer](train_byte_bpe) Training ByteBPE-{vs // 1000}K...")
 
-                spm.SentencePieceTrainer.train(
-                    input=str(self._DEFAULT_CORPUS_PATH),
-                    model_prefix=str(model_prefix),
+                tokenizer = Tokenizer(models.BPE())
+                tokenizer.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False)
+                tokenizer.decoder = decoders.ByteLevel()
+                trainer = trainers.BpeTrainer(
                     vocab_size=vs,
-                    model_type="bpe",
-                    character_coverage=0.9995,
-                    byte_fallback=True,
-                    split_digits=True,
-                    normalization_rule_name="nmt_nfkc",
-                    input_sentence_size=5_000_000,
-                    shuffle_input_sentence=True,
-                    num_threads=6,
-                    pad_id=3,
+                    min_frequency=2,
+                    special_tokens=["<pad>", "<unk>", "<s>", "</s>"],
+                    initial_alphabet=pre_tokenizers.ByteLevel.alphabet(),
                 )
+                tokenizer.train([str(self._DEFAULT_CORPUS_PATH)], trainer=trainer)
 
-                sp = spm.SentencePieceProcessor()
-                sp.load(f"{str(model_prefix)}.model")
-                trained_processors.append(sp)
+                save_path = self._DEFAULT_OUTPUT_PATH / f"byte_bpe_{vs}.json"
+                save_path.parent.mkdir(parents=True, exist_ok=True)
+                tokenizer.save(str(save_path))
+                trained_tokenizers.append(tokenizer)
 
-                global_logger.info(f"[TokenizerTrainer](train_byte_bpe) ByteBPE-{vs // 1000}K complete and loaded.")
+                global_logger.info(
+                    f"[TokenizerTrainer](train_byte_bpe) ByteBPE-{vs // 1000}K complete and saved to {save_path.name}")
 
                 sample_text = self.turkish_sample_list[0]
-                tokens = sp.encode_as_pieces(sample_text.lower())
-                global_logger.info(f" [Sample] {sample_text} -> {' '.join(tokens)}")
+                tokens = [byte_level_to_text(t) for t in tokenizer.encode(sample_text).tokens]
+                global_logger.info(f" [Sample] {sample_text} -> {' | '.join(tokens)}")
 
-            return trained_processors
+            return trained_tokenizers
 
         except Exception as err:
             global_logger.error(f"[TokenizerTrainer](train_byte_bpe) Byte-level BPE training failed: {str(err)}")

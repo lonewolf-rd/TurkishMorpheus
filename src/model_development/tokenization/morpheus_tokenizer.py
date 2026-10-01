@@ -5,7 +5,7 @@ import time
 import torch
 from pathlib import Path
 from collections import Counter
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 from src.model_development.model.morpheus import Morpheus
 from src.model_development.model.char_encoder import CharEncoderHelper
@@ -14,6 +14,8 @@ from src.common.providers.logger_provider import global_logger
 
 
 TOKENIZER_VERSION = 2
+TRAINING_CHECKPOINT = "turkish_morpheus_a100_v3_best.pt"
+INFERENCE_CHECKPOINT = "turkish_morpheus_a100_v3_inference.pt"
 
 WORD_BOUNDARY = "▁"
 NEWLINE_TOKEN = "<NL>"
@@ -322,6 +324,38 @@ class MorpheusTokenizer:
 
         return [r if r is not None else [] for r in results]
 
+    def warm_cache(self, texts: Iterable[str], batch_size: int = 2048, log_every: int = 200_000) -> int:
+        """Segment every distinct word in `texts` once, in large batches.
+
+        encode() segments the new words of each call separately, so encoding a corpus
+        line by line issues one small model call per line. Warming the cache first
+        turns that into a few large batched calls; later encode() calls only read the
+        cache. Returns the number of words newly segmented.
+        """
+        pending: Dict[str, str] = {}
+        for text in texts:
+            for kind, piece, _ in self._pretokenize(text):
+                if kind != "word":
+                    continue
+                for chunk in _split_long(piece, self.chunk_limit):
+                    key = chunk if self.preserve_case else turkish_lower(chunk)
+                    if key not in pending and key not in self._segment_cache:
+                        pending[key] = chunk
+
+        words = list(pending.values())
+        t0 = time.time()
+        for start in range(0, len(words), batch_size):
+            batch = words[start: start + batch_size]
+            for w, segs in zip(batch, self._morpheus_segment_batch(batch)):
+                self._segment_cache[w if self.preserve_case else turkish_lower(w)] = segs
+            done = start + len(batch)
+            if done % log_every < batch_size or done == len(words):
+                global_logger.info(
+                    f"[MorpheusTokenizer] warm_cache {done:,}/{len(words):,} words "
+                    f"({time.time() - t0:.0f}s)"
+                )
+        return len(words)
+
     def _segment_to_ids(self, segment: str, is_word_start: bool) -> List[int]:
         token = (WORD_BOUNDARY + segment) if is_word_start else segment
         return self._token_to_ids(token)
@@ -481,24 +515,33 @@ class MorpheusTokenizer:
             cls,
             repo_or_path: Union[str, Path] = "lonewolflab/Morpheus-TR-50K",
             device: Optional[Union[str, torch.device]] = None,
-            checkpoint: str = "turkish_morpheus_a100_v3_best.pt",
+            checkpoint: Optional[str] = None,
             vocab_dir: str = "morpheus_50k",
             revision: Optional[str] = None,
     ) -> "MorpheusTokenizer":
+        """Load vocab + model. By default the small inference checkpoint is used when the
+        repo/directory has one, falling back to the full training checkpoint."""
+        candidates = [checkpoint] if checkpoint else [INFERENCE_CHECKPOINT, TRAINING_CHECKPOINT]
         path = Path(repo_or_path)
         if not path.exists():
             from huggingface_hub import snapshot_download
-            path = Path(snapshot_download(
-                repo_id=str(repo_or_path),
-                revision=revision,
-                allow_patterns=[f"{vocab_dir}/*", checkpoint],
-            ))
+            for name in candidates:
+                path = Path(snapshot_download(
+                    repo_id=str(repo_or_path),
+                    revision=revision,
+                    allow_patterns=[f"{vocab_dir}/*", name],
+                ))
+                if (path / name).exists():
+                    break
+        found = next((path / n for n in candidates if (path / n).exists()), None)
+        if found is None:
+            raise FileNotFoundError(f"No Morpheus checkpoint ({', '.join(candidates)}) in {repo_or_path}")
 
         if device is None:
             device = "cuda" if torch.cuda.is_available() else "cpu"
         device = torch.device(device)
 
-        ckpt = cls._load_checkpoint(path / checkpoint, device)
+        ckpt = cls._load_checkpoint(found, device)
         cfg = ckpt["config"]
 
         def get(key, default=None):
@@ -524,6 +567,12 @@ class MorpheusTokenizer:
 
     @staticmethod
     def _load_checkpoint(file: Path, device: torch.device) -> Dict:
+        # Inference checkpoints hold only tensors and plain values and load without
+        # unpickling arbitrary objects; training checkpoints need the pickle path.
+        try:
+            return torch.load(file, map_location=device, weights_only=True)
+        except Exception:
+            pass
         from src.model_development.training.trainer import TrainingConfig
 
         main = sys.modules["__main__"]
@@ -696,6 +745,33 @@ def build_morpheus_vocab(
         f"| specials={len(SPECIAL_TOKENS)} | total time {elapsed:.1f}s"
     )
     return vocab
+
+
+def export_inference_checkpoint(
+        src: Union[str, Path],
+        dst: Optional[Union[str, Path]] = None,
+) -> Path:
+    """Strip a training checkpoint down to what tokenization and embedding need.
+
+    Training checkpoints also carry the optimizer, LR scheduler, grad scaler, SGNS
+    context embeddings and the MLM head. The exported file keeps only the model
+    weights and its constructor config (as plain values), so it is much smaller and
+    loads with torch.load(weights_only=True).
+    """
+    import dataclasses
+
+    src = Path(src)
+    dst = Path(dst) if dst else src.with_name(INFERENCE_CHECKPOINT)
+    ckpt = MorpheusTokenizer._load_checkpoint(src, torch.device("cpu"))
+    cfg = ckpt["config"]
+    cfg = dataclasses.asdict(cfg) if dataclasses.is_dataclass(cfg) else dict(cfg)
+    cfg = {k: v for k, v in cfg.items() if isinstance(v, (bool, int, float, str)) or v is None}
+    torch.save({"config": cfg, "model_state": ckpt["model_state"], "format": "morpheus-inference-v1"}, dst)
+    global_logger.info(
+        f"[export_inference_checkpoint] {src.name} ({src.stat().st_size / 2**20:.1f} MB) -> "
+        f"{dst.name} ({dst.stat().st_size / 2**20:.1f} MB)"
+    )
+    return dst
 
 
 def export_corpus_tokenized(

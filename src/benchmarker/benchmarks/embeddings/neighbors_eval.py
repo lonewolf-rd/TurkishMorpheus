@@ -7,10 +7,12 @@ import numpy as np
 
 from src.common.providers.logger_provider import global_logger
 from src.benchmarker.benchmarks.embeddings.encoders import build_encoders, find_checkpoint
-from src.benchmarker.benchmarks.embeddings.gold_data import load_root_families, default_gold_path
+from src.benchmarker.benchmarks.embeddings.gold_data import load_root_families_ud
 
 
-FALLBACK_FAMILIES: Dict[str, List[str]] = {
+# Hand-picked families used ONLY for the t-SNE illustration. Retrieval and dedup
+# metrics use gold UD_Turkish-Kenet families (load_root_families_ud).
+ILLUSTRATIVE_FAMILIES: Dict[str, List[str]] = {
     "kitap": ["kitap", "kitaplar", "kitabı", "kitabımız", "kitaplıkta", "kitapçı"],
     "ev": ["ev", "evler", "evimiz", "evlerde", "evcil", "evsiz"],
     "göz": ["göz", "gözler", "gözlük", "gözcü", "gözlemci", "gözünde"],
@@ -69,13 +71,19 @@ def retrieval_metrics(vecs: np.ndarray, labels: np.ndarray, k: int = 5) -> Dict[
 
 
 def _resolve_families() -> Dict[str, List[str]]:
-    gold = default_gold_path()
-    if gold.exists():
-        fams = load_root_families(str(gold))
-        if fams:
-            return fams
-    global_logger.warning("[neighbors_eval] SIGMORPHON gold unavailable; using fallback families.")
-    return FALLBACK_FAMILIES
+    fams = load_root_families_ud()
+    if len(fams) < 10:
+        # Never fall back silently to a hand-picked list: reported metrics must
+        # come from gold families.
+        raise RuntimeError(f"Only {len(fams)} gold root families found; check data/morphscore/turkish_data.csv")
+    return fams
+
+
+def _flatten(families: Dict[str, List[str]]):
+    roots = sorted(families)
+    words = [w for r in roots for w in families[r]]
+    labels = [r for r in roots for _ in families[r]]
+    return roots, words, labels
 
 
 def run(include_berturk: bool = True, k: int = 5) -> None:
@@ -90,14 +98,9 @@ def run(include_berturk: bool = True, k: int = 5) -> None:
         sys.exit(1)
 
     families = _resolve_families()
-    roots = sorted(families)
-    words: List[str] = []
-    label_names: List[str] = []
-    for root in roots:
-        for w in families[root]:
-            words.append(w)
-            label_names.append(root)
+    roots, words, label_names = _flatten(families)
     label_ids = np.array([roots.index(n) for n in label_names])
+    _, illus_words, illus_labels = _flatten(ILLUSTRATIVE_FAMILIES)
 
     encoders = build_encoders(str(checkpoint), include_berturk=include_berturk)
 
@@ -106,14 +109,14 @@ def run(include_berturk: bool = True, k: int = 5) -> None:
     for enc in encoders:
         vecs = enc.encode_words(words)
         m = retrieval_metrics(vecs, label_ids, k=k)
-        row = {"encoder": enc.name, "dim": enc.dim}
+        row = {"encoder": enc.name, "dim": enc.dim, "n_families": len(roots), "n_words": len(words)}
         row.update({key: round(val, 4) for key, val in m.items()})
         summary_rows.append(row)
         global_logger.info(
             f"[neighbors_eval] {enc.name}: MAP={m['MAP']:.4f} MRR={m['MRR']:.4f} "
             f"R@1={m['recall_at_1']:.4f} R@5={m['recall_at_5']:.4f}"
         )
-        _save_coords(vecs, label_names, words, enc.name, output_dir)
+        _save_coords(enc.encode_words(illus_words), illus_labels, illus_words, enc.name, output_dir)
 
     summary_path = output_dir / "neighbors_summary.csv"
     with open(summary_path, "w", newline="", encoding="utf-8") as f:

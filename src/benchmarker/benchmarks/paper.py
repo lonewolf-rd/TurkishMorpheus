@@ -17,7 +17,7 @@ from src.model_development.training.dataset import (
     clean_word_preserve_case,
 )
 from src.model_development.training.trainer import TrainingConfig
-from src.common.text_utils import turkish_lower
+from src.common.text_utils import byte_level_to_text, turkish_lower
 from src.common.providers.logger_provider import global_logger
 from src.benchmarker.metrics.intrinsic import (
     embed_word_list,
@@ -38,15 +38,23 @@ class ClassicalTokenizerWrapper:
         self.vocab_set: set = set()
         self._load()
 
+    SPM_KINDS = ("bpe", "unigram")
+    HF_KINDS = ("wordpiece", "byte_bpe")
+    _HF_SPECIALS = {"[CLS]", "[SEP]", "[PAD]", "[MASK]", "[UNK]", "<pad>", "<unk>", "<s>", "</s>"}
+
+    @property
+    def is_spm(self) -> bool:
+        return self.kind in self.SPM_KINDS
+
     def _load(self):
-        if self.kind in ("bpe", "byte_bpe", "unigram"):
+        if self.is_spm:
             import sentencepiece as spm
             self.model = spm.SentencePieceProcessor()
             self.model.load(self.model_path)
             self.vocab_set = {
                 self.model.id_to_piece(i) for i in range(self.model.get_piece_size())
             }
-        elif self.kind == "wordpiece":
+        elif self.kind in self.HF_KINDS:
             from tokenizers import Tokenizer
             self.model = Tokenizer.from_file(self.model_path)
             self.vocab_set = set(self.model.get_vocab().keys())
@@ -55,12 +63,23 @@ class ClassicalTokenizerWrapper:
 
     def segment(self, word: str) -> List[str]:
         w = turkish_lower(word)
-        if self.kind in ("bpe", "byte_bpe", "unigram"):
+        if self.is_spm:
             pieces = self.model.encode_as_pieces(w)
             return [self._clean_piece(p) for p in pieces]
-        else:
-            tokens = self.model.encode(w).tokens
-            return [self._clean_piece(t) for t in tokens]
+        # Cut at character offsets: byte-level tokens are byte-mapped strings
+        # ("Ã¼" for "ü") and may split a multi-byte character between tokens.
+        starts = sorted({s for s, _ in self.model.encode(w).offsets if 0 < s < len(w)})
+        cuts = [0] + starts + [len(w)]
+        return [w[a:b] for a, b in zip(cuts, cuts[1:]) if b > a]
+
+    def pieces(self, text: str) -> List[str]:
+        """Surface-string tokens of running text (for token-validity metrics)."""
+        if self.is_spm:
+            return self.model.encode_as_pieces(text)
+        tokens = [t for t in self.model.encode(text).tokens if t not in self._HF_SPECIALS]
+        if self.kind == "byte_bpe":
+            return [byte_level_to_text(t) for t in tokens]
+        return tokens
 
     @staticmethod
     def _clean_piece(p: str) -> str:
@@ -80,7 +99,7 @@ def discover_classical_tokenizers(results_dir: str, preferred_vocab: int = 64000
     found: List[ClassicalTokenizerWrapper] = []
     patterns = [
         ("bpe", "bpe", "*.model"),
-        ("byte_bpe", "byte_bpe", "*.model"),
+        ("byte_bpe", "byte_bpe", "*.json"),
         ("unigram", "unigram", "*.model"),
         ("wordpiece", "wordpiece", "*.json"),
     ]

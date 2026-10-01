@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import numpy as np
 import torch
 import morfessor
 from torch.utils.data import Dataset, DataLoader
@@ -81,9 +82,13 @@ class MorfessorWrapper:
         return labels, confidence, root
 
 
+_NON_WORD_RE = re.compile(r"[^\w]", flags=re.UNICODE)
+_DIGIT_RE = re.compile(r"[0-9]")
+
+
 def clean_word_preserve_case(word: str) -> Optional[str]:
-    word = re.sub(r"[^\w]", "", word, flags=re.UNICODE)
-    word = re.sub(r"[0-9]", "", word)
+    word = _NON_WORD_RE.sub("", word)
+    word = _DIGIT_RE.sub("", word)
     if len(word) < 2 or len(word) > 30:
         return None
     if not all(c.isalpha() for c in word):
@@ -91,19 +96,27 @@ def clean_word_preserve_case(word: str) -> Optional[str]:
     return word
 
 
+def count_clean_words(txt_path: str) -> Counter:
+    """Frequency of cleaned, lowercased words over the whole corpus (one pass)."""
+    counter = Counter()
+    with open(txt_path, "r", encoding="utf-8") as f:
+        for line in f:
+            for w in line.split():
+                cleaned = clean_word_preserve_case(w)
+                if cleaned:
+                    counter[turkish_lower(cleaned)] += 1
+    return counter
+
+
 def build_word_vocab(
         txt_path: str,
         top_k: int = 100000,
         min_freq: int = 3,
+        counter: Optional[Counter] = None,
 ) -> Tuple[Dict[str, int], torch.Tensor]:
-    global_logger.info(f"[build_word_vocab] Counting words in {txt_path}")
-    counter = Counter()
-    with open(txt_path, "r", encoding="utf-8") as f:
-        for line in f:
-            for w in line.strip().split():
-                cleaned = clean_word_preserve_case(w)
-                if cleaned:
-                    counter[turkish_lower(cleaned)] += 1
+    if counter is None:
+        global_logger.info(f"[build_word_vocab] Counting words in {txt_path}")
+        counter = count_clean_words(txt_path)
 
     items = [(w, c) for w, c in counter.items() if c >= min_freq]
     items.sort(key=lambda x: -x[1])
@@ -181,30 +194,29 @@ def build_sentence_cache(
     global_logger.info(f"[build_sentence_cache] Start: {txt_path}")
     t0 = time.time()
 
-    global_logger.info("[build_sentence_cache] Counting word frequencies...")
-    word_counter = Counter()
-    with open(txt_path, "r", encoding="utf-8") as f:
-        for line in f:
-            for w in line.strip().split():
-                cleaned = clean_word_preserve_case(w)
-                if cleaned:
-                    word_counter[turkish_lower(cleaned)] += 1
+    # One corpus pass at most, and none when both vocabularies already exist.
+    need_word_vocab = not Path(word_vocab_path).exists()
+    need_root_vocab = not Path(root_vocab_path).exists()
+    word_counter: Optional[Counter] = None
+    if need_word_vocab or need_root_vocab:
+        global_logger.info("[build_sentence_cache] Counting word frequencies...")
+        word_counter = count_clean_words(txt_path)
 
-    if Path(word_vocab_path).exists():
+    if not need_word_vocab:
         global_logger.info(f"[build_sentence_cache] Loading word vocab: {word_vocab_path}")
         word_vocab = torch.load(word_vocab_path)["vocab"]
-        word_freqs = torch.load(word_vocab_path)["freqs"]
     else:
         word_vocab, word_freqs = build_word_vocab(
             txt_path,
             top_k=word_vocab_top_k,
             min_freq=word_vocab_min_freq,
+            counter=word_counter,
         )
         Path(word_vocab_path).parent.mkdir(parents=True, exist_ok=True)
         torch.save({"vocab": word_vocab, "freqs": word_freqs}, word_vocab_path)
         global_logger.info(f"[build_sentence_cache] Saved word vocab: {word_vocab_path}")
 
-    if Path(root_vocab_path).exists():
+    if not need_root_vocab:
         global_logger.info(f"[build_sentence_cache] Loading root vocab: {root_vocab_path}")
         root_vocab = torch.load(root_vocab_path)
     else:
@@ -221,30 +233,50 @@ def build_sentence_cache(
     wrapper = MorfessorWrapper(morfessor_path)
     kalbur = KalburRoots()
     helper = CharEncoderHelper()
+    if helper.char_vocab_size > 256:
+        raise ValueError(f"char vocab ({helper.char_vocab_size}) no longer fits uint8 storage")
+
+    # Per-word features are computed once per distinct word, not once per occurrence.
+    # Labels depend only on the lowercased word (Morfessor and Kalbur both lowercase);
+    # char ids and case flags depend on the cased word. Values are kept as compact bytes.
+    char_feats: Dict[str, Tuple[bytes, bytes, int]] = {}
+    label_feats: Dict[str, Tuple[bytes, float, int, int, bool]] = {}
+
+    def features(w: str):
+        cf = char_feats.get(w)
+        if cf is None:
+            ids, flags, rl = helper.word_to_char_ids(w, max_len=max_word_len)
+            cf = char_feats[w] = (bytes(ids), bytes(flags), rl)
+        lw = turkish_lower(w)
+        lf = label_feats.get(lw)
+        if lf is None:
+            labels, conf, root = wrapper.get_boundary_labels(w, max_len=max_word_len)
+            before = labels[:]
+            labels = apply_kalbur_root_correction(labels, w, kalbur, max_word_len)
+            lf = label_feats[lw] = (bytes(labels), conf, word_vocab.get(lw, 0),
+                                    root_vocab.get(root, 0), labels != before)
+        return cf, lf
+
+    # Preallocated compact arrays instead of nested Python lists: same values,
+    # ~8x less memory than int64 and no slow list -> tensor conversion at the end.
+    n_cap, s_len, w_len = max_sentences, max_sent_len, max_word_len
+    char_ids = np.zeros((n_cap, s_len, w_len), dtype=np.uint8)  # 0 == CharEncoderHelper._PAD_ID
+    case_flags = np.zeros((n_cap, s_len, w_len), dtype=np.uint8)
+    real_lens = np.zeros((n_cap, s_len), dtype=np.uint8)
+    labels_arr = np.zeros((n_cap, s_len, w_len - 1), dtype=np.uint8)
+    confs = np.zeros((n_cap, s_len), dtype=np.float32)
+    word_ids = np.zeros((n_cap, s_len), dtype=np.int32)
+    root_ids = np.zeros((n_cap, s_len), dtype=np.int32)
+    masks = np.zeros((n_cap, s_len), dtype=np.bool_)
+    if helper._PAD_ID != 0:
+        char_ids.fill(helper._PAD_ID)
+
     n_root_corrected = 0
-
-    char_ids_all = []
-    case_flags_all = []
-    real_lens_all = []
-    labels_all = []
-    confs_all = []
-    word_ids_all = []
-    root_ids_all = []
-    masks_all = []
-
     n_sents = 0
-    total_lines = 0
 
     with open(txt_path, "r", encoding="utf-8") as f:
         for line in f:
-            total_lines += 1
-            raw_words = line.strip().split()
-            cleaned_words = []
-            for w in raw_words:
-                cw = clean_word_preserve_case(w)
-                if cw:
-                    cleaned_words.append(cw)
-
+            cleaned_words = [cw for cw in map(clean_word_preserve_case, line.split()) if cw]
             if len(cleaned_words) < min_sent_words:
                 continue
 
@@ -253,54 +285,17 @@ def build_sentence_cache(
                 if len(chunk) < min_sent_words:
                     continue
 
-                s_char_ids = []
-                s_case_flags = []
-                s_real_lens = []
-                s_labels = []
-                s_confs = []
-                s_word_ids = []
-                s_root_ids = []
-
-                for w in chunk:
-                    ids, flags, rl = helper.word_to_char_ids(w, max_len=max_word_len)
-                    labels, conf, root = wrapper.get_boundary_labels(w, max_len=max_word_len)
-                    before = labels[:]
-                    labels = apply_kalbur_root_correction(labels, w, kalbur, max_word_len)
-                    if labels != before:
-                        n_root_corrected += 1
-                    wid = word_vocab.get(turkish_lower(w), 0)
-                    rid = root_vocab.get(root, 0)
-                    s_char_ids.append(ids)
-                    s_case_flags.append(flags)
-                    s_real_lens.append(rl)
-                    s_labels.append(labels)
-                    s_confs.append(conf)
-                    s_word_ids.append(wid)
-                    s_root_ids.append(rid)
-
-                actual = len(chunk)
-                pad_word = [helper._PAD_ID] * max_word_len
-                pad_case = [0] * max_word_len
-                pad_label = [0] * (max_word_len - 1)
-                while len(s_char_ids) < max_sent_len:
-                    s_char_ids.append(pad_word)
-                    s_case_flags.append(pad_case)
-                    s_real_lens.append(0)
-                    s_labels.append(pad_label)
-                    s_confs.append(0.0)
-                    s_word_ids.append(0)
-                    s_root_ids.append(0)
-
-                mask = [True] * actual + [False] * (max_sent_len - actual)
-
-                char_ids_all.append(s_char_ids)
-                case_flags_all.append(s_case_flags)
-                real_lens_all.append(s_real_lens)
-                labels_all.append(s_labels)
-                confs_all.append(s_confs)
-                word_ids_all.append(s_word_ids)
-                root_ids_all.append(s_root_ids)
-                masks_all.append(mask)
+                for j, w in enumerate(chunk):
+                    (ids_b, flags_b, rl), (labels_b, conf, wid, rid, corrected) = features(w)
+                    char_ids[n_sents, j] = np.frombuffer(ids_b, dtype=np.uint8)
+                    case_flags[n_sents, j] = np.frombuffer(flags_b, dtype=np.uint8)
+                    labels_arr[n_sents, j] = np.frombuffer(labels_b, dtype=np.uint8)
+                    real_lens[n_sents, j] = rl
+                    confs[n_sents, j] = conf
+                    word_ids[n_sents, j] = wid
+                    root_ids[n_sents, j] = rid
+                    n_root_corrected += corrected
+                masks[n_sents, :len(chunk)] = True
 
                 n_sents += 1
                 if n_sents >= max_sentences:
@@ -310,7 +305,7 @@ def build_sentence_cache(
                     elapsed = time.time() - t0
                     global_logger.info(
                         f"[build_sentence_cache] {n_sents:>7,} sentences "
-                        f"| {elapsed:.1f}s elapsed"
+                        f"| {len(label_feats):,} distinct words | {elapsed:.1f}s elapsed"
                     )
 
             if n_sents >= max_sentences:
@@ -321,15 +316,19 @@ def build_sentence_cache(
     )
     global_logger.info(f"[build_sentence_cache] Packing tensors (N={n_sents})...")
 
+    def pack(arr: np.ndarray) -> torch.Tensor:
+        # Copy the used rows so torch.save does not write the unused preallocated tail.
+        return torch.from_numpy(arr[:n_sents].copy())
+
     cache = {
-        "char_ids": torch.tensor(char_ids_all, dtype=torch.long),
-        "case_flags": torch.tensor(case_flags_all, dtype=torch.long),
-        "real_lengths": torch.tensor(real_lens_all, dtype=torch.long),
-        "morfessor_labels": torch.tensor(labels_all, dtype=torch.long),
-        "confidence": torch.tensor(confs_all, dtype=torch.float32),
-        "word_ids": torch.tensor(word_ids_all, dtype=torch.long),
-        "root_ids": torch.tensor(root_ids_all, dtype=torch.long),
-        "attention_mask": torch.tensor(masks_all, dtype=torch.bool),
+        "char_ids": pack(char_ids),
+        "case_flags": pack(case_flags),
+        "real_lengths": pack(real_lens),
+        "morfessor_labels": pack(labels_arr),
+        "confidence": pack(confs),
+        "word_ids": pack(word_ids),
+        "root_ids": pack(root_ids),
+        "attention_mask": pack(masks),
         "word_vocab_size": len(word_vocab),
         "root_vocab_size": len(root_vocab),
         "max_word_len": max_word_len,
@@ -374,14 +373,15 @@ class MorpheusSentenceDataset(Dataset):
         return self.char_ids.size(0)
 
     def __getitem__(self, idx: int) -> Dict:
+        # Caches store compact dtypes (uint8/int32); the model expects int64 ids.
         return {
-            "char_ids": self.char_ids[idx],
-            "case_flags": self.case_flags[idx],
-            "real_lengths": self.real_lengths[idx],
-            "morfessor_labels": self.morfessor_labels[idx],
+            "char_ids": self.char_ids[idx].long(),
+            "case_flags": self.case_flags[idx].long(),
+            "real_lengths": self.real_lengths[idx].long(),
+            "morfessor_labels": self.morfessor_labels[idx].long(),
             "confidence": self.confidence[idx],
-            "word_ids": self.word_ids[idx],
-            "root_ids": self.root_ids[idx],
+            "word_ids": self.word_ids[idx].long(),
+            "root_ids": self.root_ids[idx].long(),
             "attention_mask": self.attention_mask[idx],
         }
 

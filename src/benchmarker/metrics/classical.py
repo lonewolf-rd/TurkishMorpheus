@@ -44,12 +44,12 @@ class MetricEvaluator:
             return boundaries
 
         elif hasattr(tokenizer_obj, "encode"):
+            # Character offsets work for WordPiece and byte-level BPE alike; token
+            # strings do not (byte-level tokens are byte-mapped, e.g. "Ã¼" for "ü").
             enc = tokenizer_obj.encode(word_lower)
-            tokens = enc.tokens
-            for t in tokens[:-1]:
-                clean_t = t.replace("##", "")
-                pos += len(clean_t)
-                boundaries.add(pos)
+            for start, _ in enc.offsets[1:]:
+                if 0 < start < len(word_lower):
+                    boundaries.add(start)
             return boundaries
 
         return boundaries
