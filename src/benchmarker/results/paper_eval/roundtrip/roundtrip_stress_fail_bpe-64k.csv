@@ -1,0 +1,15 @@
+wordform,reconstructed
+“Yarın gelirim” dedi — ama gelmedi…,“Yarın gelirim” dedi — ama gelmedi...
+"def topla(a, b):
+    return a + b
+","def topla(a, b): return a + b"
+"if x:
+	y = 1
+
+  z = 2",if x: y = 1 z = 2
+"Satır bir
+satır iki
+",Satır bir satır iki
+  baştaki ve sondaki boşluklar  ,baştaki ve sondaki boşluklar
+iki  boşluk   üç boşluk,iki boşluk üç boşluk
+no-break space ve ince boşluk,no-break space ve ince boşluk

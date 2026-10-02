@@ -1,4 +1,4 @@
-encoder,dim,MAP,MRR,recall_at_1,recall_at_5,precision_at_R,purity_at_5
-morpheus,320,0.8542,1.0,1.0,1.0,0.8333,1.0
-berturk,768,0.4893,0.8507,0.7917,0.5,0.441,0.5
-bge-m3,1024,0.801,0.9792,0.9583,0.9,0.7812,0.9
+encoder,dim,n_families,n_words,MAP,MRR,recall_at_1,recall_at_5,precision_at_R,purity_at_5
+morpheus,320,120,1664,0.8905,0.9889,0.9838,0.9696,0.8791,0.9696
+berturk,768,120,1664,0.38,0.8598,0.8137,0.6127,0.3809,0.6127
+bge-m3,1024,120,1664,0.7163,0.9665,0.9501,0.8964,0.6958,0.8964

@@ -1,7 +1,7 @@
 tokenizer,n_words,roundtrip_acc,roundtrip_fail_pct,n_fail,decode_words_per_sec
-bpe-64k,30204,1.0,0.0,1,369511.6
-byte_bpe-64k,30204,1.0,0.0,0,358646.9
-unigram-64k,30204,1.0,0.0,1,384273.5
-morpheus,30204,1.0,0.0,1,692177.4
-turkish-tokenizer,30204,0.9543,4.57,1379,918735.0
-wordpiece-64k,30204,0.5816,41.84,12638,349982.1
+bpe-64k,30204,1.0,0.0,0,321955.3
+byte_bpe-64k,30204,1.0,0.0,0,619130.8
+unigram-64k,30204,1.0,0.0,0,362147.1
+wordpiece-64k,30204,1.0,0.0,1,296504.2
+morpheus,30204,1.0,0.0,0,438290.5
+turkish-tokenizer,30204,0.9543,4.57,1379,813541.1

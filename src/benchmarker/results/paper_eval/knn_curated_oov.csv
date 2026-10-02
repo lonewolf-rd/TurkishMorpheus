@@ -1,101 +1,101 @@
 stratum,query,rank,trained_neighbor,trained_sim,random_neighbor,random_sim,morfessor_seg,morpheus_seg
-curated_oov,muvaffakiyetsizleştiriciler,1,mu,0.9276,ventrikülomegali,0.9212,mu | va | f | fak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
-curated_oov,muvaffakiyetsizleştiriciler,2,hukillives,0.5756,üniversitelerindeki,0.9185,mu | va | f | fak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
-curated_oov,muvaffakiyetsizleştiriciler,3,fuchs,0.5542,tariflemi,0.9152,mu | va | f | fak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
-curated_oov,muvaffakiyetsizleştiriciler,4,sulkasyon,0.3916,sözleşmesindeki,0.9129,mu | va | f | fak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
-curated_oov,muvaffakiyetsizleştiriciler,5,mevud,0.3908,değiştiricilerde,0.9116,mu | va | f | fak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
-curated_oov,muvaffakiyetsizleştiriciler,6,mütevâtir,0.3834,söyleyebilseydik,0.908,mu | va | f | fak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
-curated_oov,muvaffakiyetsizleştiriciler,7,mhs,0.381,pekiştirilmesi,0.9079,mu | va | f | fak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
-curated_oov,muvaffakiyetsizleştiriciler,8,majayda,0.3778,görevlendirilemeyeceklerinden,0.9016,mu | va | f | fak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
-curated_oov,muvaffakiyetsizleştiriciler,9,miyantlamak,0.3769,görüşmecilerin,0.9008,mu | va | f | fak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
-curated_oov,muvaffakiyetsizleştiriciler,10,mql,0.3717,intervaline,0.9003,mu | va | f | fak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
-curated_oov,anlaşılamamaktadır,1,ilişkile,0.3597,açıklamada,0.9366,anlaşıl | ama | makta | dır,anlaşıl | ama | maktadır
-curated_oov,anlaşılamamaktadır,2,kullanılan,0.325,açıklama,0.9232,anlaşıl | ama | makta | dır,anlaşıl | ama | maktadır
-curated_oov,anlaşılamamaktadır,3,ilişkin,0.3203,çalışmada,0.9113,anlaşıl | ama | makta | dır,anlaşıl | ama | maktadır
-curated_oov,anlaşılamamaktadır,4,anoksik,0.3108,duyarsızlaşma,0.9108,anlaşıl | ama | makta | dır,anlaşıl | ama | maktadır
-curated_oov,anlaşılamamaktadır,5,olabilir,0.3042,çalışmalarımızdan,0.9041,anlaşıl | ama | makta | dır,anlaşıl | ama | maktadır
-curated_oov,anlaşılamamaktadır,6,öneli,0.2986,kapsamında,0.9004,anlaşıl | ama | makta | dır,anlaşıl | ama | maktadır
-curated_oov,anlaşılamamaktadır,7,anestezist,0.2973,amacıyla,0.8987,anlaşıl | ama | makta | dır,anlaşıl | ama | maktadır
-curated_oov,anlaşılamamaktadır,8,öne,0.2945,altında,0.8986,anlaşıl | ama | makta | dır,anlaşıl | ama | maktadır
-curated_oov,anlaşılamamaktadır,9,anda,0.2853,araştırma,0.8971,anlaşıl | ama | makta | dır,anlaşıl | ama | maktadır
-curated_oov,anlaşılamamaktadır,10,anestezisi,0.2828,ortalama,0.8958,anlaşıl | ama | makta | dır,anlaşıl | ama | maktadır
-curated_oov,görevlendirilemeyeceklerinden,1,yönelik,0.3124,evlerimizdekiler,0.95,görev | lendiril | e | meyecek | lerinden,görev | lendiril | eme | yecek | lerinden
-curated_oov,görevlendirilemeyeceklerinden,2,üniversitelerindeki,0.2774,üniversitelerindeki,0.9474,görev | lendiril | e | meyecek | lerinden,görev | lendiril | eme | yecek | lerinden
-curated_oov,görevlendirilemeyeceklerinden,3,sebep,0.2733,görüşmecilerin,0.9368,görev | lendiril | e | meyecek | lerinden,görev | lendiril | eme | yecek | lerinden
-curated_oov,görevlendirilemeyeceklerinden,4,görüşmecilerin,0.2684,meşcerelerinin,0.9334,görev | lendiril | e | meyecek | lerinden,görev | lendiril | eme | yecek | lerinden
-curated_oov,görevlendirilemeyeceklerinden,5,ihbars,0.2674,meşcerelerin,0.9281,görev | lendiril | e | meyecek | lerinden,görev | lendiril | eme | yecek | lerinden
-curated_oov,görevlendirilemeyeceklerinden,6,terör,0.2507,intervaline,0.9237,görev | lendiril | e | meyecek | lerinden,görev | lendiril | eme | yecek | lerinden
-curated_oov,görevlendirilemeyeceklerinden,7,gerekli,0.2484,ventriküllerde,0.923,görev | lendiril | e | meyecek | lerinden,görev | lendiril | eme | yecek | lerinden
-curated_oov,görevlendirilemeyeceklerinden,8,karar,0.2469,kerevitlerin,0.9225,görev | lendiril | e | meyecek | lerinden,görev | lendiril | eme | yecek | lerinden
-curated_oov,görevlendirilemeyeceklerinden,9,gerek,0.2401,ventrikülomegali,0.92,görev | lendiril | e | meyecek | lerinden,görev | lendiril | eme | yecek | lerinden
-curated_oov,görevlendirilemeyeceklerinden,10,gerekiyor,0.2379,sözleşmesindeki,0.9189,görev | lendiril | e | meyecek | lerinden,görev | lendiril | eme | yecek | lerinden
-curated_oov,üniversitelerindeki,1,üniversitesi,0.5216,değiştiricilerde,0.9539,üniversite | ler | indeki,üniversite | lerindeki
-curated_oov,üniversitelerindeki,2,eğitim,0.3655,evlerimizdekiler,0.9524,üniversite | ler | indeki,üniversite | lerindeki
-curated_oov,üniversitelerindeki,3,bunu,0.3597,görevlendirilemeyeceklerinden,0.9474,üniversite | ler | indeki,üniversite | lerindeki
-curated_oov,üniversitelerindeki,4,hukukundaki,0.3282,sözleşmesindeki,0.9445,üniversite | ler | indeki,üniversite | lerindeki
-curated_oov,üniversitelerindeki,5,ders,0.3045,evlerimizdeki,0.9425,üniversite | ler | indeki,üniversite | lerindeki
-curated_oov,üniversitelerindeki,6,dünyada,0.29,kerevitlerin,0.9388,üniversite | ler | indeki,üniversite | lerindeki
-curated_oov,üniversitelerindeki,7,öğrenci,0.2886,ifadelerini,0.9382,üniversite | ler | indeki,üniversite | lerindeki
-curated_oov,üniversitelerindeki,8,öğrencilerin,0.2874,değertekin,0.9374,üniversite | ler | indeki,üniversite | lerindeki
-curated_oov,üniversitelerindeki,9,dünyanın,0.2854,pekiştirilmesi,0.9303,üniversite | ler | indeki,üniversite | lerindeki
-curated_oov,üniversitelerindeki,10,ının,0.285,meşcerelerinin,0.9299,üniversite | ler | indeki,üniversite | lerindeki
-curated_oov,çalışmalarımızdan,1,çalışmada,0.9925,açısından,0.9335,çalışma | ları | mız | dan,çalışma | ları | mız | dan
-curated_oov,çalışmalarımızdan,2,çalışmakontrol,0.9901,tarafından,0.9268,çalışma | ları | mız | dan,çalışma | ları | mız | dan
-curated_oov,çalışmalarımızdan,3,çalışma,0.9897,duyarsızlaşma,0.9216,çalışma | ları | mız | dan,çalışma | ları | mız | dan
-curated_oov,çalışmalarımızdan,4,olumsuz,0.3938,adamın,0.9213,çalışma | ları | mız | dan,çalışma | ları | mız | dan
-curated_oov,çalışmalarımızdan,5,çalışan,0.3236,çalışmada,0.9168,çalışma | ları | mız | dan,çalışma | ları | mız | dan
-curated_oov,çalışmalarımızdan,6,madde,0.3196,toplumsallıktan,0.9151,çalışma | ları | mız | dan,çalışma | ları | mız | dan
-curated_oov,çalışmalarımızdan,7,kapsamında,0.3063,alınan,0.9145,çalışma | ları | mız | dan,çalışma | ları | mız | dan
-curated_oov,çalışmalarımızdan,8,yaşam,0.2983,ardından,0.9137,çalışma | ları | mız | dan,çalışma | ları | mız | dan
-curated_oov,çalışmalarımızdan,9,çeşitli,0.2883,çalışan,0.9107,çalışma | ları | mız | dan,çalışma | ları | mız | dan
-curated_oov,çalışmalarımızdan,10,belirli,0.2699,sıklıklarına,0.9075,çalışma | ları | mız | dan,çalışma | ları | mız | dan
-curated_oov,yapamayacağız,1,yap,0.9681,kaplamasız,0.9504,yapamayacağı | z,yap | am | ayacağı | z
-curated_oov,yapamayacağız,2,yapmak,0.9659,yalnız,0.9014,yapamayacağı | z,yap | am | ayacağı | z
-curated_oov,yapamayacağız,3,yapar,0.4076,şarpınsızca,0.8901,yapamayacağı | z,yap | am | ayacağı | z
-curated_oov,yapamayacağız,4,saptırma,0.3869,yabancı,0.8724,yapamayacağı | z,yap | am | ayacağı | z
-curated_oov,yapamayacağız,5,yapıyor,0.3828,yapmak,0.8723,yapamayacağı | z,yap | am | ayacağı | z
-curated_oov,yapamayacağız,6,yaptı,0.3572,karacadağ,0.8647,yapamayacağı | z,yap | am | ayacağı | z
-curated_oov,yapamayacağız,7,yapan,0.3473,olacak,0.8571,yapamayacağı | z,yap | am | ayacağı | z
-curated_oov,yapamayacağız,8,kaplamasız,0.3369,duyarsızlaşma,0.8531,yapamayacağı | z,yap | am | ayacağı | z
-curated_oov,yapamayacağız,9,top,0.3339,ayrıca,0.8509,yapamayacağı | z,yap | am | ayacağı | z
-curated_oov,yapamayacağız,10,capuni,0.3278,amacıyla,0.8505,yapamayacağı | z,yap | am | ayacağı | z
+curated_oov,muvaffakiyetsizleştiriciler,1,muzu,0.61,yetiştiricilerinin,0.9239,mu | va | ff | ak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
+curated_oov,muvaffakiyetsizleştiriciler,2,kubilius,0.5593,üniversitelerindeki,0.9185,mu | va | ff | ak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
+curated_oov,muvaffakiyetsizleştiriciler,3,fujimi,0.5553,iletkenliklerinin,0.9143,mu | va | ff | ak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
+curated_oov,muvaffakiyetsizleştiriciler,4,kuğulu,0.5515,keşfedilmiştir,0.909,mu | va | ff | ak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
+curated_oov,muvaffakiyetsizleştiriciler,5,fut,0.5458,söyleyebilseydik,0.908,mu | va | ff | ak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
+curated_oov,muvaffakiyetsizleştiriciler,6,kuersetin,0.5365,görevlendirilemeyeceklerinden,0.9016,mu | va | ff | ak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
+curated_oov,muvaffakiyetsizleştiriciler,7,rubai,0.4718,iletkenlikleri,0.9002,mu | va | ff | ak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
+curated_oov,muvaffakiyetsizleştiriciler,8,aumann,0.468,iletkenlikler,0.898,mu | va | ff | ak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
+curated_oov,muvaffakiyetsizleştiriciler,9,zuckerbergün,0.4661,evlerimizdekiler,0.8976,mu | va | ff | ak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
+curated_oov,muvaffakiyetsizleştiriciler,10,guardi,0.4416,geosentetik,0.8968,mu | va | ff | ak | iyet | siz | leştir | ici | ler,mu | vaff | akiyet | siz | le | ştir | ici | ler
+curated_oov,anlaşılamamaktadır,1,anlamına,0.5037,kullanılmaktadır,0.9449,anlaşıl | ama | ma | ktadır,anlaşıl | ama | maktadır
+curated_oov,anlaşılamamaktadır,2,ilişkilendir,0.3979,almaktadır,0.934,anlaşıl | ama | ma | ktadır,anlaşıl | ama | maktadır
+curated_oov,anlaşılamamaktadır,3,kullanılır,0.3361,kayıtlarında,0.928,anlaşıl | ama | ma | ktadır,anlaşıl | ama | maktadır
+curated_oov,anlaşılamamaktadır,4,kullanılan,0.325,mekanizmalarında,0.9156,anlaşıl | ama | ma | ktadır,anlaşıl | ama | maktadır
+curated_oov,anlaşılamamaktadır,5,alışkanlığına,0.3234,anlamına,0.9105,anlaşıl | ama | ma | ktadır,anlaşıl | ama | maktadır
+curated_oov,anlaşılamamaktadır,6,ilişkin,0.3203,markalama,0.9104,anlaşıl | ama | ma | ktadır,anlaşıl | ama | maktadır
+curated_oov,anlaşılamamaktadır,7,kullanılmaktadır,0.3168,çalışmalarımızdan,0.9041,anlaşıl | ama | ma | ktadır,anlaşıl | ama | maktadır
+curated_oov,anlaşılamamaktadır,8,kullanılmıştır,0.3145,bulunmaktadır,0.9029,anlaşıl | ama | ma | ktadır,anlaşıl | ama | maktadır
+curated_oov,anlaşılamamaktadır,9,değişikyaşlı,0.3108,yıllarında,0.9013,anlaşıl | ama | ma | ktadır,anlaşıl | ama | maktadır
+curated_oov,anlaşılamamaktadır,10,antik,0.3062,karışımında,0.9008,anlaşıl | ama | ma | ktadır,anlaşıl | ama | maktadır
+curated_oov,görevlendirilemeyeceklerinden,1,görevi,0.9482,evlerimizdekiler,0.95,görev | lendiri | leme | yecek | lerinden,görev | lendiril | eme | yecek | lerinden
+curated_oov,görevlendirilemeyeceklerinden,2,görev,0.9258,üniversitelerindeki,0.9474,görev | lendiri | leme | yecek | lerinden,görev | lendiril | eme | yecek | lerinden
+curated_oov,görevlendirilemeyeceklerinden,3,yönelik,0.3124,derğerlendirilmesi,0.9387,görev | lendiri | leme | yecek | lerinden,görev | lendiril | eme | yecek | lerinden
+curated_oov,görevlendirilemeyeceklerinden,4,üniversitesinde,0.2818,engellerine,0.9337,görev | lendiri | leme | yecek | lerinden,görev | lendiril | eme | yecek | lerinden
+curated_oov,görevlendirilemeyeceklerinden,5,üniversitelerindeki,0.2774,iletkenlikler,0.9272,görev | lendiri | leme | yecek | lerinden,görev | lendiril | eme | yecek | lerinden
+curated_oov,görevlendirilemeyeceklerinden,6,üniversite,0.2702,üretilen,0.92,görev | lendiri | leme | yecek | lerinden,görev | lendiril | eme | yecek | lerinden
+curated_oov,görevlendirilemeyeceklerinden,7,yardımcılık,0.2698,güncelleyen,0.9192,görev | lendiri | leme | yecek | lerinden,görev | lendiril | eme | yecek | lerinden
+curated_oov,görevlendirilemeyeceklerinden,8,philostratus,0.2606,merkezine,0.9191,görev | lendiri | leme | yecek | lerinden,görev | lendiril | eme | yecek | lerinden
+curated_oov,görevlendirilemeyeceklerinden,9,karar,0.2469,uçabilenlerden,0.9186,görev | lendiri | leme | yecek | lerinden,görev | lendiril | eme | yecek | lerinden
+curated_oov,görevlendirilemeyeceklerinden,10,yardımcı,0.2364,iletkenlikleri,0.9182,görev | lendiri | leme | yecek | lerinden,görev | lendiril | eme | yecek | lerinden
+curated_oov,üniversitelerindeki,1,üniversite,0.9955,evlerimizdekiler,0.9524,üniversite | lerindeki,üniversite | lerindeki
+curated_oov,üniversitelerindeki,2,üniversitesinde,0.9885,iletkenlikleri,0.9487,üniversite | lerindeki,üniversite | lerindeki
+curated_oov,üniversitelerindeki,3,üniversitesi,0.5216,derğerlendirilmesi,0.9475,üniversite | lerindeki,üniversite | lerindeki
+curated_oov,üniversitelerindeki,4,universitat,0.4814,görevlendirilemeyeceklerinden,0.9474,üniversite | lerindeki,üniversite | lerindeki
+curated_oov,üniversitelerindeki,5,eğitimi,0.379,üniversitesinde,0.9472,üniversite | lerindeki,üniversite | lerindeki
+curated_oov,üniversitelerindeki,6,okul,0.376,iletkenliklerinin,0.9441,üniversite | lerindeki,üniversite | lerindeki
+curated_oov,üniversitelerindeki,7,eğitim,0.3655,evlerimizdeki,0.9425,üniversite | lerindeki,üniversite | lerindeki
+curated_oov,üniversitelerindeki,8,bunu,0.3597,üzerindeki,0.9398,üniversite | lerindeki,üniversite | lerindeki
+curated_oov,üniversitelerindeki,9,hukuk,0.343,karikatürlerini,0.9334,üniversite | lerindeki,üniversite | lerindeki
+curated_oov,üniversitelerindeki,10,görev,0.331,yetiştiricilerinin,0.9327,üniversite | lerindeki,üniversite | lerindeki
+curated_oov,çalışmalarımızdan,1,çalışmaları,0.9917,yılmazdan,0.9506,çalışma | lar | ımız | dan,çalışma | ları | mız | dan
+curated_oov,çalışmalarımızdan,2,çalışma,0.9897,mekanizmalarında,0.9387,çalışma | lar | ımız | dan,çalışma | ları | mız | dan
+curated_oov,çalışmalarımızdan,3,olumsuzlama,0.3896,açısından,0.9335,çalışma | lar | ımız | dan,çalışma | ları | mız | dan
+curated_oov,çalışmalarımızdan,4,alışkanlığına,0.3633,yapıştırılan,0.9294,çalışma | lar | ımız | dan,çalışma | ları | mız | dan
+curated_oov,çalışmalarımızdan,5,alıştırmaları,0.3547,yılından,0.9277,çalışma | lar | ımız | dan,çalışma | ları | mız | dan
+curated_oov,çalışmalarımızdan,6,çalıştı,0.3545,tarafından,0.9268,çalışma | lar | ımız | dan,çalışma | ları | mız | dan
+curated_oov,çalışmalarımızdan,7,çalışan,0.3236,familyasına,0.926,çalışma | lar | ımız | dan,çalışma | ları | mız | dan
+curated_oov,çalışmalarımızdan,8,başkanlığı,0.3035,yıllarında,0.9257,çalışma | lar | ımız | dan,çalışma | ları | mız | dan
+curated_oov,çalışmalarımızdan,9,yaşam,0.2983,muhafazakârların,0.9207,çalışma | lar | ımız | dan,çalışma | ları | mız | dan
+curated_oov,çalışmalarımızdan,10,çeşitli,0.2883,alışkanlığına,0.9206,çalışma | lar | ımız | dan,çalışma | ları | mız | dan
+curated_oov,yapamayacağız,1,yapmak,0.9659,bağımsız,0.8933,yap | ama | yacağı | z,yap | am | ayacağı | z
+curated_oov,yapamayacağız,2,yapmıştır,0.9437,şarpınsızca,0.8901,yap | ama | yacağı | z,yap | am | ayacağı | z
+curated_oov,yapamayacağız,3,yapıştırılan,0.5373,yalnızca,0.8892,yap | ama | yacağı | z,yap | am | ayacağı | z
+curated_oov,yapamayacağız,4,sapmasının,0.3833,fransız,0.8762,yap | ama | yacağı | z,yap | am | ayacağı | z
+curated_oov,yapamayacağız,5,yaptı,0.3572,kazandı,0.8743,yap | ama | yacağı | z,yap | am | ayacağı | z
+curated_oov,yapamayacağız,6,yaz,0.3498,yabancı,0.8724,yap | ama | yacağı | z,yap | am | ayacağı | z
+curated_oov,yapamayacağız,7,yapan,0.3473,yapmak,0.8723,yap | ama | yacağı | z,yap | am | ayacağı | z
+curated_oov,yapamayacağız,8,yazdığı,0.3427,kabarması,0.8722,yap | ama | yacağı | z,yap | am | ayacağı | z
+curated_oov,yapamayacağız,9,yapı,0.3332,makurnaz,0.866,yap | ama | yacağı | z,yap | am | ayacağı | z
+curated_oov,yapamayacağız,10,yaşlansa,0.3277,muhafazakârların,0.8627,yap | ama | yacağı | z,yap | am | ayacağı | z
 curated_oov,söyleyebilseydik,1,söyledi,0.9855,gelebilseydik,0.9757,söyle | ye | bil | sey | dik,söyle | ye | bil | sey | dik
-curated_oov,söyleyebilseydik,2,syx,0.4683,sözleşmesindeki,0.9431,söyle | ye | bil | sey | dik,söyle | ye | bil | sey | dik
-curated_oov,söyleyebilseydik,3,söz,0.4335,yerellik,0.9372,söyle | ye | bil | sey | dik,söyle | ye | bil | sey | dik
-curated_oov,söyleyebilseydik,4,böyle,0.3864,yönelik,0.9337,söyle | ye | bil | sey | dik,söyle | ye | bil | sey | dik
-curated_oov,söyleyebilseydik,5,şöyle,0.3695,yüzdelikler,0.9259,söyle | ye | bil | sey | dik,söyle | ye | bil | sey | dik
-curated_oov,söyleyebilseydik,6,diyen,0.3231,şikardiye,0.9222,söyle | ye | bil | sey | dik,söyle | ye | bil | sey | dik
-curated_oov,söyleyebilseydik,7,suç,0.3021,yalçınnevşehir,0.9219,söyle | ye | bil | sey | dik,söyle | ye | bil | sey | dik
-curated_oov,söyleyebilseydik,8,diye,0.3018,gelmedik,0.9181,söyle | ye | bil | sey | dik,söyle | ye | bil | sey | dik
-curated_oov,söyleyebilseydik,9,ses,0.2837,kelfeyimsi,0.918,söyle | ye | bil | sey | dik,söyle | ye | bil | sey | dik
-curated_oov,söyleyebilseydik,10,adamlar,0.283,söyledi,0.9171,söyle | ye | bil | sey | dik,söyle | ye | bil | sey | dik
-curated_oov,düşünmemiştik,1,düşünüyorum,0.9911,gitmiştik,0.9527,düşün | memiş | tik,düşün | memiş | t | ik
-curated_oov,düşünmemiştik,2,yüzünden,0.4508,teknik,0.9444,düşün | memiş | tik,düşün | memiş | t | ik
-curated_oov,düşünmemiştik,3,müşâ,0.4261,güvenlik,0.9374,düşün | memiş | tik,düşün | memiş | t | ik
-curated_oov,düşünmemiştik,4,önüne,0.4189,etnobotanik,0.9269,düşün | memiş | tik,düşün | memiş | t | ik
-curated_oov,düşünmemiştik,5,üstüne,0.4088,gelmedik,0.9234,düşün | memiş | tik,düşün | memiş | t | ik
-curated_oov,düşünmemiştik,6,müşâvere,0.4062,türkiyenin,0.9229,düşün | memiş | tik,düşün | memiş | t | ik
-curated_oov,düşünmemiştik,7,müşavere,0.3999,yönelik,0.9208,düşün | memiş | tik,düşün | memiş | t | ik
-curated_oov,düşünmemiştik,8,sorun,0.3981,likitlik,0.9195,düşün | memiş | tik,düşün | memiş | t | ik
-curated_oov,düşünmemiştik,9,onun,0.3439,elektrik,0.9179,düşün | memiş | tik,düşün | memiş | t | ik
-curated_oov,düşünmemiştik,10,yaşanan,0.3326,ekonomik,0.9137,düşün | memiş | tik,düşün | memiş | t | ik
-curated_oov,uçabilenlerden,1,iç,0.4618,edilen,0.9618,uça | bilen | lerden,uç | abilen | lerden
-curated_oov,uçabilenlerden,2,uygarl,0.4521,aritmilerden,0.958,uça | bilen | lerden,uç | abilen | lerden
-curated_oov,uçabilenlerden,3,suç,0.4521,yeniden,0.9563,uça | bilen | lerden,uç | abilen | lerden
-curated_oov,uçabilenlerden,4,ukf,0.4266,üzerinden,0.9534,uça | bilen | lerden,uç | abilen | lerden
-curated_oov,uçabilenlerden,5,içi,0.4202,neden,0.9478,uça | bilen | lerden,uç | abilen | lerden
-curated_oov,uçabilenlerden,6,usde,0.4195,meşcerelerinin,0.9472,uça | bilen | lerden,uç | abilen | lerden
-curated_oov,uçabilenlerden,7,aç,0.396,meşcerelerin,0.9466,uça | bilen | lerden,uç | abilen | lerden
-curated_oov,uçabilenlerden,8,araç,0.3789,anomalilerin,0.9457,uça | bilen | lerden,uç | abilen | lerden
-curated_oov,uçabilenlerden,9,kaçalin,0.3731,meniden,0.9455,uça | bilen | lerden,uç | abilen | lerden
-curated_oov,uçabilenlerden,10,kaç,0.3403,verilen,0.9447,uça | bilen | lerden,uç | abilen | lerden
-curated_oov,kitapçısı,1,kitapta,0.9899,yaptığı,0.932,kitap | çı | sı,kitap | ç | ısı
-curated_oov,kitapçısı,2,kitap,0.9891,kitaplarımı,0.9262,kitap | çı | sı,kitap | ç | ısı
-curated_oov,kitapçısı,3,kitaplarımı,0.9884,hayatını,0.9208,kitap | çı | sı,kitap | ç | ısı
-curated_oov,kitapçısı,4,kitaplıkta,0.9877,sayısı,0.9191,kitap | çı | sı,kitap | ç | ısı
-curated_oov,kitapçısı,5,kitaplar,0.9865,çınaraltı,0.9124,kitap | çı | sı,kitap | ç | ısı
-curated_oov,kitapçısı,6,kitabımdaki,0.612,açıkladı,0.9064,kitap | çı | sı,kitap | ç | ısı
-curated_oov,kitapçısı,7,kitabım,0.5466,yaptı,0.9061,kitap | çı | sı,kitap | ç | ısı
-curated_oov,kitapçısı,8,dair,0.2957,dışı,0.9032,kitap | çı | sı,kitap | ç | ısı
-curated_oov,kitapçısı,9,ortak,0.2954,okuryazarlığını,0.9006,kitap | çı | sı,kitap | ç | ısı
-curated_oov,kitapçısı,10,cevap,0.2868,sonrası,0.8991,kitap | çı | sı,kitap | ç | ısı
+curated_oov,söyleyebilseydik,2,söz,0.4335,yönelik,0.9337,söyle | ye | bil | sey | dik,söyle | ye | bil | sey | dik
+curated_oov,söyleyebilseydik,3,böyle,0.3864,jeomühendislik,0.9323,söyle | ye | bil | sey | dik,söyle | ye | bil | sey | dik
+curated_oov,söyleyebilseydik,4,böylece,0.3625,birleşik,0.9243,söyle | ye | bil | sey | dik,söyle | ye | bil | sey | dik
+curated_oov,söyleyebilseydik,5,öy,0.3465,sahiplenmek,0.9241,söyle | ye | bil | sey | dik,söyle | ye | bil | sey | dik
+curated_oov,söyleyebilseydik,6,seyahatnâmesinde,0.3455,iletkenlikler,0.9204,söyle | ye | bil | sey | dik,söyle | ye | bil | sey | dik
+curated_oov,söyleyebilseydik,7,ödeniyor,0.3426,gelmedik,0.9181,söyle | ye | bil | sey | dik,söyle | ye | bil | sey | dik
+curated_oov,söyleyebilseydik,8,diye,0.3018,kelfeyimsi,0.918,söyle | ye | bil | sey | dik,söyle | ye | bil | sey | dik
+curated_oov,söyleyebilseydik,9,ses,0.2837,söyledi,0.9171,söyle | ye | bil | sey | dik,söyle | ye | bil | sey | dik
+curated_oov,söyleyebilseydik,10,öğre,0.2788,bireylerinde,0.9166,söyle | ye | bil | sey | dik,söyle | ye | bil | sey | dik
+curated_oov,düşünmemiştik,1,düşüne,0.9903,antik,0.9531,düşün | memiş | tik,düşün | memiş | t | ik
+curated_oov,düşünmemiştik,2,onun,0.3439,gitmiştik,0.9527,düşün | memiş | tik,düşün | memiş | t | ik
+curated_oov,düşünmemiştik,3,korunurlar,0.3336,mitotik,0.9498,düşün | memiş | tik,düşün | memiş | t | ik
+curated_oov,düşünmemiştik,4,kendini,0.3219,teknik,0.9444,düşün | memiş | tik,düşün | memiş | t | ik
+curated_oov,düşünmemiştik,5,bütün,0.3167,geosentetik,0.941,düşün | memiş | tik,düşün | memiş | t | ik
+curated_oov,düşünmemiştik,6,bunun,0.3148,güvenlik,0.9374,düşün | memiş | tik,düşün | memiş | t | ik
+curated_oov,düşünmemiştik,7,bazen,0.3135,atretik,0.9355,düşün | memiş | tik,düşün | memiş | t | ik
+curated_oov,düşünmemiştik,8,bununla,0.307,jeomühendislik,0.9302,düşün | memiş | tik,düşün | memiş | t | ik
+curated_oov,düşünmemiştik,9,savunuyorsunuz,0.2912,çözümlenmiştir,0.9288,düşün | memiş | tik,düşün | memiş | t | ik
+curated_oov,düşünmemiştik,10,güvenlik,0.2736,keşfedilmiştir,0.9288,düşün | memiş | tik,düşün | memiş | t | ik
+curated_oov,uçabilenlerden,1,iç,0.4618,edilen,0.9618,uç | a | bilen | lerden,uç | abilen | lerden
+curated_oov,uçabilenlerden,2,uzm,0.3778,yeniden,0.9563,uç | a | bilen | lerden,uç | abilen | lerden
+curated_oov,uçabilenlerden,3,ukrayna,0.3237,düzenlenen,0.9561,uç | a | bilen | lerden,uç | abilen | lerden
+curated_oov,uçabilenlerden,4,üç,0.3175,üzerinden,0.9534,uç | a | bilen | lerden,uç | abilen | lerden
+curated_oov,uçabilenlerden,5,çarıklı,0.3167,üretilen,0.9501,uç | a | bilen | lerden,uç | abilen | lerden
+curated_oov,uçabilenlerden,6,birkaç,0.3136,neden,0.9478,uç | a | bilen | lerden,uç | abilen | lerden
+curated_oov,uçabilenlerden,7,açısından,0.3008,verilen,0.9447,uç | a | bilen | lerden,uç | abilen | lerden
+curated_oov,uçabilenlerden,8,uzay,0.2962,engellerine,0.942,uç | a | bilen | lerden,uç | abilen | lerden
+curated_oov,uçabilenlerden,9,güç,0.2861,bedevilerin,0.9403,uç | a | bilen | lerden,uç | abilen | lerden
+curated_oov,uçabilenlerden,10,içeren,0.285,içeren,0.939,uç | a | bilen | lerden,uç | abilen | lerden
+curated_oov,kitapçısı,1,kitapta,0.9899,şarkısı,0.941,kitap | çı | sı,kitap | ç | ısı
+curated_oov,kitapçısı,2,kitap,0.9891,kupası,0.9408,kitap | çı | sı,kitap | ç | ısı
+curated_oov,kitapçısı,3,kitaplarımı,0.9884,yaptığı,0.932,kitap | çı | sı,kitap | ç | ısı
+curated_oov,kitapçısı,4,kitaplıkta,0.9877,kitaplarımı,0.9262,kitap | çı | sı,kitap | ç | ısı
+curated_oov,kitapçısı,5,kitaplar,0.9865,kitabı,0.9208,kitap | çı | sı,kitap | ç | ısı
+curated_oov,kitapçısı,6,kitabımdaki,0.612,hayatını,0.9208,kitap | çı | sı,kitap | ç | ısı
+curated_oov,kitapçısı,7,kitabım,0.5466,sayısı,0.9191,kitap | çı | sı,kitap | ç | ısı
+curated_oov,kitapçısı,8,kitabı,0.4636,takımyıldızı,0.916,kitap | çı | sı,kitap | ç | ısı
+curated_oov,kitapçısı,9,kral,0.3544,yalıtaşı,0.9155,kitap | çı | sı,kitap | ç | ısı
+curated_oov,kitapçısı,10,dili,0.3534,parçası,0.914,kitap | çı | sı,kitap | ç | ısı
